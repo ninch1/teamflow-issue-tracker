@@ -25,6 +25,13 @@ export async function register(
   }
 
   try {
+    // validates email
+    const email = userInfo.email.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return next(new ErrorResponse('Invalid email', 400));
+    }
+
     // validates name
     const name = userInfo.name.trim();
     const nameRegex = /^[A-Za-z]{2,30}( [A-Za-z]{2,30}){1,2}$/;
@@ -35,13 +42,6 @@ export async function register(
           400,
         ),
       );
-    }
-
-    // validates email
-    const email = userInfo.email.trim();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return next(new ErrorResponse('Invalid email', 400));
     }
 
     // validates and encrypts password
@@ -72,7 +72,6 @@ export async function register(
       },
     });
   } catch (err) {
-    console.error(err);
-    return next(new ErrorResponse('Something went wrong', 500));
+    return next(err);
   }
 }
