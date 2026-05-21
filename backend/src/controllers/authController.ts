@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import ErrorResponse from '../errors/ErrorResponse';
 import asyncHandler from '../middleware/asyncHandler';
 import jwt from 'jsonwebtoken';
+import { AuthRequest } from '../types/auth';
 
 const saltRounds = 10;
 
@@ -69,7 +70,7 @@ export const register = asyncHandler(async (req, res, next) => {
   });
 });
 
-// Login User controller. logs in user. Required parameters: email, password, token.
+// Login User controller. logs in user. Required parameters: email, password.
 export const login = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -132,44 +133,13 @@ export const login = asyncHandler(async (req, res, next) => {
 
 // Protected controller. gets user info.
 export const me = asyncHandler(async (req, res, next) => {
-  // gets authorization headers
-  const authHeader = req.headers.authorization;
+  // gets user from authMiddleware
+  const authReq = req as AuthRequest;
+  const user = authReq.user;
 
-  if (!authHeader) return next(new ErrorResponse('Not authorized', 401));
-
-  // get token from headers
-  let token;
-  if (authHeader.startsWith('Bearer ')) token = authHeader.split(' ')[1];
-
-  if (!token) return next(new ErrorResponse('Not authorized', 401));
-
-  const jwtSecret = process.env.JWT_SECRET;
-
-  if (!jwtSecret)
-    return next(new ErrorResponse('JWT secret is not configured', 500));
-
-  // verify token
-  const decoded = jwt.verify(token, jwtSecret);
-
-  if (
-    typeof decoded !== 'object' ||
-    decoded === null ||
-    typeof decoded.userId !== 'string'
-  ) {
+  if (!user) {
     return next(new ErrorResponse('Unauthorized access', 401));
   }
-
-  // gets user id
-  const userId = decoded.userId;
-
-  // finds user
-  const user = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-  });
-
-  if (!user) return next(new ErrorResponse('Unauthorized access', 401));
 
   // returns user data
   return res.json({
