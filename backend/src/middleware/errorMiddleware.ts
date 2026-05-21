@@ -13,16 +13,23 @@ export default function errorMiddleware(
   let error = 'Something went wrong';
   let statusCode = 500;
 
+  // Custom error response
   if (err instanceof ErrorResponse) {
     error = err.message ? err.message : error;
     statusCode = err.statusCode ? err.statusCode : statusCode;
-  } else if (
+  }
+
+  // Prisma Duplicate error
+  else if (
     err instanceof Prisma.PrismaClientKnownRequestError &&
     err.code === 'P2002'
   ) {
     error = 'Duplicate email, please choose a new email.';
     statusCode = 409;
-  } else if (err instanceof Error) {
+  }
+
+  // Unhandled error
+  else if (err instanceof Error) {
     console.error(err);
   }
 
