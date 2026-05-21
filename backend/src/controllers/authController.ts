@@ -2,6 +2,8 @@ import prisma from '../lib/prisma';
 import bcrypt from 'bcrypt';
 import ErrorResponse from '../errors/ErrorResponse';
 import asyncHandler from '../middleware/asyncHandler';
+import jwt from 'jsonwebtoken';
+import 'dotenv/config';
 
 const saltRounds = 10;
 
@@ -107,9 +109,22 @@ export const login = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Invalid email or password', 400));
   }
 
-  // login
+  const jwtSecret = process.env.JWT_SECRET;
+
+  if (!jwtSecret) {
+    return next(new ErrorResponse('JWT secret is not configured', 500));
+  }
+
+  const token = jwt.sign({ userId: user.id }, jwtSecret);
+
+  // login and return token
   return res.status(200).json({
     message: 'Logged in successfully',
-    user: { name: user.name, email: user.email, id: user.id },
+    token,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    },
   });
 });
