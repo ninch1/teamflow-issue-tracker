@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import authRoute from './routes/authRoutes';
+import errorMiddleware from './middleware/errorMiddleware';
 
 const app = express();
 
@@ -15,8 +16,12 @@ app.get('/api/health', (req: Request, res: Response) => {
 // AUTH route mount
 app.use('/api/auth', authRoute);
 
-app.use('/', (req: Request, res: Response) => {
+// Catches bad requests 404
+app.use((req: Request, res: Response) => {
   res.status(404).json({ error: 'Invalid api request' });
 });
+
+// Catches errors passed to next()
+app.use(errorMiddleware);
 
 export default app;

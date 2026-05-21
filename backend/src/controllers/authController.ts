@@ -1,11 +1,16 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import prisma from '../lib/prisma';
 import bcrypt from 'bcrypt';
+import ErrorResponse from '../errors/ErrorResponse';
 
 const saltRounds = 10;
 
 // Register User controller. creates user. Required parameters: name, email, password.
-export async function register(req: Request, res: Response) {
+export async function register(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   const userInfo = req.body;
 
   // checks types of user info
@@ -14,9 +19,9 @@ export async function register(req: Request, res: Response) {
     typeof userInfo.email !== 'string' ||
     typeof userInfo.password !== 'string'
   ) {
-    return res.status(400).json({
-      error: 'Name, email, and password are required',
-    });
+    return next(
+      new ErrorResponse('Name, email, and password are required', 400),
+    );
   }
 
   try {
@@ -24,27 +29,26 @@ export async function register(req: Request, res: Response) {
     const name = userInfo.name.trim();
     const nameRegex = /^[A-Za-z]{2,30}( [A-Za-z]{2,30}){1,2}$/;
     if (!nameRegex.test(name)) {
-      return res.status(400).json({
-        error: 'Name must include first and last name using letters only',
-      });
+      return next(
+        new ErrorResponse(
+          'Name must include first and last name using letters only',
+          400,
+        ),
+      );
     }
 
     // validates email
     const email = userInfo.email.trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        error: 'Invalid email',
-      });
+      return next(new ErrorResponse('Invalid email', 400));
     }
 
     // validates and encrypts password
     const password = userInfo.password;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,64}$/;
     if (!passwordRegex.test(password)) {
-      return res.status(400).json({
-        error: 'Please create stonger password',
-      });
+      return next(new ErrorResponse('Please create a stonger password', 400));
     }
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
@@ -69,6 +73,6 @@ export async function register(req: Request, res: Response) {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Something went wrong' });
+    return next(new ErrorResponse('Something went wrong', 500));
   }
 }
