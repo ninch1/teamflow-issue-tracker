@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { register, login } from '../controllers/authController';
+import { register, login, me } from '../controllers/authController';
 
 const authRouter = express.Router();
 
@@ -10,5 +10,9 @@ authRouter.post('/register', register);
 // POST request to log in user.
 // PARAMS: email, password
 authRouter.post('/login', login);
+
+// PROTECTED GET request to get user information
+// AUTH: Bearer Token
+authRouter.get('/me', me);
 
 export default authRouter;
