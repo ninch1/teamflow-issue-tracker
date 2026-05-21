@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import authRoute from './routes/authRoutes';
+import workspaceRouter from './routes/workspaceRoute';
 import errorMiddleware from './middleware/errorMiddleware';
 
 const app = express();
@@ -15,6 +16,9 @@ app.get('/api/health', (req: Request, res: Response) => {
 
 // AUTH route mount
 app.use('/api/auth', authRoute);
+
+// Workspace route mount
+app.use('/api/workspace', workspaceRouter);
 
 // Catches bad requests 404
 app.use((req: Request, res: Response) => {
