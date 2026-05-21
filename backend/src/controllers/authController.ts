@@ -48,7 +48,7 @@ export async function register(
     const password = userInfo.password;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,64}$/;
     if (!passwordRegex.test(password)) {
-      return next(new ErrorResponse('Please create a stonger password', 400));
+      return next(new ErrorResponse('Please create a stronger password', 400));
     }
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
@@ -70,6 +70,56 @@ export async function register(
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       },
+    });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+// Login User controller. logs in user. Required parameters: email, password.
+export async function login(req: Request, res: Response, next: NextFunction) {
+  const { email, password } = req.body;
+
+  // check if email and password are strings before processing them
+  if (typeof email !== 'string' || typeof password !== 'string') {
+    return next(
+      new ErrorResponse('Valid email and password are required', 400),
+    );
+  }
+
+  const trimmedEmail = email.trim();
+
+  // checks if email is valid
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(trimmedEmail) || password.length < 1) {
+    return next(
+      new ErrorResponse('Valid email and password are required', 400),
+    );
+  }
+
+  try {
+    // finds user
+    const user = await prisma.user.findUnique({
+      where: {
+        email: trimmedEmail,
+      },
+    });
+
+    // if user does not exist
+    if (!user) {
+      return next(new ErrorResponse('Invalid email or password', 400));
+    }
+
+    // check password
+    const isPasswordCorrect = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordCorrect) {
+      return next(new ErrorResponse('Invalid email or password', 400));
+    }
+
+    // login
+    return res.status(200).json({
+      message: 'Logged in successfully',
+      user: { name: user.name, email: user.email, id: user.id },
     });
   } catch (err) {
     return next(err);
