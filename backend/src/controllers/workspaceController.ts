@@ -87,3 +87,15 @@ export const getWorkspaces = asyncHandler(async (req, res, next) => {
     .status(200)
     .json({ message: 'Got all workspaces', workspaces: workspacesResponse });
 });
+
+export const deleteWorkspace = asyncHandler(async (req, res, next) => {
+  // Get authenticated user added by authMiddleware.
+  const authReq = req as AuthRequest;
+  const user = authReq.user;
+
+  if (!user) {
+    return next(new ErrorResponse('Unauthorized access', 401));
+  }
+
+  const workspaceId = req.body.workspaceId;
+});

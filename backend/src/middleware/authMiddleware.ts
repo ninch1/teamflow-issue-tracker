@@ -4,7 +4,7 @@ import prisma from '../lib/prisma';
 import jwt from 'jsonwebtoken';
 import { AuthRequest } from '../types/auth';
 
-// Middleware to protect routes
+// Middleware to protect routes from unauthorized users
 
 export default asyncHandler(async (req, res, next) => {
   // gets authorization headers
