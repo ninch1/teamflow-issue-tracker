@@ -3,7 +3,7 @@ import ErrorResponse from '../errors/ErrorResponse';
 import asyncHandler from '../middleware/asyncHandler';
 import { AuthRequest } from '../types/auth';
 
-// Creates new workspace. required paramter: name.
+// Creates a new workspace. Required parameter: name.
 export const createWorkspace = asyncHandler(async (req, res, next) => {
   // Get authenticated user added by authMiddleware.
   const authReq = req as AuthRequest;
@@ -52,7 +52,7 @@ export const createWorkspace = asyncHandler(async (req, res, next) => {
   });
 });
 
-// gets all workspaces
+// Gets all workspaces for the authenticated user.
 export const getWorkspaces = asyncHandler(async (req, res, next) => {
   const authReq = req as AuthRequest;
   const user = authReq.user;
@@ -63,7 +63,6 @@ export const getWorkspaces = asyncHandler(async (req, res, next) => {
 
   // Find all workspace memberships for the current user.
   const workspaces = await prisma.workspaceMember.findMany({
-    // Get authenticated user added by authMiddleware.
     where: {
       userId: user.id,
     },
@@ -97,5 +96,32 @@ export const deleteWorkspace = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Unauthorized access', 401));
   }
 
-  const workspaceId = req.body.workspaceId;
+  const workspaceId = req.params.workspaceId;
+
+  if (typeof workspaceId !== 'string') {
+    return next(new ErrorResponse('Workspace id is required', 400));
+  }
+
+  // Use a transaction so memberships and workspace are deleted together.
+  const [, deletedWorkspace] = await prisma.$transaction([
+    prisma.workspaceMember.deleteMany({
+      where: {
+        workspaceId,
+      },
+    }),
+
+    prisma.workspace.delete({
+      where: {
+        id: workspaceId,
+      },
+    }),
+  ]);
+
+  return res.status(200).json({
+    message: 'Workspace deleted successfully',
+    workspace: {
+      id: deletedWorkspace.id,
+      name: deletedWorkspace.name,
+    },
+  });
 });

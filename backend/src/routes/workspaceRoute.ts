@@ -13,6 +13,7 @@ const workspaceRouter = express.Router();
 // Protected workspace routes.
 // GET /api/workspace - get current user's workspaces.
 // POST /api/workspace - create a workspace and make current user OWNER.
+// DELETE /api/workspace/:workspaceId - delete a workspace. OWNER only.
 workspaceRouter
   .route('/')
   .get(authMiddleware, getWorkspaces)
