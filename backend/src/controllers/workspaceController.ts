@@ -87,6 +87,7 @@ export const getWorkspaces = asyncHandler(async (req, res, next) => {
     .json({ message: 'Got all workspaces', workspaces: workspacesResponse });
 });
 
+// Deletes workspace based on id
 export const deleteWorkspace = asyncHandler(async (req, res, next) => {
   // Get authenticated user added by authMiddleware.
   const authReq = req as AuthRequest;
@@ -124,4 +125,48 @@ export const deleteWorkspace = asyncHandler(async (req, res, next) => {
       name: deletedWorkspace.name,
     },
   });
+});
+
+// Gets single workspace by id.
+export const getWorkspace = asyncHandler(async (req, res, next) => {
+  const authReq = req as AuthRequest;
+  const user = authReq.user;
+
+  if (!user) {
+    return next(new ErrorResponse('Unauthorized access', 401));
+  }
+
+  const workspaceId = req.params.workspaceId;
+
+  if (typeof workspaceId !== 'string') {
+    return next(new ErrorResponse('Workspace id is required', 400));
+  }
+
+  // gets workspace by matching unique workspace id and user id on WorkspaceMember
+  const workspaceMember = await prisma.workspaceMember.findUnique({
+    where: {
+      userId_workspaceId: {
+        userId: user.id,
+        workspaceId,
+      },
+    },
+    include: {
+      workspace: true,
+    },
+  });
+
+  if (!workspaceMember)
+    return next(new ErrorResponse('Workspace not found', 404));
+
+  // Shape response to return workspace data plus user's role.
+  const workspaceResponse = {
+    id: workspaceMember.workspace.id,
+    name: workspaceMember.workspace.name,
+    role: workspaceMember.role,
+    createdAt: workspaceMember.workspace.createdAt,
+  };
+
+  return res
+    .status(200)
+    .json({ message: 'Got workspace', workspaces: workspaceResponse });
 });
