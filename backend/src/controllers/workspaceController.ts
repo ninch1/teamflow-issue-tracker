@@ -87,6 +87,51 @@ export const getWorkspaces = asyncHandler(async (req, res, next) => {
     .json({ message: 'Got all workspaces', workspaces: workspacesResponse });
 });
 
+// Gets single workspace by id.
+export const getWorkspace = asyncHandler(async (req, res, next) => {
+  const authReq = req as AuthRequest;
+  const user = authReq.user;
+
+  if (!user) {
+    return next(new ErrorResponse('Unauthorized access', 401));
+  }
+
+  const workspaceId = req.params.workspaceId;
+
+  if (typeof workspaceId !== 'string') {
+    return next(new ErrorResponse('Workspace id is required', 400));
+  }
+
+  // gets workspace by matching unique workspace id and user id on WorkspaceMember
+  const workspaceMember = await prisma.workspaceMember.findUnique({
+    where: {
+      userId_workspaceId: {
+        userId: user.id,
+        workspaceId,
+      },
+    },
+    include: {
+      workspace: true,
+    },
+  });
+
+  if (!workspaceMember)
+    return next(new ErrorResponse('Workspace not found', 404));
+
+  // Shape response to return workspace data plus user's role.
+  const workspaceResponse = {
+    id: workspaceMember.workspace.id,
+    name: workspaceMember.workspace.name,
+    role: workspaceMember.role,
+    createdAt: workspaceMember.workspace.createdAt,
+    updatedAt: workspaceMember.workspace.updatedAt,
+  };
+
+  return res
+    .status(200)
+    .json({ message: 'Got workspace', workspace: workspaceResponse });
+});
+
 // Deletes workspace based on id
 export const deleteWorkspace = asyncHandler(async (req, res, next) => {
   // Get authenticated user added by authMiddleware.
@@ -127,8 +172,9 @@ export const deleteWorkspace = asyncHandler(async (req, res, next) => {
   });
 });
 
-// Gets single workspace by id.
-export const getWorkspace = asyncHandler(async (req, res, next) => {
+// allows user with OWNER and ADMIN role to update workspace.
+export const updateWorkspace = asyncHandler(async (req, res, next) => {
+  // Get authenticated user added by authMiddleware.
   const authReq = req as AuthRequest;
   const user = authReq.user;
 
@@ -139,34 +185,46 @@ export const getWorkspace = asyncHandler(async (req, res, next) => {
   const workspaceId = req.params.workspaceId;
 
   if (typeof workspaceId !== 'string') {
-    return next(new ErrorResponse('Workspace id is required', 400));
+    return next(new ErrorResponse('Workspace id is required to update', 400));
   }
 
-  // gets workspace by matching unique workspace id and user id on WorkspaceMember
-  const workspaceMember = await prisma.workspaceMember.findUnique({
+  const updateInfo = req.body;
+  if (!updateInfo) {
+    return next(new ErrorResponse('Updated name is required to update', 400));
+  }
+  const newName = updateInfo.name;
+
+  if (typeof newName !== 'string') {
+    return next(new ErrorResponse('Updated name is required to update', 400));
+  }
+
+  const trimmedName = newName.trim();
+
+  const workspaceNameRegex = /^[A-Za-z0-9 _'-]{2,50}$/;
+
+  if (!workspaceNameRegex.test(trimmedName)) {
+    return next(
+      new ErrorResponse(
+        'Workspace name must be 2-50 characters and can include letters, numbers, spaces, hyphens, underscores, and apostrophes',
+        400,
+      ),
+    );
+  }
+
+  const updatedWorkspace = await prisma.workspace.update({
     where: {
-      userId_workspaceId: {
-        userId: user.id,
-        workspaceId,
-      },
+      id: workspaceId,
     },
-    include: {
-      workspace: true,
+    data: {
+      name: trimmedName,
     },
   });
 
-  if (!workspaceMember)
-    return next(new ErrorResponse('Workspace not found', 404));
-
-  // Shape response to return workspace data plus user's role.
-  const workspaceResponse = {
-    id: workspaceMember.workspace.id,
-    name: workspaceMember.workspace.name,
-    role: workspaceMember.role,
-    createdAt: workspaceMember.workspace.createdAt,
-  };
-
-  return res
-    .status(200)
-    .json({ message: 'Got workspace', workspaces: workspaceResponse });
+  return res.status(200).json({
+    message: 'Workspace updated successfully',
+    workspace: {
+      id: updatedWorkspace.id,
+      name: updatedWorkspace.name,
+    },
+  });
 });

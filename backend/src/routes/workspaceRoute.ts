@@ -2,8 +2,9 @@ import express from 'express';
 import {
   createWorkspace,
   getWorkspaces,
-  deleteWorkspace,
   getWorkspace,
+  deleteWorkspace,
+  updateWorkspace,
 } from '../controllers/workspaceController';
 import authMiddleware from '../middleware/authMiddleware';
 import workspaceRoleMiddleware from '../middleware/workspaceRoleMiddleware';
@@ -16,6 +17,7 @@ const workspaceRouter = express.Router();
 // POST /api/workspace - create a workspace and make current user OWNER.
 // DELETE /api/workspace/:workspaceId - delete a workspace. OWNER only.
 // GET /api/workspace/:workspaceId - get a single workspace if current user is a member.
+// PATCH /api/workspace/:workspaceId - update workspace name. OWNER or ADMIN only.
 workspaceRouter
   .route('/')
   .get(authMiddleware, getWorkspaces)
@@ -24,6 +26,11 @@ workspaceRouter
 workspaceRouter
   .route('/:workspaceId')
   .get(authMiddleware, getWorkspace)
+  .patch(
+    authMiddleware,
+    workspaceRoleMiddleware([WorkspaceRole.OWNER, WorkspaceRole.ADMIN]),
+    updateWorkspace,
+  )
   .delete(
     authMiddleware,
     workspaceRoleMiddleware([WorkspaceRole.OWNER]),
