@@ -1,7 +1,8 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import authRoute from './routes/authRoutes';
-import workspaceRouter from './routes/workspaceRoute';
+import authRouter from './routes/authRoutes';
+import workspaceRouter from './routes/workspaceRoutes';
+import projectsRouter from './routes/projectsRoutes';
 import errorMiddleware from './middleware/errorMiddleware';
 
 const app = express();
@@ -15,10 +16,12 @@ app.get('/api/health', (req: Request, res: Response) => {
 });
 
 // AUTH route mount
-app.use('/api/auth', authRoute);
+app.use('/api/auth', authRouter);
 
 // Workspace route mount
 app.use('/api/workspace', workspaceRouter);
+// Projects route mount
+app.use('/api/workspace/:workspaceId/projects', projectsRouter);
 
 // Catches bad requests 404
 app.use((req: Request, res: Response) => {
