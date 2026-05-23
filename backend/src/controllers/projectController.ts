@@ -62,3 +62,41 @@ export const createProject = asyncHandler(async (req, res, next) => {
     },
   });
 });
+
+// Gets all projects with workspace id.
+export const getProjects = asyncHandler(async (req, res, next) => {
+  // Get authenticated user added by authMiddleware.
+  const authReq = req as AuthRequest;
+  const user = authReq.user;
+
+  if (!user) {
+    return next(new ErrorResponse('Unauthorized access', 401));
+  }
+
+  const workspaceId = req.params.workspaceId;
+
+  if (typeof workspaceId !== 'string') {
+    return next(new ErrorResponse('Workspace id is required', 400));
+  }
+
+  const projects = await prisma.project.findMany({
+    where: {
+      workspaceId,
+    },
+  });
+
+  // shape response
+  const projectsResponse = projects.map((project) => ({
+    id: project.id,
+    name: project.name,
+    description: project.description,
+    workspaceId: project.workspaceId,
+    createdAt: project.createdAt,
+    updatedAt: project.updatedAt,
+  }));
+
+  res.status(200).json({
+    message: 'Successfully got all projects',
+    projects: projectsResponse,
+  });
+});

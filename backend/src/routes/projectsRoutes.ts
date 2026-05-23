@@ -1,5 +1,5 @@
 import express from 'express';
-import { createProject } from '../controllers/projectController';
+import { createProject, getProjects } from '../controllers/projectController';
 import authMiddleware from '../middleware/authMiddleware';
 import workspaceRoleMiddleware from '../middleware/workspaceRoleMiddleware';
 import { WorkspaceRole } from '../generated/prisma/client';
@@ -9,6 +9,15 @@ const projectsRouter = express.Router({ mergeParams: true });
 
 projectsRouter
   .route('/')
+  .get(
+    authMiddleware,
+    workspaceRoleMiddleware([
+      WorkspaceRole.OWNER,
+      WorkspaceRole.ADMIN,
+      WorkspaceRole.MEMBER,
+    ]),
+    getProjects,
+  )
   .post(
     authMiddleware,
     workspaceRoleMiddleware([WorkspaceRole.OWNER, WorkspaceRole.ADMIN]),
