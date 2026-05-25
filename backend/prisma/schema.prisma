@@ -13,22 +13,24 @@ datasource db {
 }
 
 model User {
-  id               String            @id @default(uuid())
-  name             String
-  email            String            @unique
-  passwordHash     String
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  workspaceMembers WorkspaceMember[]
+  id                       String                @id @default(uuid())
+  name                     String
+  email                    String                @unique
+  passwordHash             String
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime              @updatedAt
+  workspaceMembers         WorkspaceMember[]
+  sentWorkspaceInvitations WorkspaceInvitation[]
 }
 
 model Workspace {
-  id               String            @id @default(uuid())
-  name             String
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  workspaceMembers WorkspaceMember[]
-  projects         Project[]
+  id                   String                @id @default(uuid())
+  name                 String
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  workspaceMembers     WorkspaceMember[]
+  projects             Project[]
+  workspaceInvitations WorkspaceInvitation[]
 }
 
 model WorkspaceMember {
@@ -97,4 +99,28 @@ enum IssueType {
   BUG
   TASK
   FEATURE
+}
+
+model WorkspaceInvitation {
+  id     String           @id @default(uuid())
+  email  String
+  role   WorkspaceRole    @default(MEMBER)
+  status InvitationStatus @default(PENDING)
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspaceId String
+
+  invitedBy   User   @relation(fields: [invitedById], references: [id])
+  invitedById String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([email, workspaceId])
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
 }
