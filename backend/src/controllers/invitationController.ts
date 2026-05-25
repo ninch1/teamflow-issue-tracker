@@ -125,7 +125,7 @@ export const getWorkspaceInvitations = asyncHandler(async (req, res, next) => {
   const workspaceId = req.params.workspaceId;
   if (typeof workspaceId !== 'string') {
     return next(
-      new ErrorResponse('Please choose workspace to get invitation', 400),
+      new ErrorResponse('Workspace id is required to get invitations', 400),
     );
   }
 
@@ -283,6 +283,78 @@ export const acceptInvitation = asyncHandler(async (req, res, next) => {
       workspaceId: membership.workspaceId,
       role: membership.role,
       createdAt: membership.createdAt,
+    },
+  });
+});
+
+// Decline invitation
+export const declineInvitation = asyncHandler(async (req, res, next) => {
+  const authReq = req as AuthRequest;
+  const user = authReq.user;
+
+  if (!user) {
+    return next(new ErrorResponse('Unauthorized access', 401));
+  }
+
+  const invitationId = req.params.invitationId;
+  if (typeof invitationId !== 'string') {
+    return next(new ErrorResponse('Please choose invitation', 400));
+  }
+
+  const invitation = await prisma.workspaceInvitation.findUnique({
+    where: {
+      id: invitationId,
+    },
+  });
+
+  if (!invitation) {
+    return next(new ErrorResponse('Invitation was not found', 404));
+  }
+
+  if (invitation.email !== user.email) {
+    return next(new ErrorResponse('You cannot decline this invitation', 401));
+  }
+
+  if (invitation.status !== InvitationStatus.PENDING) {
+    return next(
+      new ErrorResponse('You already have responded to this invitation', 400),
+    );
+  }
+
+  // Check if user is already a member of this workspace.
+  const existingMembership = await prisma.workspaceMember.findUnique({
+    where: {
+      userId_workspaceId: {
+        userId: user.id,
+        workspaceId: invitation.workspaceId,
+      },
+    },
+  });
+
+  if (existingMembership) {
+    return next(
+      new ErrorResponse('You are already a member of this workspace', 400),
+    );
+  }
+
+  const updatedInvitation = await prisma.workspaceInvitation.update({
+    where: {
+      id: invitation.id,
+    },
+    data: {
+      status: InvitationStatus.DECLINED,
+    },
+  });
+
+  return res.status(200).json({
+    message: 'Invitation declined successfully',
+    invitation: {
+      id: updatedInvitation.id,
+      email: updatedInvitation.email,
+      role: updatedInvitation.role,
+      status: updatedInvitation.status,
+      workspaceId: updatedInvitation.workspaceId,
+      updatedAt: updatedInvitation.updatedAt,
     },
   });
 });
