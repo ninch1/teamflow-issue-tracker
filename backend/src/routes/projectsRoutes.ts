@@ -4,6 +4,7 @@ import {
   getProjects,
   getProject,
   deleteProject,
+  updateProject,
 } from '../controllers/projectController';
 import authMiddleware from '../middleware/authMiddleware';
 import workspaceRoleMiddleware from '../middleware/workspaceRoleMiddleware';
@@ -44,6 +45,11 @@ projectsRouter
     authMiddleware,
     workspaceRoleMiddleware([WorkspaceRole.OWNER, WorkspaceRole.ADMIN]),
     deleteProject,
+  )
+  .patch(
+    authMiddleware,
+    workspaceRoleMiddleware([WorkspaceRole.OWNER, WorkspaceRole.ADMIN]),
+    updateProject,
   );
 
 export default projectsRouter;
