@@ -100,3 +100,45 @@ export const getProjects = asyncHandler(async (req, res, next) => {
     projects: projectsResponse,
   });
 });
+
+// Gets single project based on id
+export const getProject = asyncHandler(async (req, res, next) => {
+  // Get authenticated user added by authMiddleware.
+  const authReq = req as AuthRequest;
+  const user = authReq.user;
+
+  if (!user) {
+    return next(new ErrorResponse('Unauthorized access', 401));
+  }
+
+  const projectId = req.params.projectId;
+  const workspaceId = req.params.workspaceId;
+
+  if (typeof projectId !== 'string') {
+    return next(
+      new ErrorResponse('Project id is required to get project', 400),
+    );
+  }
+
+  if (typeof workspaceId !== 'string') {
+    return next(
+      new ErrorResponse('Workspace id is required to get project', 400),
+    );
+  }
+
+  const project = await prisma.project.findFirst({
+    where: {
+      id: projectId,
+      workspaceId,
+    },
+  });
+
+  if (!project) {
+    return next(new ErrorResponse('Project not found', 404));
+  }
+
+  res.status(200).json({
+    message: 'Returned project successfully',
+    project,
+  });
+});
