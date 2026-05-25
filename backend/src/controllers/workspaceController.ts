@@ -148,9 +148,26 @@ export const deleteWorkspace = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Workspace id is required', 400));
   }
 
+  const workspace = await prisma.workspace.findUnique({
+    where: {
+      id: workspaceId,
+    },
+  });
+
+  if (!workspace) {
+    return next(new ErrorResponse('Workspace not found', 404));
+  }
+
   // Use a transaction so memberships and workspace are deleted together.
-  const [, deletedWorkspace] = await prisma.$transaction([
+  // Deleting Workspace also deletes Projects
+  const [, , deletedWorkspace] = await prisma.$transaction([
     prisma.workspaceMember.deleteMany({
+      where: {
+        workspaceId,
+      },
+    }),
+
+    prisma.project.deleteMany({
       where: {
         workspaceId,
       },

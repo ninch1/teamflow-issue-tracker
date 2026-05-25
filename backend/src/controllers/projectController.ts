@@ -137,8 +137,58 @@ export const getProject = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Project not found', 404));
   }
 
-  res.status(200).json({
+  return res.status(200).json({
     message: 'Returned project successfully',
     project,
+  });
+});
+
+// Deletes project based on id
+export const deleteProject = asyncHandler(async (req, res, next) => {
+  const authReq = req as AuthRequest;
+  const user = authReq.user;
+
+  if (!user) {
+    return next(new ErrorResponse('Unauthorized access', 401));
+  }
+
+  const workspaceId = req.params.workspaceId;
+  const projectId = req.params.projectId;
+
+  if (typeof workspaceId !== 'string') {
+    return next(
+      new ErrorResponse('Workspace id is required to delete project', 400),
+    );
+  }
+
+  if (typeof projectId !== 'string') {
+    return next(
+      new ErrorResponse('Project id is required to delete project', 400),
+    );
+  }
+
+  const project = await prisma.project.findFirst({
+    where: {
+      id: projectId,
+      workspaceId,
+    },
+  });
+
+  if (!project) {
+    return next(new ErrorResponse('Project not found', 404));
+  }
+
+  const deletedProject = await prisma.project.delete({
+    where: {
+      id: project.id,
+    },
+  });
+
+  return res.status(200).json({
+    message: 'Project was deleted successfully',
+    project: {
+      id: deletedProject.id,
+      name: deletedProject.name,
+    },
   });
 });

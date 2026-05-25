@@ -3,6 +3,7 @@ import {
   createProject,
   getProjects,
   getProject,
+  deleteProject,
 } from '../controllers/projectController';
 import authMiddleware from '../middleware/authMiddleware';
 import workspaceRoleMiddleware from '../middleware/workspaceRoleMiddleware';
@@ -38,6 +39,11 @@ projectsRouter
       WorkspaceRole.MEMBER,
     ]),
     getProject,
+  )
+  .delete(
+    authMiddleware,
+    workspaceRoleMiddleware([WorkspaceRole.OWNER, WorkspaceRole.ADMIN]),
+    deleteProject,
   );
 
 export default projectsRouter;
