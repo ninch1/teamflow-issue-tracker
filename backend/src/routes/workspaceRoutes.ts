@@ -6,7 +6,10 @@ import {
   deleteWorkspace,
   updateWorkspace,
 } from '../controllers/workspaceController';
-import { sendInvitation } from '../controllers/invitationController';
+import {
+  sendInvitation,
+  getWorkspaceInvitations,
+} from '../controllers/invitationController';
 import authMiddleware from '../middleware/authMiddleware';
 import workspaceRoleMiddleware from '../middleware/workspaceRoleMiddleware';
 import { WorkspaceRole } from '../generated/prisma/client';
@@ -41,6 +44,11 @@ workspaceRouter
 
 workspaceRouter
   .route('/:workspaceId/invitations')
+  .get(
+    authMiddleware,
+    workspaceRoleMiddleware([WorkspaceRole.OWNER, WorkspaceRole.ADMIN]),
+    getWorkspaceInvitations,
+  )
   .post(
     authMiddleware,
     workspaceRoleMiddleware([WorkspaceRole.OWNER, WorkspaceRole.ADMIN]),

@@ -32,7 +32,7 @@ export const sendInvitation = asyncHandler(async (req, res, next) => {
   const workspaceId = req.params.workspaceId;
   if (typeof workspaceId !== 'string') {
     return next(
-      new ErrorResponse('Please choose workspace to send invitation', 400),
+      new ErrorResponse('Workspace id is required to get invitations', 400),
     );
   }
 
@@ -109,5 +109,46 @@ export const sendInvitation = asyncHandler(async (req, res, next) => {
       invitedById: invitation.invitedById,
       createdAt: invitation.createdAt,
     },
+  });
+});
+
+// Gets all invitations for workspace based on id
+export const getWorkspaceInvitations = asyncHandler(async (req, res, next) => {
+  const authReq = req as AuthRequest;
+  const user = authReq.user;
+
+  if (!user) {
+    return next(new ErrorResponse('Unauthorized access', 401));
+  }
+
+  const workspaceId = req.params.workspaceId;
+  if (typeof workspaceId !== 'string') {
+    return next(
+      new ErrorResponse('Please choose workspace to send invitation', 400),
+    );
+  }
+
+  const invitations = await prisma.workspaceInvitation.findMany({
+    where: {
+      workspaceId,
+    },
+  });
+
+  const invitationsResponse = invitations.map((invitation) => {
+    return {
+      id: invitation.id,
+      email: invitation.email,
+      role: invitation.role,
+      status: invitation.status,
+      workspaceId: invitation.workspaceId,
+      invitedById: invitation.invitedById,
+      createdAt: invitation.createdAt,
+      updatedAt: invitation.updatedAt,
+    };
+  });
+
+  return res.status(200).json({
+    message: 'Got all invitations successfully',
+    invitationsResponse,
   });
 });
