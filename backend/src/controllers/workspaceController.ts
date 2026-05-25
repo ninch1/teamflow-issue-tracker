@@ -253,3 +253,44 @@ export const updateWorkspace = asyncHandler(async (req, res, next) => {
     },
   });
 });
+
+// gets all users of workspace
+export const getWorkspaceMembers = asyncHandler(async (req, res, next) => {
+  const workspaceId = req.params.workspaceId;
+
+  if (typeof workspaceId !== 'string') {
+    return next(new ErrorResponse('Workspace id is required', 400));
+  }
+
+  const members = await prisma.workspaceMember.findMany({
+    where: {
+      workspaceId,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'asc',
+    },
+  });
+
+  const membersResponse = members.map((member) => {
+    return {
+      id: member.id,
+      role: member.role,
+      joinedAt: member.createdAt,
+      user: member.user,
+    };
+  });
+
+  return res.status(200).json({
+    message: 'Got workspace members successfully',
+    members: membersResponse,
+  });
+});
