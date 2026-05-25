@@ -2,6 +2,7 @@ import prisma from '../lib/prisma';
 import ErrorResponse from '../errors/ErrorResponse';
 import asyncHandler from '../middleware/asyncHandler';
 import { AuthRequest } from '../types/auth';
+import { InvitationStatus } from '../generated/prisma/client';
 
 export const sendInvitation = asyncHandler(async (req, res, next) => {
   const authReq = req as AuthRequest;
@@ -141,6 +142,50 @@ export const getWorkspaceInvitations = asyncHandler(async (req, res, next) => {
       role: invitation.role,
       status: invitation.status,
       workspaceId: invitation.workspaceId,
+      invitedById: invitation.invitedById,
+      createdAt: invitation.createdAt,
+      updatedAt: invitation.updatedAt,
+    };
+  });
+
+  return res.status(200).json({
+    message: 'Got all invitations successfully',
+    invitationsResponse,
+  });
+});
+
+// Gets all invitations for user
+export const getMyInvitations = asyncHandler(async (req, res, next) => {
+  const authReq = req as AuthRequest;
+  const user = authReq.user;
+
+  if (!user) {
+    return next(new ErrorResponse('Unauthorized access', 401));
+  }
+
+  // returns only pending invitations
+  const invitations = await prisma.workspaceInvitation.findMany({
+    where: {
+      email: user.email,
+      status: 'PENDING',
+    },
+    include: {
+      workspace: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  const invitationsResponse = invitations.map((invitation) => {
+    return {
+      id: invitation.id,
+      email: invitation.email,
+      role: invitation.role,
+      status: invitation.status,
+      workspace: invitation.workspace,
       invitedById: invitation.invitedById,
       createdAt: invitation.createdAt,
       updatedAt: invitation.updatedAt,
