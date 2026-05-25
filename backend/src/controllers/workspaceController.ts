@@ -159,15 +159,23 @@ export const deleteWorkspace = asyncHandler(async (req, res, next) => {
   }
 
   // Use a transaction so memberships and workspace are deleted together.
-  // Deleting Workspace also deletes Projects
-  const [, , deletedWorkspace] = await prisma.$transaction([
-    prisma.workspaceMember.deleteMany({
+  // Deleting Workspace also deletes Issues and Projects
+  const [, , , deletedWorkspace] = await prisma.$transaction([
+    prisma.issue.deleteMany({
+      where: {
+        project: {
+          workspaceId,
+        },
+      },
+    }),
+
+    prisma.project.deleteMany({
       where: {
         workspaceId,
       },
     }),
 
-    prisma.project.deleteMany({
+    prisma.workspaceMember.deleteMany({
       where: {
         workspaceId,
       },

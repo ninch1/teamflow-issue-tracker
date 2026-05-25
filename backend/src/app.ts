@@ -3,6 +3,7 @@ import cors from 'cors';
 import authRouter from './routes/authRoutes';
 import workspaceRouter from './routes/workspaceRoutes';
 import projectsRouter from './routes/projectsRoutes';
+import issueRouter from './routes/issueRoutes';
 import errorMiddleware from './middleware/errorMiddleware';
 
 const app = express();
@@ -20,8 +21,12 @@ app.use('/api/auth', authRouter);
 
 // Workspace route mount
 app.use('/api/workspace', workspaceRouter);
+
 // Projects route mount
 app.use('/api/workspace/:workspaceId/projects', projectsRouter);
+
+// Issues route mount
+app.use('/api/workspace/:workspaceId/projects/:projectId/issues', issueRouter);
 
 // Catches bad requests 404
 app.use((req: Request, res: Response) => {
