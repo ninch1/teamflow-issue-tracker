@@ -6,6 +6,7 @@ import {
   deleteWorkspace,
   updateWorkspace,
 } from '../controllers/workspaceController';
+import { sendInvitation } from '../controllers/invitationController';
 import authMiddleware from '../middleware/authMiddleware';
 import workspaceRoleMiddleware from '../middleware/workspaceRoleMiddleware';
 import { WorkspaceRole } from '../generated/prisma/client';
@@ -18,6 +19,7 @@ const workspaceRouter = express.Router();
 // DELETE /api/workspace/:workspaceId - delete a workspace. OWNER only.
 // GET /api/workspace/:workspaceId - get a single workspace if current user is a member.
 // PATCH /api/workspace/:workspaceId - update workspace name. OWNER or ADMIN only.
+// POST /api/workspace/:workspaceId/invitations - invite a user to workspace. OWNER or ADMIN only.
 workspaceRouter
   .route('/')
   .get(authMiddleware, getWorkspaces)
@@ -35,6 +37,14 @@ workspaceRouter
     authMiddleware,
     workspaceRoleMiddleware([WorkspaceRole.OWNER]),
     deleteWorkspace,
+  );
+
+workspaceRouter
+  .route('/:workspaceId/invitations')
+  .post(
+    authMiddleware,
+    workspaceRoleMiddleware([WorkspaceRole.OWNER, WorkspaceRole.ADMIN]),
+    sendInvitation,
   );
 
 export default workspaceRouter;
