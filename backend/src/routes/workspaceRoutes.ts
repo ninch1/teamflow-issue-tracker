@@ -5,12 +5,15 @@ import {
   getWorkspace,
   deleteWorkspace,
   updateWorkspace,
-  getWorkspaceMembers,
 } from '../controllers/workspaceController';
 import {
   sendInvitation,
   getWorkspaceInvitations,
 } from '../controllers/invitationController';
+import {
+  getWorkspaceMembers,
+  updateWorkspaceMemberRole,
+} from '../controllers/workspaceMemberController';
 import authMiddleware from '../middleware/authMiddleware';
 import workspaceRoleMiddleware from '../middleware/workspaceRoleMiddleware';
 import { WorkspaceRole } from '../generated/prisma/client';
@@ -67,6 +70,14 @@ workspaceRouter
       WorkspaceRole.MEMBER,
     ]),
     getWorkspaceMembers,
+  );
+
+workspaceRouter
+  .route('/:workspaceId/members/:memberId/role')
+  .patch(
+    authMiddleware,
+    workspaceRoleMiddleware([WorkspaceRole.OWNER]),
+    updateWorkspaceMemberRole,
   );
 
 export default workspaceRouter;

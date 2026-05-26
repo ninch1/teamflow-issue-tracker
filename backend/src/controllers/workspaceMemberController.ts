@@ -1,0 +1,134 @@
+import prisma from '../lib/prisma';
+import ErrorResponse from '../errors/ErrorResponse';
+import asyncHandler from '../middleware/asyncHandler';
+import { AuthRequest } from '../types/auth';
+import { WorkspaceRole } from '../generated/prisma/client';
+
+// gets all users of workspace
+export const getWorkspaceMembers = asyncHandler(async (req, res, next) => {
+  const workspaceId = req.params.workspaceId;
+
+  if (typeof workspaceId !== 'string') {
+    return next(new ErrorResponse('Workspace id is required', 400));
+  }
+
+  const members = await prisma.workspaceMember.findMany({
+    where: {
+      workspaceId,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'asc',
+    },
+  });
+
+  const membersResponse = members.map((member) => {
+    return {
+      id: member.id,
+      role: member.role,
+      joinedAt: member.createdAt,
+      user: member.user,
+    };
+  });
+
+  return res.status(200).json({
+    message: 'Got workspace members successfully',
+    members: membersResponse,
+  });
+});
+
+// change members role, based on membership id
+export const updateWorkspaceMemberRole = asyncHandler(
+  async (req, res, next) => {
+    const authReq = req as AuthRequest;
+    const user = authReq.user;
+
+    if (!user) {
+      return next(new ErrorResponse('Unauthorized access', 401));
+    }
+
+    const workspaceId = req.params.workspaceId;
+    const memberId = req.params.memberId;
+
+    if (typeof workspaceId !== 'string') {
+      return next(new ErrorResponse('Please choose workspace', 400));
+    }
+    if (typeof memberId !== 'string') {
+      return next(new ErrorResponse('Please choose member', 400));
+    }
+
+    if (!req.body) {
+      return next(new ErrorResponse('Please choose role to update', 400));
+    }
+
+    const newRole = req.body.role;
+    if (typeof newRole !== 'string') {
+      return next(
+        new ErrorResponse('Please choose correct role to update', 400),
+      );
+    }
+
+    const newRoleTrim = newRole.toUpperCase().trim();
+
+    if (newRoleTrim !== 'ADMIN' && newRoleTrim !== 'MEMBER') {
+      return next(new ErrorResponse('Role must be ADMIN or MEMBER', 400));
+    }
+
+    let updatedRole: WorkspaceRole;
+
+    if (newRoleTrim === 'ADMIN') {
+      updatedRole = WorkspaceRole.ADMIN;
+    } else {
+      updatedRole = WorkspaceRole.MEMBER;
+    }
+
+    const membership = await prisma.workspaceMember.findFirst({
+      where: {
+        id: memberId,
+        workspaceId,
+      },
+    });
+
+    // Check if target member belongs to this workspace.
+    if (!membership) {
+      return next(new ErrorResponse('User is not in this workspace', 400));
+    }
+
+    // check if user already has updated role
+    if (membership.role === updatedRole) {
+      return next(new ErrorResponse('User already has this role', 400));
+    }
+
+    if (membership.role === WorkspaceRole.OWNER) {
+      return next(new ErrorResponse('Owner role cannot be changed', 400));
+    }
+
+    const updatedMembership = await prisma.workspaceMember.update({
+      where: {
+        id: membership.id,
+      },
+      data: {
+        role: updatedRole,
+      },
+    });
+
+    return res.status(200).json({
+      message: 'Successfully changed role',
+      membership: {
+        id: updatedMembership.id,
+        userId: updatedMembership.userId,
+        workspaceId: updatedMembership.workspaceId,
+        role: updatedMembership.role,
+        updatedAt: updatedMembership.updatedAt,
+      },
+    });
+  },
+);
