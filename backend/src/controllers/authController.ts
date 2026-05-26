@@ -23,7 +23,7 @@ export const register = asyncHandler(async (req, res, next) => {
   }
 
   // validates email
-  const email = userInfo.email.trim();
+  const email = userInfo.email.trim().toLowerCase();
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     return next(new ErrorResponse('Invalid email', 400));
@@ -81,7 +81,7 @@ export const login = asyncHandler(async (req, res, next) => {
     );
   }
 
-  const trimmedEmail = email.trim();
+  const trimmedEmail = email.trim().toLowerCase();
 
   // checks if email is valid
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

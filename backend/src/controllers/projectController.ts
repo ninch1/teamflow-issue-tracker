@@ -26,9 +26,31 @@ export const createProject = asyncHandler(async (req, res, next) => {
   }
 
   const projectName = req.body.name;
+  const description = req.body.description;
 
   if (typeof projectName !== 'string') {
     return next(new ErrorResponse('Name is required to create project', 400));
+  }
+
+  let trimmedDescription: string | undefined;
+
+  if (description !== undefined) {
+    if (typeof description !== 'string') {
+      return next(
+        new ErrorResponse('Project description must be a string', 400),
+      );
+    }
+
+    trimmedDescription = description.trim();
+
+    if (trimmedDescription.length > 500) {
+      return next(
+        new ErrorResponse(
+          'Project description must be 500 characters or less',
+          400,
+        ),
+      );
+    }
   }
 
   const trimmedName = projectName.trim();
@@ -48,6 +70,7 @@ export const createProject = asyncHandler(async (req, res, next) => {
   const project = await prisma.project.create({
     data: {
       name: trimmedName,
+      description: trimmedDescription,
       workspaceId,
     },
   });
@@ -57,6 +80,7 @@ export const createProject = asyncHandler(async (req, res, next) => {
     project: {
       id: project.id,
       name: project.name,
+      description: project.description,
       workspaceId: project.workspaceId,
       createdAt: project.createdAt,
     },
