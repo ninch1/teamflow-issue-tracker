@@ -159,9 +159,15 @@ export const deleteWorkspace = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Workspace not found', 404));
   }
 
-  // Use a transaction so memberships and workspace are deleted together.
-  // Deleting Workspace also deletes Issues and Projects
-  const [, , , deletedWorkspace] = await prisma.$transaction([
+  // Use a transaction so workspace-related data is deleted together.
+  // Delete child records first, then delete the workspace.
+  const [, , , , deletedWorkspace] = await prisma.$transaction([
+    prisma.workspaceInvitation.deleteMany({
+      where: {
+        workspaceId,
+      },
+    }),
+
     prisma.issue.deleteMany({
       where: {
         project: {
