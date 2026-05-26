@@ -132,3 +132,54 @@ export const updateWorkspaceMemberRole = asyncHandler(
     });
   },
 );
+
+export const removeWorkspaceMember = asyncHandler(async (req, res, next) => {
+  const authReq = req as AuthRequest;
+  const user = authReq.user;
+
+  if (!user) {
+    return next(new ErrorResponse('Unauthorized access', 401));
+  }
+
+  const memberId = req.params.memberId;
+  const workspaceId = req.params.workspaceId;
+
+  if (typeof workspaceId !== 'string') {
+    return next(new ErrorResponse('Please choose workspace', 400));
+  }
+  if (typeof memberId !== 'string') {
+    return next(new ErrorResponse('Please choose member', 400));
+  }
+
+  // check membership
+  const membership = await prisma.workspaceMember.findFirst({
+    where: {
+      id: memberId,
+      workspaceId,
+    },
+  });
+
+  if (!membership) {
+    return next(new ErrorResponse('Membership not found', 404));
+  }
+  if (membership.role === WorkspaceRole.OWNER) {
+    return next(new ErrorResponse('Owner cannot be removed', 400));
+  }
+
+  // delete membership
+  const deletedMembership = await prisma.workspaceMember.delete({
+    where: {
+      id: memberId,
+    },
+  });
+
+  return res.status(200).json({
+    message: 'Successfully removed member',
+    membership: {
+      id: deletedMembership.id,
+      userId: deletedMembership.userId,
+      workspaceId: deletedMembership.workspaceId,
+      role: deletedMembership.role,
+    },
+  });
+});

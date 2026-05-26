@@ -2,7 +2,7 @@ import prisma from '../lib/prisma';
 import ErrorResponse from '../errors/ErrorResponse';
 import asyncHandler from '../middleware/asyncHandler';
 import { AuthRequest } from '../types/auth';
-import { InvitationStatus } from '../generated/prisma/client';
+import { InvitationStatus, WorkspaceRole } from '../generated/prisma/client';
 
 export const sendInvitation = asyncHandler(async (req, res, next) => {
   const authReq = req as AuthRequest;
@@ -83,12 +83,50 @@ export const sendInvitation = asyncHandler(async (req, res, next) => {
   });
 
   if (existingInvitation) {
-    return next(
-      new ErrorResponse(
-        'This user already has an invitation to this workspace',
-        400,
-      ),
-    );
+    if (existingInvitation.status === InvitationStatus.PENDING) {
+      return next(
+        new ErrorResponse(
+          'This user already has a pending invitation to this workspace',
+          400,
+        ),
+      );
+    }
+
+    if (existingInvitation.status === InvitationStatus.ACCEPTED) {
+      return next(
+        new ErrorResponse(
+          'This user has already accepted an invitation to this workspace',
+          400,
+        ),
+      );
+    }
+
+    if (existingInvitation.status === InvitationStatus.DECLINED) {
+      const invitation = await prisma.workspaceInvitation.update({
+        where: {
+          id: existingInvitation.id,
+        },
+        data: {
+          status: InvitationStatus.PENDING,
+          role: WorkspaceRole.MEMBER,
+          invitedById: user.id,
+        },
+      });
+
+      return res.status(200).json({
+        message: 'Invitation was sent again successfully',
+        invitation: {
+          id: invitation.id,
+          email: invitation.email,
+          role: invitation.role,
+          status: invitation.status,
+          workspaceId: invitation.workspaceId,
+          invitedById: invitation.invitedById,
+          createdAt: invitation.createdAt,
+          updatedAt: invitation.updatedAt,
+        },
+      });
+    }
   }
 
   const invitation = await prisma.workspaceInvitation.create({

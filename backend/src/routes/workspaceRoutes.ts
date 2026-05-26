@@ -13,6 +13,7 @@ import {
 import {
   getWorkspaceMembers,
   updateWorkspaceMemberRole,
+  removeWorkspaceMember,
 } from '../controllers/workspaceMemberController';
 import authMiddleware from '../middleware/authMiddleware';
 import workspaceRoleMiddleware from '../middleware/workspaceRoleMiddleware';
@@ -27,7 +28,9 @@ const workspaceRouter = express.Router();
 // GET /api/workspace/:workspaceId - get a single workspace if current user is a member.
 // PATCH /api/workspace/:workspaceId - update workspace name. OWNER or ADMIN only.
 // POST /api/workspace/:workspaceId/invitations - invite a user to workspace. OWNER or ADMIN only.
-// GET /api./workspace/:workspaceId/members - get all members of workspace
+// GET /api/workspace/:workspaceId/members - get all members of workspace.
+// PATCH /api/workspace/:workspaceId/members/:memberId/role - update member role. OWNER only.
+// DELETE /api/workspace/:workspaceId/members/:memberId - remove member. OWNER only.
 workspaceRouter
   .route('/')
   .get(authMiddleware, getWorkspaces)
@@ -78,6 +81,14 @@ workspaceRouter
     authMiddleware,
     workspaceRoleMiddleware([WorkspaceRole.OWNER]),
     updateWorkspaceMemberRole,
+  );
+
+workspaceRouter
+  .route('/:workspaceId/members/:memberId')
+  .delete(
+    authMiddleware,
+    workspaceRoleMiddleware([WorkspaceRole.OWNER]),
+    removeWorkspaceMember,
   );
 
 export default workspaceRouter;
