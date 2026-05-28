@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { loginUser } from '../api/authApi';
 
 type LoginPageProps = {
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
@@ -14,29 +15,14 @@ export default function LoginPage({ setIsLoggedIn }: LoginPageProps) {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3000/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || 'Login failed');
-        return;
-      }
-
-      localStorage.setItem('teamflow_token', data.token);
-
+      await loginUser(email, password);
       setIsLoggedIn(true);
-    } catch {
-      setError('Could not connect to server');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('Could not connect to server');
+      }
     }
   }
 

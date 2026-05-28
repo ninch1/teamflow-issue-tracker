@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { getMe } from '../api/authApi';
 
 type UserType = {
   user: {
@@ -17,28 +18,21 @@ export default function MePage() {
       const token = localStorage.getItem('teamflow_token');
 
       if (!token) {
+        setError('Session expired. Please log in again');
         return;
       }
 
       try {
-        const response = await fetch('http://localhost:3000/api/auth/me', {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          localStorage.removeItem('teamflow_token');
-          setError(data.error || 'Session expired. Please log in again');
-          return;
-        }
-
+        const data = await getMe(token);
         setUserData(data);
-      } catch {
-        setError('Could not connect to server');
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          localStorage.removeItem('teamflow_token');
+          setError(error.message);
+        } else {
+          localStorage.removeItem('teamflow_token');
+          setError('Could not connect to server');
+        }
       }
     }
 
