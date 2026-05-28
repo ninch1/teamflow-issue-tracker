@@ -1,6 +1,10 @@
 import { useState } from 'react';
 
-export default function LoginPage() {
+type LoginPageProps = {
+  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+export default function LoginPage({ setIsLoggedIn }: LoginPageProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -29,7 +33,8 @@ export default function LoginPage() {
       }
 
       localStorage.setItem('teamflow_token', data.token);
-      console.log('Logged in successfully');
+
+      setIsLoggedIn(true);
     } catch {
       setError('Could not connect to server');
     }
