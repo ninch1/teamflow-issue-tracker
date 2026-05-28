@@ -5,6 +5,8 @@ import MePage from './pages/MePage';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Tracks whether the initial auth check has finished.
   const [isLoaded, setIsLoaded] = useState(false);
 
   return (
@@ -13,7 +15,7 @@ function App() {
         <LoadState setIsLoggedIn={setIsLoggedIn} setIsLoaded={setIsLoaded} />
       )}
       {isLoaded && !isLoggedIn && <LoginPage setIsLoggedIn={setIsLoggedIn} />}
-      {isLoggedIn && <MePage />}
+      {isLoggedIn && <MePage setIsLoggedIn={setIsLoggedIn} />}
     </div>
   );
 }

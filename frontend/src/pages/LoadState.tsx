@@ -5,6 +5,7 @@ type LoadStateProps = {
   setIsLoaded: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
+// Check if a saved token exists when the app first loads.
 export default function LoadState({
   setIsLoggedIn,
   setIsLoaded,

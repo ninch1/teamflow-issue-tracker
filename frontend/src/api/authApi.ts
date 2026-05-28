@@ -1,3 +1,5 @@
+// API functions for authentication requests.
+
 const BASE_URL = 'http://localhost:3000/api';
 
 export const getMe = async (token: string) => {

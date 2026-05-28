@@ -5,6 +5,7 @@ type LoginPageProps = {
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
+// Submit login credentials and save token if login succeeds.
 export default function LoginPage({ setIsLoggedIn }: LoginPageProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
