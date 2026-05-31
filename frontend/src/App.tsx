@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import MePage from './pages/MePage';
@@ -7,7 +8,7 @@ function App() {
   return (
     <div className='min-h-screen bg-white text-black flex items-center justify-center'>
       <Routes>
-        <Route path='/' element={<Navigate to='/login' />} />
+        <Route path='/' element={<HomePage />} />
         <Route path='/login' element={<LoginPage />} />
         <Route path='/register' element={<RegisterPage />} />
         <Route path='/me' element={<MePage />} />

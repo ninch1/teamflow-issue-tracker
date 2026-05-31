@@ -50,7 +50,7 @@ export default function MePage() {
   // Clear saved token and return to login page.
   function handleLogout() {
     localStorage.removeItem('teamflow_token');
-    navigate('/login');
+    navigate('/');
   }
 
   return (
