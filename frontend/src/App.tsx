@@ -1,21 +1,17 @@
-import { useState } from 'react';
-import LoadState from './pages/LoadState';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import MePage from './pages/MePage';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  // Tracks whether the initial auth check has finished.
-  const [isLoaded, setIsLoaded] = useState(false);
-
   return (
     <div className='min-h-screen bg-white text-black flex items-center justify-center'>
-      {!isLoaded && (
-        <LoadState setIsLoggedIn={setIsLoggedIn} setIsLoaded={setIsLoaded} />
-      )}
-      {isLoaded && !isLoggedIn && <LoginPage setIsLoggedIn={setIsLoggedIn} />}
-      {isLoggedIn && <MePage setIsLoggedIn={setIsLoggedIn} />}
+      <Routes>
+        <Route path='/' element={<Navigate to='/login' />} />
+        <Route path='/login' element={<LoginPage />} />
+        <Route path='/register' element={<RegisterPage />} />
+        <Route path='/me' element={<MePage />} />
+      </Routes>
     </div>
   );
 }

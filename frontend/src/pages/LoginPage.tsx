@@ -1,15 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { loginUser } from '../api/authApi';
-
-type LoginPageProps = {
-  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
-};
+import { useNavigate } from 'react-router-dom';
 
 // Submit login credentials and save token if login succeeds.
-export default function LoginPage({ setIsLoggedIn }: LoginPageProps) {
+export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem('teamflow_token');
+    if (token) navigate('/me');
+  }, [navigate]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -17,7 +21,7 @@ export default function LoginPage({ setIsLoggedIn }: LoginPageProps) {
 
     try {
       await loginUser(email, password);
-      setIsLoggedIn(true);
+      navigate('/me');
     } catch (error: unknown) {
       if (error instanceof Error) {
         setError(error.message);
