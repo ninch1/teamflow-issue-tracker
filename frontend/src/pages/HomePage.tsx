@@ -1,17 +1,18 @@
 import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { getAuthToken } from '../utils/authToken';
 
 export default function HomePage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('teamflow_token');
+    const token = getAuthToken();
     if (token) navigate('/me');
   }, [navigate]);
 
   return (
     <div className='flex flex-col items-center text-center gap-4 px-4'>
-      <h1 className='font-bold text-4xl bg-linear-to-r from-black to-blue-500 bg-clip-text text-transparent'>
+      <h1 className='font-bold text-4xl bg-linear-to-r from-slate-900 to-blue-600 bg-clip-text text-transparent'>
         TeamFlow
       </h1>
       <p>Organize workspaces, projects, and issues with your team.</p>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { loginUser } from '../api/authApi';
 import { useNavigate } from 'react-router-dom';
+import { getAuthToken } from '../utils/authToken';
 
 // Submit login credentials and save token if login succeeds.
 export default function LoginPage() {
@@ -11,7 +12,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('teamflow_token');
+    const token = getAuthToken();
     if (token) navigate('/me');
   }, [navigate]);
 

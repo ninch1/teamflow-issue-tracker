@@ -1,3 +1,5 @@
+import { setAuthToken } from '../utils/authToken';
+
 // API functions for authentication requests.
 
 const BASE_URL = 'http://localhost:3000/api';
@@ -37,7 +39,7 @@ export const loginUser = async (email: string, password: string) => {
     throw new Error(data.error || 'Login failed');
   }
 
-  localStorage.setItem('teamflow_token', data.token);
+  setAuthToken(data.token);
 };
 
 export const registerUser = async (

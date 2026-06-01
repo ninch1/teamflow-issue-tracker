@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getMe } from '../api/authApi';
 import { useNavigate } from 'react-router-dom';
+import { getAuthToken, removeAuthToken } from '../utils/authToken';
 
 type UserType = {
   user: {
@@ -20,7 +21,7 @@ export default function MePage() {
   // Load current user using saved token.
   useEffect(() => {
     async function fetchMe() {
-      const token = localStorage.getItem('teamflow_token');
+      const token = getAuthToken();
 
       if (!token) {
         setError('Session expired. Please log in again');
@@ -33,10 +34,10 @@ export default function MePage() {
         setUserData(data);
       } catch (error: unknown) {
         if (error instanceof Error) {
-          localStorage.removeItem('teamflow_token');
+          removeAuthToken();
           setError(error.message);
         } else {
-          localStorage.removeItem('teamflow_token');
+          removeAuthToken();
           setError('Could not connect to server');
         }
 
@@ -49,7 +50,7 @@ export default function MePage() {
 
   // Clear saved token and return to login page.
   function handleLogout() {
-    localStorage.removeItem('teamflow_token');
+    removeAuthToken();
     navigate('/');
   }
 

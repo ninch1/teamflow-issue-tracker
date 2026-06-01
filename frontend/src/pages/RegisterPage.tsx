@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { registerUser } from '../api/authApi';
 import { useNavigate } from 'react-router-dom';
+import { getAuthToken } from '../utils/authToken';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -12,7 +13,7 @@ export default function RegisterPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('teamflow_token');
+    const token = getAuthToken();
     if (token) navigate('/me');
   }, [navigate]);
 
