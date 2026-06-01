@@ -2,10 +2,10 @@ import { setAuthToken } from '../utils/authToken';
 
 // API functions for authentication requests.
 
-const BASE_URL = 'http://localhost:3000/api';
+const BASE_URL = 'http://localhost:3000/api/auth';
 
 export const getMe = async (token: string) => {
-  const response = await fetch(`${BASE_URL}/auth/me`, {
+  const response = await fetch(`${BASE_URL}/me`, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -22,7 +22,7 @@ export const getMe = async (token: string) => {
 };
 
 export const loginUser = async (email: string, password: string) => {
-  const response = await fetch(`${BASE_URL}/auth/login`, {
+  const response = await fetch(`${BASE_URL}/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -47,7 +47,7 @@ export const registerUser = async (
   email: string,
   password: string,
 ) => {
-  const response = await fetch(`${BASE_URL}/auth/register`, {
+  const response = await fetch(`${BASE_URL}/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

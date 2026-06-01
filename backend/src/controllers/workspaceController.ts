@@ -64,7 +64,14 @@ export const createWorkspace = asyncHandler(async (req, res, next) => {
 
   return res.status(201).json({
     message: 'Workspace created successfully',
-    workspace,
+    workspace: {
+      id: workspace.id,
+      name: workspace.name,
+      description: workspace.description,
+      role: WorkspaceRole.OWNER,
+      createdAt: workspace.createdAt,
+      updatedAt: workspace.updatedAt,
+    },
   });
 });
 

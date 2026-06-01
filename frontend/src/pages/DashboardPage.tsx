@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import WorkspaceCard from '../components/common/WorkspaceCard';
-import { getWorkspaces } from '../api/workspaceApi';
-import { removeAuthToken } from '../utils/authToken';
+import { getWorkspaces, createWorkspace } from '../api/workspaceApi';
+import AddWorkspaceCard from '../components/layout/AddWorkspaceCard';
+import CreateWorkspaceCard from '../components/layout/CreateWorkspaceCard';
 
 type WorkspaceData = {
   id: string;
@@ -13,9 +14,21 @@ type WorkspaceData = {
   updatedAt: string;
 };
 
+type NewWorkspace = {
+  name: string;
+  description: string;
+};
+
 export default function DashboardPage() {
-  const [workspaceCardsData, setWorkspaceCards] = useState<WorkspaceData[]>([]);
+  const [workspaceCardsData, setWorkspaceCardsData] = useState<WorkspaceData[]>(
+    [],
+  );
   const [error, setError] = useState('');
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newWorkspaceInfo, setNewWorkspaceInfo] = useState<NewWorkspace>({
+    name: '',
+    description: '',
+  });
 
   const navigate = useNavigate();
 
@@ -24,13 +37,11 @@ export default function DashboardPage() {
       try {
         const workspacesData = await getWorkspaces();
         const workspacesArr = workspacesData.workspaces;
-        setWorkspaceCards(workspacesArr);
+        setWorkspaceCardsData(workspacesArr);
       } catch (error: unknown) {
         if (error instanceof Error) {
-          removeAuthToken();
           setError(error.message);
         } else {
-          removeAuthToken();
           setError('Could not connect to server');
         }
 
@@ -40,6 +51,28 @@ export default function DashboardPage() {
 
     getWorkspacesWrapper();
   }, [navigate]);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    try {
+      const newWorkspace = await createWorkspace(
+        newWorkspaceInfo.name,
+        newWorkspaceInfo.description,
+      );
+      setWorkspaceCardsData((prev) => {
+        return [...prev, newWorkspace.workspace];
+      });
+      setNewWorkspaceInfo({ name: '', description: '' });
+      setShowCreateForm(false);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('Could not connect to server');
+      }
+    }
+  }
 
   return (
     <div className='w-full max-w-6xl'>
@@ -58,6 +91,25 @@ export default function DashboardPage() {
 
         {!error && workspaceCardsData.length > 0 && (
           <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+            {showCreateForm ? (
+              <CreateWorkspaceCard
+                name={newWorkspaceInfo.name}
+                description={newWorkspaceInfo.description}
+                onNameChange={(value) =>
+                  setNewWorkspaceInfo((prev) => ({ ...prev, name: value }))
+                }
+                onDescriptionChange={(value) =>
+                  setNewWorkspaceInfo((prev) => ({
+                    ...prev,
+                    description: value,
+                  }))
+                }
+                onSubmit={handleSubmit}
+                onCancel={() => setShowCreateForm(false)}
+              />
+            ) : (
+              <AddWorkspaceCard onClick={() => setShowCreateForm(true)} />
+            )}
             {workspaceCardsData.map((data) => (
               <WorkspaceCard key={data.id} workspaceInfo={data} />
             ))}

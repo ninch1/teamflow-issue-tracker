@@ -20,3 +20,27 @@ export const getWorkspaces = async () => {
 
   return data;
 };
+
+export const createWorkspace = async (name: string, description: string) => {
+  const authToken = getAuthToken();
+
+  const response = await fetch(`${BASE_URL}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      name,
+      description,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Workspace creation failed');
+  }
+
+  return data;
+};
