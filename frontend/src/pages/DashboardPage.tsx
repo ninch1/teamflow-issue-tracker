@@ -4,15 +4,10 @@ import WorkspaceCard from '../components/common/WorkspaceCard';
 import { getWorkspaces } from '../api/workspaceApi';
 import { removeAuthToken } from '../utils/authToken';
 
-const tempInfo = {
-  id: 'de2d36fa-cd51-4775-afcf-435975ca5bfb',
-  name: 'Postman Test Workspace',
-  role: 'OWNER',
-};
-
 type WorkspaceData = {
   id: string;
   name: string;
+  description: string | null;
   role: string;
   createdAt: string;
   updatedAt: string;
@@ -47,7 +42,7 @@ export default function DashboardPage() {
   }, [navigate]);
 
   return (
-    <div>
+    <div className='w-full max-w-6xl'>
       <h1 className='mb-10 text-3xl font-semibold tracking-[-0.04em] text-slate-950'>
         Dashboard
       </h1>
