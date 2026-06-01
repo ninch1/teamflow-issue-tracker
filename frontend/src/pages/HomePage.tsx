@@ -15,13 +15,21 @@ export default function HomePage() {
       <h1 className='font-bold text-4xl bg-linear-to-r from-slate-900 to-blue-600 bg-clip-text text-transparent'>
         TeamFlow
       </h1>
-      <p>Organize workspaces, projects, and issues with your team.</p>
+      <p className='max-w-sm text-sm text-slate-500'>
+        Organize workspaces, projects, and issues with your team.
+      </p>
       <div className='flex gap-5'>
-        <Link to='/login' className='border cursor-pointer p-2 text-xl'>
+        <Link
+          to='/login'
+          className='rounded-lg bg-[#5e6ad2] px-4 py-2 text-sm font-medium text-white hover:bg-[#828fff]'
+        >
           Log in
         </Link>
 
-        <Link to='/register' className='border cursor-pointer p-2 text-xl'>
+        <Link
+          to='/register'
+          className='rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100'
+        >
           Register
         </Link>
       </div>

@@ -55,18 +55,48 @@ export default function MePage() {
   }
 
   return (
-    <div className='flex flex-col gap-10'>
+    <div className='flex w-full max-w-sm flex-col gap-5 rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
+      <div className='flex flex-col gap-1'>
+        <h1 className='text-3xl font-semibold tracking-[-0.04em] text-slate-950'>
+          Signed in
+        </h1>
+        <p className='text-sm text-slate-500'>
+          Your current TeamFlow account details.
+        </p>
+      </div>
+
       {userData && (
-        <div className='border-5 p-5 rounded-xl border-blue-300'>
-          <h1>ID: {userData.user.id}</h1>
-          <h1>Name: {userData.user.name}</h1>
-          <h1>Email: {userData.user.email}</h1>
+        <div className='flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4'>
+          <div>
+            <p className='text-xs font-medium text-slate-500'>Name</p>
+            <p className='text-sm font-medium text-slate-950'>
+              {userData.user.name}
+            </p>
+          </div>
+
+          <div>
+            <p className='text-xs font-medium text-slate-500'>Email</p>
+            <p className='text-sm text-slate-950'>{userData.user.email}</p>
+          </div>
+
+          <div>
+            <p className='text-xs font-medium text-slate-500'>User ID</p>
+            <p className='break-all text-sm text-slate-950'>
+              {userData.user.id}
+            </p>
+          </div>
         </div>
       )}
-      {error && <h1>{error}</h1>}
+
+      {error && (
+        <p className='rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600'>
+          {error}
+        </p>
+      )}
+
       <button
         onClick={handleLogout}
-        className='max-w-30 mx-auto border py-2 px-5 rounded-md cursor-pointer hover:bg-red-600 hover:text-white'
+        className='w-full cursor-pointer rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-100'
       >
         Logout
       </button>
