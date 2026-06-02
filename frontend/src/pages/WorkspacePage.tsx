@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getWorkspace } from '../api/workspaceApi';
+import { getProjects } from '../api/projectApi';
+import ProjectCard from '../components/common/ProjectCard';
 
 type WorkspaceType = {
   id: string;
@@ -11,10 +13,20 @@ type WorkspaceType = {
   updatedAt: string;
 };
 
+type ProjectType = {
+  id: string;
+  name: string;
+  description: string | null;
+  workspaceId: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export default function WorkspacePage() {
   const { workspaceId } = useParams();
   const [currentWorkspace, setCurrentWorkspace] =
     useState<WorkspaceType | null>(null);
+  const [currentProjects, setCurrentProjects] = useState<ProjectType[]>([]);
 
   useEffect(() => {
     async function initialWorkspace() {
@@ -23,8 +35,10 @@ export default function WorkspacePage() {
           throw new Error('Please choose workspace');
         }
         const workspaceData = await getWorkspace(workspaceId);
+        const projectsData = await getProjects(workspaceId);
 
         setCurrentWorkspace(workspaceData.workspace);
+        setCurrentProjects(projectsData.projects);
       } catch (error: unknown) {
         console.log(error);
       }
@@ -34,7 +48,7 @@ export default function WorkspacePage() {
   }, [workspaceId]);
 
   return (
-    <div className='w-full'>
+    <div className='w-full max-w-6xl'>
       <div className='mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
         <div className='flex items-start justify-between gap-4'>
           <div>
@@ -69,9 +83,17 @@ export default function WorkspacePage() {
             Create project
           </button>
         </div>
-        <div className='mt-5 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500'>
-          No projects yet. Create your first project to start tracking work.
-        </div>
+        {currentProjects.length === 0 ? (
+          <div className='mt-5 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500'>
+            No projects yet. Create your first project to start tracking work.
+          </div>
+        ) : (
+          <div className='mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+            {currentProjects.map((project) => (
+              <ProjectCard key={project.id} projectInfo={project} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
