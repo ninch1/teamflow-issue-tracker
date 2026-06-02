@@ -44,3 +44,25 @@ export const createProject = async (
 
   return data;
 };
+
+export const getProject = async (workspaceId: string, projectId: string) => {
+  const token = getAuthToken();
+
+  const response = await fetch(
+    `${BASE_URL}/${workspaceId}/projects/${projectId}`,
+    {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Could not load project');
+  }
+
+  return data;
+};

@@ -6,6 +6,7 @@ import MePage from './pages/MePage';
 import DashboardPage from './pages/DashboardPage';
 import AppLayout from './layout/AppLayout';
 import WorkspacePage from './pages/WorkspacePage';
+import ProjectPage from './pages/ProjectPage';
 
 function App() {
   return (
@@ -28,6 +29,14 @@ function App() {
           element={
             <AppLayout>
               <WorkspacePage />
+            </AppLayout>
+          }
+        />
+        <Route
+          path='/workspaces/:workspaceId/projects/:projectId'
+          element={
+            <AppLayout>
+              <ProjectPage />
             </AppLayout>
           }
         />
