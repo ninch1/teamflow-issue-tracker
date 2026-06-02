@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getWorkspace } from '../api/workspaceApi';
-import { getProjects } from '../api/projectApi';
+import { getProjects, createProject } from '../api/projectApi';
 import ProjectCard from '../components/common/ProjectCard';
+import CreateProjectCard from '../components/layout/CreateProjectCard';
 
 type WorkspaceType = {
   id: string;
@@ -22,11 +23,22 @@ type ProjectType = {
   updatedAt: string;
 };
 
+type NewProject = {
+  name: string;
+  description: string;
+};
+
 export default function WorkspacePage() {
   const { workspaceId } = useParams();
+
   const [currentWorkspace, setCurrentWorkspace] =
     useState<WorkspaceType | null>(null);
   const [currentProjects, setCurrentProjects] = useState<ProjectType[]>([]);
+  const [showCreateProjectForm, setShowCreateProjectForm] = useState(false);
+  const [newProjectInfo, setNewProjectInfo] = useState<NewProject>({
+    name: '',
+    description: '',
+  });
 
   useEffect(() => {
     async function initialWorkspace() {
@@ -46,6 +58,28 @@ export default function WorkspacePage() {
 
     initialWorkspace();
   }, [workspaceId]);
+
+  async function handleCreateProject(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (!workspaceId) {
+      return;
+    }
+    try {
+      const newProjectData = await createProject(
+        workspaceId,
+        newProjectInfo.name,
+        newProjectInfo.description,
+      );
+
+      setNewProjectInfo({ name: '', description: '' });
+      setShowCreateProjectForm(false);
+
+      setCurrentProjects((prev) => [...prev, newProjectData.project]);
+    } catch (error: unknown) {
+      console.log(error);
+    }
+  }
 
   return (
     <div className='w-full max-w-6xl'>
@@ -79,19 +113,42 @@ export default function WorkspacePage() {
             </p>
           </div>
 
-          <button className='rounded-lg bg-[#5e6ad2] px-4 py-2 text-sm font-medium text-white hover:bg-[#828fff]'>
-            Create project
-          </button>
+          {!showCreateProjectForm && (
+            <button
+              onClick={() => setShowCreateProjectForm(true)}
+              className='rounded-lg bg-[#5e6ad2] px-4 py-2 text-sm font-medium text-white hover:bg-[#828fff] hover:cursor-pointer'
+            >
+              Create project
+            </button>
+          )}
         </div>
-        {currentProjects.length === 0 ? (
+        <div className='mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+          {showCreateProjectForm && (
+            <CreateProjectCard
+              name={newProjectInfo.name}
+              description={newProjectInfo.description}
+              onNameChange={(value) =>
+                setNewProjectInfo((prev) => ({ ...prev, name: value }))
+              }
+              onDescriptionChange={(value) =>
+                setNewProjectInfo((prev) => ({ ...prev, description: value }))
+              }
+              onSubmit={handleCreateProject}
+              onCancel={() => {
+                setNewProjectInfo({ name: '', description: '' });
+                setShowCreateProjectForm(false);
+              }}
+            />
+          )}
+
+          {currentProjects.map((project) => (
+            <ProjectCard key={project.id} projectInfo={project} />
+          ))}
+        </div>
+
+        {!showCreateProjectForm && currentProjects.length === 0 && (
           <div className='mt-5 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500'>
             No projects yet. Create your first project to start tracking work.
-          </div>
-        ) : (
-          <div className='mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-            {currentProjects.map((project) => (
-              <ProjectCard key={project.id} projectInfo={project} />
-            ))}
           </div>
         )}
       </div>

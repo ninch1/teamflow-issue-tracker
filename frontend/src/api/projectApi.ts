@@ -19,3 +19,28 @@ export const getProjects = async (workspaceId: string) => {
 
   return data;
 };
+
+export const createProject = async (
+  workspaceId: string,
+  name: string,
+  description: string,
+) => {
+  const token = getAuthToken();
+  const projectData = { name, description };
+  const response = await fetch(`${BASE_URL}/${workspaceId}/projects`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(projectData),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Session expired. Please log in again');
+  }
+
+  return data;
+};
