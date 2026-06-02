@@ -5,6 +5,7 @@ import RegisterPage from './pages/RegisterPage';
 import MePage from './pages/MePage';
 import DashboardPage from './pages/DashboardPage';
 import AppLayout from './layout/AppLayout';
+import WorkspacePage from './pages/WorkspacePage';
 
 function App() {
   return (
@@ -19,6 +20,14 @@ function App() {
           element={
             <AppLayout>
               <DashboardPage />
+            </AppLayout>
+          }
+        />
+        <Route
+          path='/workspaces/:workspaceId'
+          element={
+            <AppLayout>
+              <WorkspacePage />
             </AppLayout>
           }
         />

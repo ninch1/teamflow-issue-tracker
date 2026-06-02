@@ -44,3 +44,22 @@ export const createWorkspace = async (name: string, description: string) => {
 
   return data;
 };
+
+export const getWorkspace = async (id: string) => {
+  const authToken = getAuthToken();
+
+  const response = await fetch(`${BASE_URL}/${id}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+    },
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Session expired. Please log in again');
+  }
+
+  return data;
+};
