@@ -39,6 +39,7 @@ export default function WorkspacePage() {
     name: '',
     description: '',
   });
+  const [projectError, setProjectError] = useState('');
 
   useEffect(() => {
     async function initialWorkspace() {
@@ -61,10 +62,13 @@ export default function WorkspacePage() {
 
   async function handleCreateProject(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setProjectError('');
 
     if (!workspaceId) {
+      setProjectError('Workspace not found');
       return;
     }
+
     try {
       const newProjectData = await createProject(
         workspaceId,
@@ -77,7 +81,11 @@ export default function WorkspacePage() {
 
       setCurrentProjects((prev) => [...prev, newProjectData.project]);
     } catch (error: unknown) {
-      console.log(error);
+      if (error instanceof Error) {
+        setProjectError(error.message);
+      } else {
+        setProjectError('Could not create project');
+      }
     }
   }
 
@@ -122,6 +130,21 @@ export default function WorkspacePage() {
             </button>
           )}
         </div>
+
+        {projectError && (
+          <div className='mt-5 flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600'>
+            <p>{projectError}</p>
+
+            <button
+              type='button'
+              onClick={() => setProjectError('')}
+              className='cursor-pointer rounded px-2 text-red-500 hover:bg-red-100 hover:text-red-700'
+            >
+              X
+            </button>
+          </div>
+        )}
+
         <div className='mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
           {showCreateProjectForm && (
             <CreateProjectCard
@@ -136,6 +159,7 @@ export default function WorkspacePage() {
               onSubmit={handleCreateProject}
               onCancel={() => {
                 setNewProjectInfo({ name: '', description: '' });
+                setProjectError('');
                 setShowCreateProjectForm(false);
               }}
             />

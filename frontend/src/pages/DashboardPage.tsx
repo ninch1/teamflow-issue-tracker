@@ -84,12 +84,20 @@ export default function DashboardPage() {
       </h2>
       <main>
         {error && (
-          <p className='rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600'>
-            {error}
-          </p>
+          <div className='mb-5 flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600'>
+            <p>{error}</p>
+
+            <button
+              type='button'
+              onClick={() => setError('')}
+              className='cursor-pointer rounded px-2 text-red-500 hover:bg-red-100 hover:text-red-700'
+            >
+              X
+            </button>
+          </div>
         )}
 
-        {!error && workspaceCardsData.length > 0 && (
+        {workspaceCardsData.length > 0 && (
           <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
             {showCreateForm ? (
               <CreateWorkspaceCard
@@ -105,7 +113,11 @@ export default function DashboardPage() {
                   }))
                 }
                 onSubmit={handleSubmit}
-                onCancel={() => setShowCreateForm(false)}
+                onCancel={() => {
+                  setNewWorkspaceInfo({ name: '', description: '' });
+                  setShowCreateForm(false);
+                  setError('');
+                }}
               />
             ) : (
               <AddWorkspaceCard onClick={() => setShowCreateForm(true)} />
@@ -116,7 +128,7 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {!error && workspaceCardsData.length === 0 && (
+        {workspaceCardsData.length === 0 && (
           <p className='rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600'>
             No workspaces yet.
           </p>
