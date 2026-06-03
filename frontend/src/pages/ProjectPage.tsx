@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getProject } from '../api/projectApi';
-import { getIssues } from '../api/issueApi';
+import { getIssues, createIssue } from '../api/issueApi';
 import IssueCard from '../components/common/IssueCard';
+import CreateIssueCard from '../components/layout/CreateIssueCard';
 
 type ProjectType = {
   id: string;
@@ -24,6 +25,13 @@ type IssueType = {
   updatedAt: string;
 };
 
+type NewIssue = {
+  title: string;
+  description: string;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH';
+  type: 'BUG' | 'FEATURE' | 'TASK';
+};
+
 export default function ProjectPage() {
   const { workspaceId, projectId } = useParams();
 
@@ -32,6 +40,14 @@ export default function ProjectPage() {
   );
   const [issues, setIssues] = useState<IssueType[]>([]);
   const [error, setError] = useState('');
+  const [showCreateIssueForm, setShowIssueForm] = useState(false);
+  const [newIssueInfo, setNewIssueInfo] = useState<NewIssue>({
+    title: '',
+    description: '',
+    priority: 'MEDIUM',
+    type: 'TASK',
+  });
+  const [issueError, setIssueError] = useState('');
 
   useEffect(() => {
     async function initialProject() {
@@ -39,7 +55,8 @@ export default function ProjectPage() {
         setError('');
 
         if (!workspaceId || !projectId) {
-          throw new Error('Project not found');
+          setIssueError('Project not found');
+          return;
         }
 
         const projectData = await getProject(workspaceId, projectId);
@@ -58,6 +75,43 @@ export default function ProjectPage() {
 
     initialProject();
   }, [workspaceId, projectId]);
+
+  async function handleCreateIssue(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setIssueError('');
+
+    if (!workspaceId || !projectId) {
+      setIssueError('Project not found');
+      return;
+    }
+
+    try {
+      const newIssueData = await createIssue(
+        workspaceId,
+        projectId,
+        newIssueInfo.title,
+        newIssueInfo.description,
+        newIssueInfo.priority,
+        newIssueInfo.type,
+      );
+
+      setNewIssueInfo({
+        title: '',
+        description: '',
+        priority: 'MEDIUM',
+        type: 'TASK',
+      });
+      setShowIssueForm(false);
+
+      setIssues((prev) => [...prev, newIssueData.issue]);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setIssueError(error.message);
+      } else {
+        setIssueError('Could not create issue');
+      }
+    }
+  }
 
   return (
     <div className='w-full max-w-6xl'>
@@ -100,29 +154,78 @@ export default function ProjectPage() {
             </p>
           </div>
 
-          <button className='rounded-lg bg-[#5e6ad2] px-4 py-2 text-sm font-medium text-white hover:bg-[#828fff] hover:cursor-pointer'>
-            Create issue
-          </button>
-        </div>
-
-        <div className='mt-5 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500'>
-          {issues.length === 0 ? (
-            <div className='mt-5 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500'>
-              No issues yet. Create your first issue to start tracking work.
-            </div>
-          ) : (
-            <div className='mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-              {currentProject &&
-                issues.map((issue) => (
-                  <IssueCard
-                    key={issue.id}
-                    workspaceId={currentProject.workspaceId}
-                    issueInfo={issue}
-                  />
-                ))}
-            </div>
+          {!showCreateIssueForm && (
+            <button
+              onClick={() => setShowIssueForm(true)}
+              className='rounded-lg bg-[#5e6ad2] px-4 py-2 text-sm font-medium text-white hover:bg-[#828fff] hover:cursor-pointer'
+            >
+              Create issue
+            </button>
           )}
         </div>
+
+        {issueError && (
+          <div className='mt-5 flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600'>
+            <p>{issueError}</p>
+
+            <button
+              type='button'
+              onClick={() => setIssueError('')}
+              className='cursor-pointer rounded px-2 text-red-500 hover:bg-red-100 hover:text-red-700'
+            >
+              X
+            </button>
+          </div>
+        )}
+
+        <div className='mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+          {showCreateIssueForm && (
+            <CreateIssueCard
+              title={newIssueInfo.title}
+              description={newIssueInfo.description}
+              priority={newIssueInfo.priority}
+              type={newIssueInfo.type}
+              onTitleChange={(value) =>
+                setNewIssueInfo((prev) => ({ ...prev, title: value }))
+              }
+              onDescriptionChange={(value) =>
+                setNewIssueInfo((prev) => ({ ...prev, description: value }))
+              }
+              onPriorityChange={(value) =>
+                setNewIssueInfo((prev) => ({ ...prev, priority: value }))
+              }
+              onTypeChange={(value) =>
+                setNewIssueInfo((prev) => ({ ...prev, type: value }))
+              }
+              onSubmit={handleCreateIssue}
+              onCancel={() => {
+                setNewIssueInfo({
+                  title: '',
+                  description: '',
+                  priority: 'MEDIUM',
+                  type: 'TASK',
+                });
+                setIssueError('');
+                setShowIssueForm(false);
+              }}
+            />
+          )}
+
+          {currentProject &&
+            issues.map((issue) => (
+              <IssueCard
+                key={issue.id}
+                workspaceId={currentProject.workspaceId}
+                issueInfo={issue}
+              />
+            ))}
+        </div>
+
+        {!showCreateIssueForm && issues.length === 0 && (
+          <div className='mt-5 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500'>
+            No issues yet. Create your first issue to start tracking work.
+          </div>
+        )}
       </div>
     </div>
   );

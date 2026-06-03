@@ -23,3 +23,39 @@ export const getIssues = async (workspaceId: string, projectId: string) => {
 
   return data;
 };
+
+export const createIssue = async (
+  workspaceId: string,
+  projectId: string,
+  title: string,
+  description: string,
+  priority: string,
+  type: string,
+) => {
+  const token = getAuthToken();
+
+  const response = await fetch(
+    `${BASE_URL}/${workspaceId}/projects/${projectId}/issues`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title,
+        description,
+        priority,
+        type,
+      }),
+    },
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Issue creation failed');
+  }
+
+  return data;
+};
