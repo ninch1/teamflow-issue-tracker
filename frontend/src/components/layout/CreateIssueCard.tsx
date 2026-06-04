@@ -1,3 +1,5 @@
+import PrimaryButton from '../common/PrimaryButton';
+
 type CreateIssueCardProps = {
   title: string;
   description: string;
@@ -72,12 +74,9 @@ export default function CreateIssueCard({
         </select>
 
         <div className='flex gap-2'>
-          <button
-            type='submit'
-            className='flex-1 cursor-pointer rounded-lg bg-[#5e6ad2] px-4 py-2 text-sm font-medium text-white hover:bg-[#828fff]'
-          >
+          <PrimaryButton type='submit' fullWidth>
             Create
-          </button>
+          </PrimaryButton>
 
           <button
             type='button'

@@ -3,6 +3,7 @@ import { loginUser } from '../api/authApi';
 import { useNavigate, Link } from 'react-router-dom';
 import useRedirectIfLoggedIn from '../hooks/useRedirectIfLoggedIn';
 import ErrorAlert from '../components/common/ErrorAlert';
+import PrimaryButton from '../components/common/PrimaryButton';
 
 // Submit login credentials and save token if login succeeds.
 export default function LoginPage() {
@@ -55,12 +56,9 @@ export default function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           className='w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 placeholder:text-slate-400 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
         />
-        <button
-          type='submit'
-          className='w-full rounded-lg bg-[#5e6ad2] px-4 py-2 text-sm font-medium text-white hover:bg-[#828fff] cursor-pointer'
-        >
+        <PrimaryButton type='submit' fullWidth>
           Login
-        </button>
+        </PrimaryButton>
       </form>
 
       {formError && (

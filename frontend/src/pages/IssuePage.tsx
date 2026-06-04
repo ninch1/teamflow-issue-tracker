@@ -9,6 +9,7 @@ import {
   getPriorityClass,
   getTypeClass,
 } from '../utils/issueBadgeStyles';
+import PrimaryButton from '../components/common/PrimaryButton';
 
 type IssueType = {
   id: string;
@@ -165,12 +166,7 @@ export default function IssuePage() {
           <option value='DONE'>DONE</option>
         </select>
 
-        <button
-          onClick={handleUpdateStatus}
-          className='rounded-lg bg-[#5e6ad2] px-4 py-2 text-sm font-medium text-white hover:bg-[#828fff] hover:cursor-pointer'
-        >
-          Update
-        </button>
+        <PrimaryButton onClick={handleUpdateStatus}>Update</PrimaryButton>
       </div>
     </div>
   );

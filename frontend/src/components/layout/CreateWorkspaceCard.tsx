@@ -1,3 +1,5 @@
+import PrimaryButton from '../common/PrimaryButton';
+
 type CreateWorkspaceCardProps = {
   name: string;
   description: string;
@@ -42,12 +44,9 @@ export default function CreateWorkspaceCard({
         />
 
         <div className='flex gap-2'>
-          <button
-            type='submit'
-            className='flex-1 cursor-pointer rounded-lg bg-[#5e6ad2] px-4 py-2 text-sm font-medium text-white hover:bg-[#828fff]'
-          >
+          <PrimaryButton type='submit' fullWidth>
             Create
-          </button>
+          </PrimaryButton>
 
           <button
             type='button'

@@ -7,6 +7,7 @@ import CreateProjectCard from '../components/layout/CreateProjectCard';
 import ErrorAlert from '../components/common/ErrorAlert';
 import ApiError from '../errors/ApiError';
 import { removeAuthToken } from '../utils/authToken';
+import PrimaryButton from '../components/common/PrimaryButton';
 
 type WorkspaceType = {
   id: string;
@@ -152,12 +153,9 @@ export default function WorkspacePage() {
           </div>
 
           {!showCreateProjectForm && (
-            <button
-              onClick={() => setShowCreateProjectForm(true)}
-              className='rounded-lg bg-[#5e6ad2] px-4 py-2 text-sm font-medium text-white hover:bg-[#828fff] hover:cursor-pointer'
-            >
+            <PrimaryButton onClick={() => setShowCreateProjectForm(true)}>
               Create project
-            </button>
+            </PrimaryButton>
           )}
         </div>
 
