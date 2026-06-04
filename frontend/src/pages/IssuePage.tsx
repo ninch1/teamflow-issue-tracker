@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getIssue } from '../api/issueApi';
+import { getIssue, updateIssue } from '../api/issueApi';
 
 type IssueType = {
   id: string;
@@ -67,6 +67,9 @@ export default function IssuePage() {
 
   const [currentIssue, setCurrentIssue] = useState<IssueType | null>(null);
   const [error, setError] = useState('');
+  const [newStatus, setNewStatus] = useState<'TODO' | 'IN_PROGRESS' | 'DONE'>(
+    'TODO',
+  );
 
   useEffect(() => {
     async function initialIssue() {
@@ -91,6 +94,34 @@ export default function IssuePage() {
 
     initialIssue();
   }, [workspaceId, projectId, issueId]);
+
+  // Update Issue Status
+  async function handleUpdateStatus() {
+    setError('');
+
+    if (!workspaceId || !projectId || !issueId) {
+      setError('Issue not found');
+      return;
+    }
+
+    try {
+      const updatedIssueData = await updateIssue(
+        workspaceId,
+        projectId,
+        issueId,
+        newStatus,
+      );
+
+      setCurrentIssue(updatedIssueData.issue);
+      setNewStatus(updatedIssueData.issue.status);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('Could not update issue');
+      }
+    }
+  }
 
   return (
     <div className='w-full max-w-6xl'>
@@ -150,8 +181,25 @@ export default function IssuePage() {
         </div>
       </div>
 
-      <div className='mt-8 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500'>
-        Issue actions will go here later.
+      <div className='mt-8 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-950'>
+        <h2 className='text-xl font-semibold mb-2.5'>Update Status</h2>
+        <select
+          value={newStatus}
+          onChange={(e) =>
+            setNewStatus(e.target.value as 'TODO' | 'IN_PROGRESS' | 'DONE')
+          }
+          className='mr-5 w-full max-w-max rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
+        >
+          <option value='TODO'>TODO</option>
+          <option value='IN_PROGRESS'>In Progress</option>
+          <option value='DONE'>DONE</option>
+        </select>
+        <button
+          onClick={handleUpdateStatus}
+          className='rounded-lg bg-[#5e6ad2] px-4 py-2 text-sm font-medium text-white hover:bg-[#828fff] hover:cursor-pointer'
+        >
+          Update
+        </button>
       </div>
     </div>
   );

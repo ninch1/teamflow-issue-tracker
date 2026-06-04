@@ -85,3 +85,34 @@ export const getIssue = async (
 
   return data;
 };
+
+export const updateIssue = async (
+  workspaceId: string,
+  projectId: string,
+  issueId: string,
+  newStatus: 'TODO' | 'IN_PROGRESS' | 'DONE',
+) => {
+  const token = getAuthToken();
+
+  const response = await fetch(
+    `${BASE_URL}/${workspaceId}/projects/${projectId}/issues/${issueId}`,
+    {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        status: newStatus,
+      }),
+    },
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Could not update issue');
+  }
+
+  return data;
+};
