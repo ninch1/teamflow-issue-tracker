@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { getWorkspace } from '../api/workspaceApi';
 import { getProjects, createProject } from '../api/projectApi';
 import ProjectCard from '../components/common/ProjectCard';
 import CreateProjectCard from '../components/layout/CreateProjectCard';
 import ErrorAlert from '../components/common/ErrorAlert';
+import ApiError from '../errors/ApiError';
+import { removeAuthToken } from '../utils/authToken';
 
 type WorkspaceType = {
   id: string;
@@ -31,46 +33,58 @@ type NewProject = {
 
 export default function WorkspacePage() {
   const { workspaceId } = useParams();
+  const navigate = useNavigate();
 
   const [currentWorkspace, setCurrentWorkspace] =
     useState<WorkspaceType | null>(null);
   const [currentProjects, setCurrentProjects] = useState<ProjectType[]>([]);
+  const [pageError, setPageError] = useState('');
+  const [formError, setFormError] = useState('');
   const [showCreateProjectForm, setShowCreateProjectForm] = useState(false);
   const [newProjectInfo, setNewProjectInfo] = useState<NewProject>({
     name: '',
     description: '',
   });
-  const [error, setError] = useState('');
 
   useEffect(() => {
     async function initialWorkspace() {
       try {
+        setPageError('');
+
         if (!workspaceId) {
-          throw new Error('Please choose workspace');
+          setPageError('Workspace not found');
+          return;
         }
+
         const workspaceData = await getWorkspace(workspaceId);
         const projectsData = await getProjects(workspaceId);
 
         setCurrentWorkspace(workspaceData.workspace);
         setCurrentProjects(projectsData.projects);
       } catch (error: unknown) {
+        if (error instanceof ApiError && error.status === 401) {
+          removeAuthToken();
+          navigate('/login');
+          return;
+        }
+
         if (error instanceof Error) {
-          setError(error.message);
+          setPageError(error.message);
         } else {
-          setError('Could not load workspace');
+          setPageError('Could not load workspace');
         }
       }
     }
 
     initialWorkspace();
-  }, [workspaceId]);
+  }, [workspaceId, navigate]);
 
   async function handleCreateProject(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError('');
+    setFormError('');
 
     if (!workspaceId) {
-      setError('Workspace not found');
+      setFormError('Workspace not found');
       return;
     }
 
@@ -86,16 +100,26 @@ export default function WorkspacePage() {
 
       setCurrentProjects((prev) => [...prev, newProjectData.project]);
     } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate('/login');
+        return;
+      }
+
       if (error instanceof Error) {
-        setError(error.message);
+        setFormError(error.message);
       } else {
-        setError('Could not create project');
+        setFormError('Could not create project');
       }
     }
   }
 
   return (
     <div className='w-full max-w-6xl'>
+      {pageError && (
+        <ErrorAlert message={pageError} onClose={() => setPageError('')} />
+      )}
+
       <div className='mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
         <div className='flex items-start justify-between gap-4'>
           <div>
@@ -115,6 +139,7 @@ export default function WorkspacePage() {
           </span>
         </div>
       </div>
+
       <div>
         <div className='flex items-center justify-between'>
           <div>
@@ -136,7 +161,9 @@ export default function WorkspacePage() {
           )}
         </div>
 
-        {error && <ErrorAlert message={error} onClose={() => setError('')} />}
+        {formError && (
+          <ErrorAlert message={formError} onClose={() => setFormError('')} />
+        )}
 
         <div className='mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
           {showCreateProjectForm && (
@@ -152,7 +179,7 @@ export default function WorkspacePage() {
               onSubmit={handleCreateProject}
               onCancel={() => {
                 setNewProjectInfo({ name: '', description: '' });
-                setError('');
+                setFormError('');
                 setShowCreateProjectForm(false);
               }}
             />

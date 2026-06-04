@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { getMe } from '../api/authApi';
 import { useNavigate } from 'react-router-dom';
 import { getAuthToken, removeAuthToken } from '../utils/authToken';
+import ErrorAlert from '../components/common/ErrorAlert';
+import ApiError from '../errors/ApiError';
 
 type UserType = {
   user: {
@@ -11,44 +13,45 @@ type UserType = {
   };
 };
 
-// Load current user using the saved token.
 export default function MePage() {
   const [userData, setUserData] = useState<UserType | null>(null);
-  const [error, setError] = useState('');
+  const [pageError, setPageError] = useState('');
 
   const navigate = useNavigate();
 
-  // Load current user using saved token.
   useEffect(() => {
     async function fetchMe() {
       const token = getAuthToken();
 
       if (!token) {
-        setError('Session expired. Please log in again');
+        removeAuthToken();
         navigate('/login');
         return;
       }
 
       try {
+        setPageError('');
+
         const data = await getMe(token);
         setUserData(data);
       } catch (error: unknown) {
-        if (error instanceof Error) {
+        if (error instanceof ApiError && error.status === 401) {
           removeAuthToken();
-          setError(error.message);
-        } else {
-          removeAuthToken();
-          setError('Could not connect to server');
+          navigate('/login');
+          return;
         }
 
-        navigate('/login');
+        if (error instanceof Error) {
+          setPageError(error.message);
+        } else {
+          setPageError('Could not load account details');
+        }
       }
     }
 
     fetchMe();
   }, [navigate]);
 
-  // Clear saved token and return to login page.
   function handleLogout() {
     removeAuthToken();
     navigate('/');
@@ -64,6 +67,10 @@ export default function MePage() {
           Your current TeamFlow account details.
         </p>
       </div>
+
+      {pageError && (
+        <ErrorAlert message={pageError} onClose={() => setPageError('')} />
+      )}
 
       {userData && (
         <div className='flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4'>
@@ -86,12 +93,6 @@ export default function MePage() {
             </p>
           </div>
         </div>
-      )}
-
-      {error && (
-        <p className='rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600'>
-          {error}
-        </p>
       )}
 
       <button

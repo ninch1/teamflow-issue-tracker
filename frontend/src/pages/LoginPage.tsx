@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { loginUser } from '../api/authApi';
 import { useNavigate, Link } from 'react-router-dom';
 import useRedirectIfLoggedIn from '../hooks/useRedirectIfLoggedIn';
+import ErrorAlert from '../components/common/ErrorAlert';
 
 // Submit login credentials and save token if login succeeds.
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [formError, setFormError] = useState('');
 
   const navigate = useNavigate();
 
@@ -15,16 +16,16 @@ export default function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError('');
+    setFormError('');
 
     try {
       await loginUser(email, password);
       navigate('/dashboard');
     } catch (error: unknown) {
       if (error instanceof Error) {
-        setError(error.message);
+        setFormError(error.message);
       } else {
-        setError('Could not connect to server');
+        setFormError('Could not connect to server');
       }
     }
   }
@@ -62,10 +63,8 @@ export default function LoginPage() {
         </button>
       </form>
 
-      {error && (
-        <p className='rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600'>
-          {error}
-        </p>
+      {formError && (
+        <ErrorAlert message={formError} onClose={() => setFormError('')} />
       )}
 
       <p className='text-center text-sm text-slate-500'>

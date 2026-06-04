@@ -5,6 +5,8 @@ import { getWorkspaces, createWorkspace } from '../api/workspaceApi';
 import AddWorkspaceCard from '../components/layout/AddWorkspaceCard';
 import CreateWorkspaceCard from '../components/layout/CreateWorkspaceCard';
 import ErrorAlert from '../components/common/ErrorAlert';
+import ApiError from '../errors/ApiError';
+import { removeAuthToken } from '../utils/authToken';
 
 type WorkspaceData = {
   id: string;
@@ -24,7 +26,8 @@ export default function DashboardPage() {
   const [workspaceCardsData, setWorkspaceCardsData] = useState<WorkspaceData[]>(
     [],
   );
-  const [error, setError] = useState('');
+  const [pageError, setPageError] = useState('');
+  const [formError, setFormError] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newWorkspaceInfo, setNewWorkspaceInfo] = useState<NewWorkspace>({
     name: '',
@@ -36,17 +39,24 @@ export default function DashboardPage() {
   useEffect(() => {
     async function getWorkspacesWrapper() {
       try {
+        setPageError('');
+
         const workspacesData = await getWorkspaces();
         const workspacesArr = workspacesData.workspaces;
+
         setWorkspaceCardsData(workspacesArr);
       } catch (error: unknown) {
-        if (error instanceof Error) {
-          setError(error.message);
-        } else {
-          setError('Could not connect to server');
+        if (error instanceof ApiError && error.status === 401) {
+          removeAuthToken();
+          navigate('/login');
+          return;
         }
 
-        navigate('/login');
+        if (error instanceof Error) {
+          setPageError(error.message);
+        } else {
+          setPageError('Could not load workspaces');
+        }
       }
     }
 
@@ -55,22 +65,31 @@ export default function DashboardPage() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setFormError('');
 
     try {
       const newWorkspace = await createWorkspace(
         newWorkspaceInfo.name,
         newWorkspaceInfo.description,
       );
+
       setWorkspaceCardsData((prev) => {
         return [...prev, newWorkspace.workspace];
       });
+
       setNewWorkspaceInfo({ name: '', description: '' });
       setShowCreateForm(false);
     } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate('/login');
+        return;
+      }
+
       if (error instanceof Error) {
-        setError(error.message);
+        setFormError(error.message);
       } else {
-        setError('Could not connect to server');
+        setFormError('Could not create workspace');
       }
     }
   }
@@ -80,14 +99,22 @@ export default function DashboardPage() {
       <h1 className='mb-10 text-3xl font-semibold tracking-[-0.04em] text-slate-950'>
         Dashboard
       </h1>
+
       <h2 className='mb-5 text-2xl tracking-[-0.04em] text-slate-950'>
         Your Workspaces
       </h2>
+
       <main>
-        {error && <ErrorAlert message={error} onClose={() => setError('')} />}
+        {pageError && (
+          <ErrorAlert message={pageError} onClose={() => setPageError('')} />
+        )}
+
+        {formError && (
+          <ErrorAlert message={formError} onClose={() => setFormError('')} />
+        )}
 
         {workspaceCardsData.length > 0 && (
-          <div className='pt-2.5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+          <div className='grid gap-4 pt-2.5 sm:grid-cols-2 lg:grid-cols-3'>
             {showCreateForm ? (
               <CreateWorkspaceCard
                 name={newWorkspaceInfo.name}
@@ -105,12 +132,13 @@ export default function DashboardPage() {
                 onCancel={() => {
                   setNewWorkspaceInfo({ name: '', description: '' });
                   setShowCreateForm(false);
-                  setError('');
+                  setFormError('');
                 }}
               />
             ) : (
               <AddWorkspaceCard onClick={() => setShowCreateForm(true)} />
             )}
+
             {workspaceCardsData.map((data) => (
               <WorkspaceCard key={data.id} workspaceInfo={data} />
             ))}

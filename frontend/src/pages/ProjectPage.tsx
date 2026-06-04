@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { getProject } from '../api/projectApi';
 import { getIssues, createIssue } from '../api/issueApi';
 import IssueCard from '../components/common/IssueCard';
 import CreateIssueCard from '../components/layout/CreateIssueCard';
 import ErrorAlert from '../components/common/ErrorAlert';
+import ApiError from '../errors/ApiError';
+import { removeAuthToken } from '../utils/authToken';
 
 type ProjectType = {
   id: string;
@@ -35,6 +37,7 @@ type NewIssue = {
 
 export default function ProjectPage() {
   const { workspaceId, projectId } = useParams();
+  const navigate = useNavigate();
 
   const [currentProject, setCurrentProject] = useState<ProjectType | null>(
     null,
@@ -66,6 +69,12 @@ export default function ProjectPage() {
         setCurrentProject(projectData.project);
         setIssues(issuesData.issues);
       } catch (error: unknown) {
+        if (error instanceof ApiError && error.status === 401) {
+          removeAuthToken();
+          navigate('/login');
+          return;
+        }
+
         if (error instanceof Error) {
           setPageError(error.message);
         } else {
@@ -75,7 +84,7 @@ export default function ProjectPage() {
     }
 
     initialProject();
-  }, [workspaceId, projectId]);
+  }, [workspaceId, projectId, navigate]);
 
   async function handleCreateIssue(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -106,6 +115,12 @@ export default function ProjectPage() {
 
       setIssues((prev) => [...prev, newIssueData.issue]);
     } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate('/login');
+        return;
+      }
+
       if (error instanceof Error) {
         setFormError(error.message);
       } else {

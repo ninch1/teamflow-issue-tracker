@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { getIssue, updateIssue } from '../api/issueApi';
 import ErrorAlert from '../components/common/ErrorAlert';
+import ApiError from '../errors/ApiError';
+import { removeAuthToken } from '../utils/authToken';
 
 type IssueType = {
   id: string;
@@ -65,9 +67,11 @@ function getTypeClass(type: string) {
 
 export default function IssuePage() {
   const { workspaceId, projectId, issueId } = useParams();
+  const navigate = useNavigate();
 
   const [currentIssue, setCurrentIssue] = useState<IssueType | null>(null);
-  const [error, setError] = useState('');
+  const [pageError, setPageError] = useState('');
+  const [formError, setFormError] = useState('');
   const [newStatus, setNewStatus] = useState<'TODO' | 'IN_PROGRESS' | 'DONE'>(
     'TODO',
   );
@@ -75,10 +79,11 @@ export default function IssuePage() {
   useEffect(() => {
     async function initialIssue() {
       try {
-        setError('');
+        setPageError('');
 
         if (!workspaceId || !projectId || !issueId) {
-          throw new Error('Issue not found');
+          setPageError('Issue not found');
+          return;
         }
 
         const issueData = await getIssue(workspaceId, projectId, issueId);
@@ -86,23 +91,28 @@ export default function IssuePage() {
         setCurrentIssue(issueData.issue);
         setNewStatus(issueData.issue.status);
       } catch (error: unknown) {
+        if (error instanceof ApiError && error.status === 401) {
+          removeAuthToken();
+          navigate('/login');
+          return;
+        }
+
         if (error instanceof Error) {
-          setError(error.message);
+          setPageError(error.message);
         } else {
-          setError('Could not load issue');
+          setPageError('Could not load issue');
         }
       }
     }
 
     initialIssue();
-  }, [workspaceId, projectId, issueId]);
+  }, [workspaceId, projectId, issueId, navigate]);
 
-  // Update Issue Status
   async function handleUpdateStatus() {
-    setError('');
+    setFormError('');
 
     if (!workspaceId || !projectId || !issueId) {
-      setError('Issue not found');
+      setFormError('Issue not found');
       return;
     }
 
@@ -117,17 +127,29 @@ export default function IssuePage() {
       setCurrentIssue(updatedIssueData.issue);
       setNewStatus(updatedIssueData.issue.status);
     } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate('/login');
+        return;
+      }
+
       if (error instanceof Error) {
-        setError(error.message);
+        setFormError(error.message);
       } else {
-        setError('Could not update issue');
+        setFormError('Could not update issue');
       }
     }
   }
 
   return (
     <div className='w-full max-w-6xl'>
-      {error && <ErrorAlert message={error} onClose={() => setError('')} />}
+      {pageError && (
+        <ErrorAlert message={pageError} onClose={() => setPageError('')} />
+      )}
+
+      {formError && (
+        <ErrorAlert message={formError} onClose={() => setFormError('')} />
+      )}
 
       <div className='rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
         <p className='mb-2 text-sm text-slate-500'>Issue</p>
@@ -172,7 +194,8 @@ export default function IssuePage() {
       </div>
 
       <div className='mt-8 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-950'>
-        <h2 className='text-xl font-semibold mb-2.5'>Update Status</h2>
+        <h2 className='mb-2.5 text-xl font-semibold'>Update Status</h2>
+
         <select
           value={newStatus}
           onChange={(e) =>
@@ -184,6 +207,7 @@ export default function IssuePage() {
           <option value='IN_PROGRESS'>In Progress</option>
           <option value='DONE'>DONE</option>
         </select>
+
         <button
           onClick={handleUpdateStatus}
           className='rounded-lg bg-[#5e6ad2] px-4 py-2 text-sm font-medium text-white hover:bg-[#828fff] hover:cursor-pointer'

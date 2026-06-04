@@ -1,3 +1,4 @@
+import ApiError from '../errors/ApiError';
 import { getAuthToken } from '../utils/authToken';
 
 const BASE_URL = 'http://localhost:3000/api/workspace';
@@ -18,7 +19,10 @@ export const getIssues = async (workspaceId: string, projectId: string) => {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.error || 'Session expired. Please log in again');
+    throw new ApiError(
+      data.error || 'Session expired. Please log in again',
+      response.status,
+    );
   }
 
   return data;
@@ -54,7 +58,7 @@ export const createIssue = async (
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.error || 'Issue creation failed');
+    throw new ApiError(data.error || 'Issue creation failed', response.status);
   }
 
   return data;
@@ -80,7 +84,7 @@ export const getIssue = async (
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.error || 'Could not load issue');
+    throw new ApiError(data.error || 'Could not load issue', response.status);
   }
 
   return data;
@@ -111,7 +115,7 @@ export const updateIssue = async (
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.error || 'Could not update issue');
+    throw new ApiError(data.error || 'Could not update issue', response.status);
   }
 
   return data;

@@ -2,28 +2,29 @@ import { useState } from 'react';
 import { registerUser } from '../api/authApi';
 import { Link } from 'react-router-dom';
 import useRedirectIfLoggedIn from '../hooks/useRedirectIfLoggedIn';
+import ErrorAlert from '../components/common/ErrorAlert';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [formError, setFormError] = useState('');
   const [registered, setRegistered] = useState(false);
 
   useRedirectIfLoggedIn();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError('');
+    setFormError('');
 
     try {
       await registerUser(name, email, password);
       setRegistered(true);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        setError(error.message);
+        setFormError(error.message);
       } else {
-        setError('Could not connect to server');
+        setFormError('Could not connect to server');
       }
     }
   }
@@ -99,10 +100,8 @@ export default function RegisterPage() {
           Log in
         </Link>
       </p>
-      {error && (
-        <p className='rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600'>
-          {error}
-        </p>
+      {formError && (
+        <ErrorAlert message={formError} onClose={() => setFormError('')} />
       )}
     </div>
   );
