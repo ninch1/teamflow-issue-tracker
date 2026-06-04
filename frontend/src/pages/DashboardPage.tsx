@@ -4,6 +4,7 @@ import WorkspaceCard from '../components/common/WorkspaceCard';
 import { getWorkspaces, createWorkspace } from '../api/workspaceApi';
 import AddWorkspaceCard from '../components/layout/AddWorkspaceCard';
 import CreateWorkspaceCard from '../components/layout/CreateWorkspaceCard';
+import ErrorAlert from '../components/common/ErrorAlert';
 
 type WorkspaceData = {
   id: string;
@@ -83,22 +84,10 @@ export default function DashboardPage() {
         Your Workspaces
       </h2>
       <main>
-        {error && (
-          <div className='mb-5 flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600'>
-            <p>{error}</p>
-
-            <button
-              type='button'
-              onClick={() => setError('')}
-              className='cursor-pointer rounded px-2 text-red-500 hover:bg-red-100 hover:text-red-700'
-            >
-              X
-            </button>
-          </div>
-        )}
+        {error && <ErrorAlert message={error} onClose={() => setError('')} />}
 
         {workspaceCardsData.length > 0 && (
-          <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+          <div className='pt-2.5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
             {showCreateForm ? (
               <CreateWorkspaceCard
                 name={newWorkspaceInfo.name}

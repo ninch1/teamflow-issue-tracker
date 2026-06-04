@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getIssue, updateIssue } from '../api/issueApi';
+import ErrorAlert from '../components/common/ErrorAlert';
 
 type IssueType = {
   id: string;
@@ -83,6 +84,7 @@ export default function IssuePage() {
         const issueData = await getIssue(workspaceId, projectId, issueId);
 
         setCurrentIssue(issueData.issue);
+        setNewStatus(issueData.issue.status);
       } catch (error: unknown) {
         if (error instanceof Error) {
           setError(error.message);
@@ -125,19 +127,7 @@ export default function IssuePage() {
 
   return (
     <div className='w-full max-w-6xl'>
-      {error && (
-        <div className='mb-5 flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600'>
-          <p>{error}</p>
-
-          <button
-            type='button'
-            onClick={() => setError('')}
-            className='cursor-pointer rounded px-2 text-red-500 hover:bg-red-100 hover:text-red-700'
-          >
-            X
-          </button>
-        </div>
-      )}
+      {error && <ErrorAlert message={error} onClose={() => setError('')} />}
 
       <div className='rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
         <p className='mb-2 text-sm text-slate-500'>Issue</p>

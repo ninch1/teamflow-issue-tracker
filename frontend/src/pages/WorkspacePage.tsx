@@ -4,6 +4,7 @@ import { getWorkspace } from '../api/workspaceApi';
 import { getProjects, createProject } from '../api/projectApi';
 import ProjectCard from '../components/common/ProjectCard';
 import CreateProjectCard from '../components/layout/CreateProjectCard';
+import ErrorAlert from '../components/common/ErrorAlert';
 
 type WorkspaceType = {
   id: string;
@@ -39,7 +40,7 @@ export default function WorkspacePage() {
     name: '',
     description: '',
   });
-  const [projectError, setProjectError] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     async function initialWorkspace() {
@@ -53,7 +54,11 @@ export default function WorkspacePage() {
         setCurrentWorkspace(workspaceData.workspace);
         setCurrentProjects(projectsData.projects);
       } catch (error: unknown) {
-        console.log(error);
+        if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError('Could not load workspace');
+        }
       }
     }
 
@@ -62,10 +67,10 @@ export default function WorkspacePage() {
 
   async function handleCreateProject(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setProjectError('');
+    setError('');
 
     if (!workspaceId) {
-      setProjectError('Workspace not found');
+      setError('Workspace not found');
       return;
     }
 
@@ -82,9 +87,9 @@ export default function WorkspacePage() {
       setCurrentProjects((prev) => [...prev, newProjectData.project]);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        setProjectError(error.message);
+        setError(error.message);
       } else {
-        setProjectError('Could not create project');
+        setError('Could not create project');
       }
     }
   }
@@ -131,19 +136,7 @@ export default function WorkspacePage() {
           )}
         </div>
 
-        {projectError && (
-          <div className='mt-5 flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600'>
-            <p>{projectError}</p>
-
-            <button
-              type='button'
-              onClick={() => setProjectError('')}
-              className='cursor-pointer rounded px-2 text-red-500 hover:bg-red-100 hover:text-red-700'
-            >
-              X
-            </button>
-          </div>
-        )}
+        {error && <ErrorAlert message={error} onClose={() => setError('')} />}
 
         <div className='mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
           {showCreateProjectForm && (
@@ -159,7 +152,7 @@ export default function WorkspacePage() {
               onSubmit={handleCreateProject}
               onCancel={() => {
                 setNewProjectInfo({ name: '', description: '' });
-                setProjectError('');
+                setError('');
                 setShowCreateProjectForm(false);
               }}
             />

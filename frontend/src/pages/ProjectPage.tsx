@@ -4,6 +4,7 @@ import { getProject } from '../api/projectApi';
 import { getIssues, createIssue } from '../api/issueApi';
 import IssueCard from '../components/common/IssueCard';
 import CreateIssueCard from '../components/layout/CreateIssueCard';
+import ErrorAlert from '../components/common/ErrorAlert';
 
 type ProjectType = {
   id: string;
@@ -39,7 +40,8 @@ export default function ProjectPage() {
     null,
   );
   const [issues, setIssues] = useState<IssueType[]>([]);
-  const [error, setError] = useState('');
+  const [pageError, setPageError] = useState('');
+  const [formError, setFormError] = useState('');
   const [showCreateIssueForm, setShowIssueForm] = useState(false);
   const [newIssueInfo, setNewIssueInfo] = useState<NewIssue>({
     title: '',
@@ -47,15 +49,14 @@ export default function ProjectPage() {
     priority: 'MEDIUM',
     type: 'TASK',
   });
-  const [issueError, setIssueError] = useState('');
 
   useEffect(() => {
     async function initialProject() {
       try {
-        setError('');
+        setPageError('');
 
         if (!workspaceId || !projectId) {
-          setIssueError('Project not found');
+          setPageError('Project not found');
           return;
         }
 
@@ -66,9 +67,9 @@ export default function ProjectPage() {
         setIssues(issuesData.issues);
       } catch (error: unknown) {
         if (error instanceof Error) {
-          setError(error.message);
+          setPageError(error.message);
         } else {
-          setError('Could not load project');
+          setPageError('Could not load project');
         }
       }
     }
@@ -78,10 +79,10 @@ export default function ProjectPage() {
 
   async function handleCreateIssue(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setIssueError('');
+    setFormError('');
 
     if (!workspaceId || !projectId) {
-      setIssueError('Project not found');
+      setFormError('Project not found');
       return;
     }
 
@@ -106,27 +107,21 @@ export default function ProjectPage() {
       setIssues((prev) => [...prev, newIssueData.issue]);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        setIssueError(error.message);
+        setFormError(error.message);
       } else {
-        setIssueError('Could not create issue');
+        setFormError('Could not create issue');
       }
     }
   }
 
   return (
     <div className='w-full max-w-6xl'>
-      {error && (
-        <div className='mb-5 flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600'>
-          <p>{error}</p>
+      {pageError && (
+        <ErrorAlert message={pageError} onClose={() => setPageError('')} />
+      )}
 
-          <button
-            type='button'
-            onClick={() => setError('')}
-            className='cursor-pointer rounded px-2 text-red-500 hover:bg-red-100 hover:text-red-700'
-          >
-            X
-          </button>
-        </div>
+      {formError && (
+        <ErrorAlert message={formError} onClose={() => setFormError('')} />
       )}
 
       <div className='mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
@@ -164,20 +159,6 @@ export default function ProjectPage() {
           )}
         </div>
 
-        {issueError && (
-          <div className='mt-5 flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600'>
-            <p>{issueError}</p>
-
-            <button
-              type='button'
-              onClick={() => setIssueError('')}
-              className='cursor-pointer rounded px-2 text-red-500 hover:bg-red-100 hover:text-red-700'
-            >
-              X
-            </button>
-          </div>
-        )}
-
         <div className='mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
           {showCreateIssueForm && (
             <CreateIssueCard
@@ -205,7 +186,7 @@ export default function ProjectPage() {
                   priority: 'MEDIUM',
                   type: 'TASK',
                 });
-                setIssueError('');
+                setFormError('');
                 setShowIssueForm(false);
               }}
             />

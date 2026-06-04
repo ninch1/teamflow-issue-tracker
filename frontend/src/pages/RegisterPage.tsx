@@ -58,7 +58,7 @@ export default function RegisterPage() {
           Create your account
         </h1>
         <p className='text-sm text-slate-500'>
-          Start organizing your team’s work in TeamFlow.
+          Start organizing your team's work in TeamFlow.
         </p>
       </div>
       <form onSubmit={handleSubmit} className='flex flex-col gap-5'>
