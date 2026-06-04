@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { loginUser } from '../api/authApi';
 import { useNavigate, Link } from 'react-router-dom';
-import { getAuthToken } from '../utils/authToken';
+import useRedirectIfLoggedIn from '../hooks/useRedirectIfLoggedIn';
 
 // Submit login credentials and save token if login succeeds.
 export default function LoginPage() {
@@ -11,10 +11,7 @@ export default function LoginPage() {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = getAuthToken();
-    if (token) navigate('/me');
-  }, [navigate]);
+  useRedirectIfLoggedIn();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -22,7 +19,7 @@ export default function LoginPage() {
 
     try {
       await loginUser(email, password);
-      navigate('/me');
+      navigate('/dashboard');
     } catch (error: unknown) {
       if (error instanceof Error) {
         setError(error.message);

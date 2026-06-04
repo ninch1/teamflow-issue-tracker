@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { registerUser } from '../api/authApi';
-import { useNavigate, Link } from 'react-router-dom';
-import { getAuthToken } from '../utils/authToken';
+import { Link } from 'react-router-dom';
+import useRedirectIfLoggedIn from '../hooks/useRedirectIfLoggedIn';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -10,12 +10,7 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [registered, setRegistered] = useState(false);
 
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const token = getAuthToken();
-    if (token) navigate('/me');
-  }, [navigate]);
+  useRedirectIfLoggedIn();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -46,12 +41,12 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        <button
-          className='w-full rounded-lg bg-[#5e6ad2] px-4 py-2 text-sm font-medium text-white hover:bg-[#828fff] cursor-pointer'
-          onClick={() => navigate('/login')}
+        <Link
+          className='w-full text-center rounded-lg bg-[#5e6ad2] px-4 py-2 text-sm font-medium text-white hover:bg-[#828fff] cursor-pointer'
+          to='/login'
         >
           Go to login
-        </button>
+        </Link>
       </div>
     );
   }

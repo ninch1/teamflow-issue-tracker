@@ -1,14 +1,8 @@
-import { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { getAuthToken } from '../utils/authToken';
+import { Link } from 'react-router-dom';
+import useRedirectIfLoggedIn from '../hooks/useRedirectIfLoggedIn';
 
 export default function HomePage() {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const token = getAuthToken();
-    if (token) navigate('/me');
-  }, [navigate]);
+  useRedirectIfLoggedIn();
 
   return (
     <div className='flex flex-col items-center text-center gap-4 px-4'>
