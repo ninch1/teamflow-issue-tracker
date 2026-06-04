@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { getStatusClass, getPriorityClass } from '../../utils/issueBadgeStyles';
 
 type IssueCardProps = {
   workspaceId: string;
@@ -13,38 +14,6 @@ type IssueCardProps = {
     updatedAt: string;
   };
 };
-
-function getStatusClass(status: string) {
-  if (status === 'TODO') {
-    return 'border-slate-200 bg-slate-100 text-slate-700';
-  }
-
-  if (status === 'IN_PROGRESS') {
-    return 'border-[#d8dcff] bg-[#eef0ff] text-[#5e6ad2]';
-  }
-
-  if (status === 'DONE') {
-    return 'border-green-200 bg-green-50 text-green-700';
-  }
-
-  return 'border-slate-200 bg-slate-100 text-slate-700';
-}
-
-function getPriorityClass(priority: string) {
-  if (priority === 'LOW') {
-    return 'border-slate-200 bg-slate-100 text-slate-700';
-  }
-
-  if (priority === 'MEDIUM') {
-    return 'border-yellow-200 bg-yellow-50 text-yellow-700';
-  }
-
-  if (priority === 'HIGH') {
-    return 'border-red-200 bg-red-50 text-red-700';
-  }
-
-  return 'border-slate-200 bg-slate-100 text-slate-700';
-}
 
 export default function IssueCard({ workspaceId, issueInfo }: IssueCardProps) {
   return (
