@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { getAuthToken, removeAuthToken } from '../utils/authToken';
 import ErrorAlert from '../components/common/ErrorAlert';
 import ApiError from '../errors/ApiError';
+import DangerButton from '../components/common/DangerButton';
 
 type UserType = {
   user: {
@@ -95,12 +96,9 @@ export default function MePage() {
         </div>
       )}
 
-      <button
-        onClick={handleLogout}
-        className='w-full cursor-pointer rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-100'
-      >
+      <DangerButton onClick={handleLogout} fullWidth>
         Logout
-      </button>
+      </DangerButton>
     </div>
   );
 }
