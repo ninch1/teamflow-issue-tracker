@@ -7,6 +7,7 @@ import DashboardPage from './pages/DashboardPage';
 import AppLayout from './layout/AppLayout';
 import WorkspacePage from './pages/WorkspacePage';
 import ProjectPage from './pages/ProjectPage';
+import IssuePage from './pages/IssuePage';
 
 function App() {
   return (
@@ -37,6 +38,14 @@ function App() {
           element={
             <AppLayout>
               <ProjectPage />
+            </AppLayout>
+          }
+        />
+        <Route
+          path='/workspaces/:workspaceId/projects/:projectId/issues/:issueId'
+          element={
+            <AppLayout>
+              <IssuePage />
             </AppLayout>
           }
         />

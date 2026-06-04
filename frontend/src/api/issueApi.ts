@@ -59,3 +59,29 @@ export const createIssue = async (
 
   return data;
 };
+
+export const getIssue = async (
+  workspaceId: string,
+  projectId: string,
+  issueId: string,
+) => {
+  const token = getAuthToken();
+
+  const response = await fetch(
+    `${BASE_URL}/${workspaceId}/projects/${projectId}/issues/${issueId}`,
+    {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Could not load issue');
+  }
+
+  return data;
+};
