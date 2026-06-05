@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getProject } from '../api/projectApi';
+import { getProject, updateProject } from '../api/projectApi';
 import { getIssues, createIssue } from '../api/issueApi';
 import IssueCard from '../components/common/IssueCard';
 import CreateIssueCard from '../components/layout/CreateIssueCard';
@@ -53,6 +53,10 @@ export default function ProjectPage() {
     priority: 'MEDIUM',
     type: 'TASK',
   });
+  const [editProjectInfo, setEditProjectInfo] = useState({
+    name: '',
+    description: '',
+  });
 
   useEffect(() => {
     async function initialProject() {
@@ -69,6 +73,10 @@ export default function ProjectPage() {
 
         setCurrentProject(projectData.project);
         setIssues(issuesData.issues);
+        setEditProjectInfo({
+          name: projectData.project.name,
+          description: projectData.project.description || '',
+        });
       } catch (error: unknown) {
         if (error instanceof ApiError && error.status === 401) {
           removeAuthToken();
@@ -130,6 +138,42 @@ export default function ProjectPage() {
     }
   }
 
+  async function handleUpdateProject(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setFormError('');
+
+    if (!workspaceId || !projectId) {
+      setFormError('Project not found');
+      return;
+    }
+
+    try {
+      const updatedProjectData = await updateProject(workspaceId, projectId, {
+        name: editProjectInfo.name,
+        description: editProjectInfo.description,
+      });
+
+      setCurrentProject(updatedProjectData.project);
+
+      setEditProjectInfo({
+        name: updatedProjectData.project.name,
+        description: updatedProjectData.project.description || '',
+      });
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate('/login');
+        return;
+      }
+
+      if (error instanceof Error) {
+        setFormError(error.message);
+      } else {
+        setFormError('Could not update project');
+      }
+    }
+  }
+
   return (
     <div className='w-full max-w-6xl'>
       {pageError && (
@@ -152,6 +196,47 @@ export default function ProjectPage() {
             {currentProject?.description || 'No description yet.'}
           </p>
         </div>
+      </div>
+
+      <div className='mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
+        <h2 className='mb-4 text-xl font-semibold text-slate-950'>
+          Edit Project
+        </h2>
+
+        <form
+          onSubmit={handleUpdateProject}
+          className='grid gap-3 md:grid-cols-2'
+        >
+          <input
+            type='text'
+            placeholder='Project name'
+            value={editProjectInfo.name}
+            onChange={(e) =>
+              setEditProjectInfo((prev) => ({
+                ...prev,
+                name: e.target.value,
+              }))
+            }
+            className='w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 placeholder:text-slate-400 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
+          />
+
+          <input
+            type='text'
+            placeholder='Optional description'
+            value={editProjectInfo.description}
+            onChange={(e) =>
+              setEditProjectInfo((prev) => ({
+                ...prev,
+                description: e.target.value,
+              }))
+            }
+            className='w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 placeholder:text-slate-400 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
+          />
+
+          <div className='md:col-span-2'>
+            <PrimaryButton type='submit'>Save changes</PrimaryButton>
+          </div>
+        </form>
       </div>
 
       <div>

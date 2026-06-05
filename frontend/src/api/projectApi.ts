@@ -3,6 +3,11 @@ import { getAuthToken } from '../utils/authToken';
 
 const BASE_URL = 'http://localhost:3000/api/workspace';
 
+type UpdateProjectPayload = {
+  name?: string;
+  description?: string;
+};
+
 export const getProjects = async (workspaceId: string) => {
   const token = getAuthToken();
 
@@ -73,6 +78,37 @@ export const getProject = async (workspaceId: string, projectId: string) => {
 
   if (!response.ok) {
     throw new ApiError(data.error || 'Could not load project', response.status);
+  }
+
+  return data;
+};
+
+export const updateProject = async (
+  workspaceId: string,
+  projectId: string,
+  payload: UpdateProjectPayload,
+) => {
+  const token = getAuthToken();
+
+  const response = await fetch(
+    `${BASE_URL}/${workspaceId}/projects/${projectId}`,
+    {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new ApiError(
+      data.error || 'Could not update project',
+      response.status,
+    );
   }
 
   return data;
