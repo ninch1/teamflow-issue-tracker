@@ -12,13 +12,13 @@ type EditIssueInfo = {
 
 type IssueEditFormProps = {
   editIssueInfo: EditIssueInfo;
-  setEditIssueInfo: React.Dispatch<React.SetStateAction<EditIssueInfo>>;
+  onEditIssueChange: React.Dispatch<React.SetStateAction<EditIssueInfo>>;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 };
 
 export default function IssueEditForm({
   editIssueInfo,
-  setEditIssueInfo,
+  onEditIssueChange,
   onSubmit,
 }: IssueEditFormProps) {
   return (
@@ -31,7 +31,7 @@ export default function IssueEditForm({
           placeholder='Issue title'
           value={editIssueInfo.title}
           onChange={(e) =>
-            setEditIssueInfo((prev) => ({ ...prev, title: e.target.value }))
+            onEditIssueChange((prev) => ({ ...prev, title: e.target.value }))
           }
           className='w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 placeholder:text-slate-400 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
         />
@@ -41,7 +41,7 @@ export default function IssueEditForm({
           placeholder='Optional description'
           value={editIssueInfo.description}
           onChange={(e) =>
-            setEditIssueInfo((prev) => ({
+            onEditIssueChange((prev) => ({
               ...prev,
               description: e.target.value,
             }))
@@ -52,7 +52,7 @@ export default function IssueEditForm({
         <select
           value={editIssueInfo.priority}
           onChange={(e) =>
-            setEditIssueInfo((prev) => ({
+            onEditIssueChange((prev) => ({
               ...prev,
               priority: e.target.value as 'LOW' | 'MEDIUM' | 'HIGH',
             }))
@@ -67,7 +67,7 @@ export default function IssueEditForm({
         <select
           value={editIssueInfo.type}
           onChange={(e) =>
-            setEditIssueInfo((prev) => ({
+            onEditIssueChange((prev) => ({
               ...prev,
               type: e.target.value as 'BUG' | 'FEATURE' | 'TASK',
             }))

@@ -8,7 +8,9 @@ import ErrorAlert from '../components/common/ErrorAlert';
 import ApiError from '../errors/ApiError';
 import { removeAuthToken } from '../utils/authToken';
 import PrimaryButton from '../components/common/PrimaryButton';
-import DangerButton from '../components/common/DangerButton';
+import ProjectDetailsCard from '../components/layout/ProjectDetailsCard';
+import ProjectEditForm from '../components/layout/ProjectEditForm';
+import DangerZone from '../components/common/DangerZone';
 
 type ProjectType = {
   id: string;
@@ -220,75 +222,22 @@ export default function ProjectPage() {
         <ErrorAlert message={formError} onClose={() => setFormError('')} />
       )}
 
-      <div className='mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
-        <div>
-          <p className='mb-2 text-sm text-slate-500'>Project</p>
+      {currentProject && <ProjectDetailsCard project={currentProject} />}
 
-          <h1 className='text-3xl font-semibold tracking-[-0.04em] text-slate-950'>
-            {currentProject?.name}
-          </h1>
+      <ProjectEditForm
+        editProjectInfo={editProjectInfo}
+        onEditProjectChange={setEditProjectInfo}
+        onSubmit={handleUpdateProject}
+      />
 
-          <p className='mt-2 text-sm text-slate-500'>
-            {currentProject?.description || 'No description yet.'}
-          </p>
-        </div>
-      </div>
+      <DangerZone
+        buttonText='Delete project'
+        message='Deleting this project cannot be undone. All issues inside this project will be removed.'
+        onDelete={handleDeleteProject}
+        fullWidth
+      />
 
-      <div className='mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
-        <h2 className='mb-4 text-xl font-semibold text-slate-950'>
-          Edit Project
-        </h2>
-
-        <form
-          onSubmit={handleUpdateProject}
-          className='grid gap-3 md:grid-cols-2'
-        >
-          <input
-            type='text'
-            placeholder='Project name'
-            value={editProjectInfo.name}
-            onChange={(e) =>
-              setEditProjectInfo((prev) => ({
-                ...prev,
-                name: e.target.value,
-              }))
-            }
-            className='w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 placeholder:text-slate-400 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
-          />
-
-          <input
-            type='text'
-            placeholder='Optional description'
-            value={editProjectInfo.description}
-            onChange={(e) =>
-              setEditProjectInfo((prev) => ({
-                ...prev,
-                description: e.target.value,
-              }))
-            }
-            className='w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 placeholder:text-slate-400 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
-          />
-
-          <div className='md:col-span-2'>
-            <PrimaryButton type='submit'>Save changes</PrimaryButton>
-          </div>
-        </form>
-      </div>
-
-      <div className='mb-8 rounded-xl border border-red-200 bg-red-50 p-6'>
-        <h2 className='mb-2 text-xl font-semibold text-red-700'>Danger Zone</h2>
-
-        <p className='mb-4 text-sm text-red-600'>
-          Deleting this project cannot be undone. All issues inside this project
-          will be removed.
-        </p>
-
-        <DangerButton onClick={handleDeleteProject}>
-          Delete project
-        </DangerButton>
-      </div>
-
-      <div>
+      <div className='mt-5'>
         <div className='flex items-center justify-between'>
           <div>
             <h2 className='text-2xl font-medium tracking-[-0.04em] text-slate-950'>

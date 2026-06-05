@@ -4,7 +4,6 @@ import { getIssue, updateIssue, deleteIssue } from '../api/issueApi';
 import ErrorAlert from '../components/common/ErrorAlert';
 import ApiError from '../errors/ApiError';
 import { removeAuthToken } from '../utils/authToken';
-import DangerButton from '../components/common/DangerButton';
 import IssueDetailsCard from '../components/layout/IssueDetailsCard';
 import IssueStatusSection from '../components/layout/IssueStatusSection';
 import IssueEditForm from '../components/layout/IssueEditForm';
@@ -224,7 +223,7 @@ export default function IssuePage() {
 
         <IssueEditForm
           editIssueInfo={editIssueInfo}
-          setEditIssueInfo={setEditIssueInfo}
+          onEditIssueChange={setEditIssueInfo}
           onSubmit={handleUpdateIssueDetails}
         />
       </div>
