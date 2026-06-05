@@ -5,6 +5,7 @@ import { getAuthToken, removeAuthToken } from '../utils/authToken';
 import ErrorAlert from '../components/common/ErrorAlert';
 import ApiError from '../errors/ApiError';
 import DangerButton from '../components/common/DangerButton';
+import LoadingCard from '../components/common/LoadingCard';
 
 type UserType = {
   user: {
@@ -17,6 +18,7 @@ type UserType = {
 export default function MePage() {
   const [userData, setUserData] = useState<UserType | null>(null);
   const [pageError, setPageError] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   const navigate = useNavigate();
 
@@ -31,6 +33,7 @@ export default function MePage() {
       }
 
       try {
+        setIsLoading(true);
         setPageError('');
 
         const data = await getMe(token);
@@ -47,6 +50,8 @@ export default function MePage() {
         } else {
           setPageError('Could not load account details');
         }
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -56,6 +61,10 @@ export default function MePage() {
   function handleLogout() {
     removeAuthToken();
     navigate('/');
+  }
+
+  if (isLoading) {
+    return <LoadingCard message='Loading...' />;
   }
 
   return (

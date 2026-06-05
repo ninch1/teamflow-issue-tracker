@@ -8,6 +8,7 @@ import IssueDetailsCard from '../components/layout/IssueDetailsCard';
 import IssueStatusSection from '../components/layout/IssueStatusSection';
 import IssueEditForm from '../components/layout/IssueEditForm';
 import DangerZone from '../components/common/DangerZone';
+import LoadingCard from '../components/common/LoadingCard';
 
 type IssueType = {
   id: string;
@@ -44,10 +45,12 @@ export default function IssuePage() {
     priority: 'MEDIUM',
     type: 'TASK',
   });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function initialIssue() {
       try {
+        setIsLoading(true);
         setPageError('');
 
         if (!workspaceId || !projectId || !issueId) {
@@ -77,6 +80,8 @@ export default function IssuePage() {
         } else {
           setPageError('Could not load issue');
         }
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -200,6 +205,10 @@ export default function IssuePage() {
         setFormError('Could not update issue');
       }
     }
+  }
+
+  if (isLoading) {
+    return <LoadingCard message='Loading issue...' />;
   }
 
   return (

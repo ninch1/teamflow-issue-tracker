@@ -11,6 +11,7 @@ import PrimaryButton from '../components/common/PrimaryButton';
 import ProjectDetailsCard from '../components/layout/ProjectDetailsCard';
 import ProjectEditForm from '../components/layout/ProjectEditForm';
 import DangerZone from '../components/common/DangerZone';
+import LoadingCard from '../components/common/LoadingCard';
 
 type ProjectType = {
   id: string;
@@ -61,9 +62,12 @@ export default function ProjectPage() {
     description: '',
   });
 
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     async function initialProject() {
       try {
+        setIsLoading(true);
         setPageError('');
 
         if (!workspaceId || !projectId) {
@@ -92,6 +96,8 @@ export default function ProjectPage() {
         } else {
           setPageError('Could not load project');
         }
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -210,6 +216,10 @@ export default function ProjectPage() {
         setFormError('Could not delete project');
       }
     }
+  }
+
+  if (isLoading) {
+    return <LoadingCard message='Loading project...' />;
   }
 
   return (

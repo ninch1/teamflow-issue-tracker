@@ -15,6 +15,7 @@ import PrimaryButton from '../components/common/PrimaryButton';
 import WorkspaceDetailsCard from '../components/layout/WorkspaceDetailsCard';
 import WorkspaceEditForm from '../components/layout/WorkspaceEditForm';
 import DangerZone from '../components/common/DangerZone';
+import LoadingCard from '../components/common/LoadingCard';
 
 type WorkspaceType = {
   id: string;
@@ -62,10 +63,12 @@ export default function WorkspacePage() {
     name: '',
     description: '',
   });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function initialWorkspace() {
       try {
+        setIsLoading(true);
         setPageError('');
 
         if (!workspaceId) {
@@ -94,6 +97,8 @@ export default function WorkspacePage() {
         } else {
           setPageError('Could not load workspace');
         }
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -204,6 +209,10 @@ export default function WorkspacePage() {
         setFormError('Could not delete workspace');
       }
     }
+  }
+
+  if (isLoading) {
+    return <LoadingCard message='Loading workspace...' />;
   }
 
   return (

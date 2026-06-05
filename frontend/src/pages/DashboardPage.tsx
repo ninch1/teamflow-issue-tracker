@@ -7,6 +7,7 @@ import CreateWorkspaceCard from '../components/layout/CreateWorkspaceCard';
 import ErrorAlert from '../components/common/ErrorAlert';
 import ApiError from '../errors/ApiError';
 import { removeAuthToken } from '../utils/authToken';
+import LoadingCard from '../components/common/LoadingCard';
 
 type WorkspaceData = {
   id: string;
@@ -33,12 +34,14 @@ export default function DashboardPage() {
     name: '',
     description: '',
   });
+  const [isLoading, setIsLoading] = useState(true);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     async function getWorkspacesWrapper() {
       try {
+        setIsLoading(true);
         setPageError('');
 
         const workspacesData = await getWorkspaces();
@@ -57,6 +60,8 @@ export default function DashboardPage() {
         } else {
           setPageError('Could not load workspaces');
         }
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -92,6 +97,10 @@ export default function DashboardPage() {
         setFormError('Could not create workspace');
       }
     }
+  }
+
+  if (isLoading) {
+    return <LoadingCard message='Loading dashboard...' />;
   }
 
   return (
