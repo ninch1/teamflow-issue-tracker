@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getWorkspace } from '../api/workspaceApi';
+import {
+  getWorkspace,
+  deleteWorkspace,
+  updateWorkspace,
+} from '../api/workspaceApi';
 import { getProjects, createProject } from '../api/projectApi';
 import ProjectCard from '../components/common/ProjectCard';
 import CreateProjectCard from '../components/layout/CreateProjectCard';
@@ -8,6 +12,7 @@ import ErrorAlert from '../components/common/ErrorAlert';
 import ApiError from '../errors/ApiError';
 import { removeAuthToken } from '../utils/authToken';
 import PrimaryButton from '../components/common/PrimaryButton';
+import DangerButton from '../components/common/DangerButton';
 
 type WorkspaceType = {
   id: string;
@@ -16,6 +21,11 @@ type WorkspaceType = {
   role: 'OWNER' | 'ADMIN' | 'MEMBER';
   createdAt: string;
   updatedAt: string;
+};
+
+type EditWorkspace = {
+  name: string;
+  description: string;
 };
 
 type ProjectType = {
@@ -46,6 +56,10 @@ export default function WorkspacePage() {
     name: '',
     description: '',
   });
+  const [editWorkspaceInfo, setEditWorkspaceInfo] = useState<EditWorkspace>({
+    name: '',
+    description: '',
+  });
 
   useEffect(() => {
     async function initialWorkspace() {
@@ -62,6 +76,10 @@ export default function WorkspacePage() {
 
         setCurrentWorkspace(workspaceData.workspace);
         setCurrentProjects(projectsData.projects);
+        setEditWorkspaceInfo({
+          name: workspaceData.workspace.name,
+          description: workspaceData.workspace.description || '',
+        });
       } catch (error: unknown) {
         if (error instanceof ApiError && error.status === 401) {
           removeAuthToken();
@@ -115,6 +133,77 @@ export default function WorkspacePage() {
     }
   }
 
+  async function handleUpdateWorkspace(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setFormError('');
+
+    if (!workspaceId) {
+      setFormError('Workspace not found');
+      return;
+    }
+
+    try {
+      const updatedWorkspaceData = await updateWorkspace(workspaceId, {
+        name: editWorkspaceInfo.name,
+        description: editWorkspaceInfo.description,
+      });
+
+      setCurrentWorkspace(updatedWorkspaceData.workspace);
+
+      setEditWorkspaceInfo({
+        name: updatedWorkspaceData.workspace.name,
+        description: updatedWorkspaceData.workspace.description || '',
+      });
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate('/login');
+        return;
+      }
+
+      if (error instanceof Error) {
+        setFormError(error.message);
+      } else {
+        setFormError('Could not update workspace');
+      }
+    }
+  }
+
+  async function handleDeleteWorkspace() {
+    setFormError('');
+
+    if (!workspaceId) {
+      setFormError('Workspace not found');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this workspace? This will also remove its projects and issues.',
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deleteWorkspace(workspaceId);
+
+      navigate('/dashboard');
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate('/login');
+        return;
+      }
+
+      if (error instanceof Error) {
+        setFormError(error.message);
+      } else {
+        setFormError('Could not delete workspace');
+      }
+    }
+  }
+
   return (
     <div className='w-full max-w-6xl'>
       {pageError && (
@@ -139,6 +228,60 @@ export default function WorkspacePage() {
             {currentWorkspace?.role}
           </span>
         </div>
+      </div>
+
+      <div className='mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
+        <h2 className='mb-4 text-xl font-semibold text-slate-950'>
+          Edit Workspace
+        </h2>
+
+        <form
+          onSubmit={handleUpdateWorkspace}
+          className='grid gap-3 md:grid-cols-2'
+        >
+          <input
+            type='text'
+            placeholder='Workspace name'
+            value={editWorkspaceInfo.name}
+            onChange={(e) =>
+              setEditWorkspaceInfo((prev) => ({
+                ...prev,
+                name: e.target.value,
+              }))
+            }
+            className='w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 placeholder:text-slate-400 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
+          />
+
+          <input
+            type='text'
+            placeholder='Optional description'
+            value={editWorkspaceInfo.description}
+            onChange={(e) =>
+              setEditWorkspaceInfo((prev) => ({
+                ...prev,
+                description: e.target.value,
+              }))
+            }
+            className='w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 placeholder:text-slate-400 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
+          />
+
+          <div className='md:col-span-2'>
+            <PrimaryButton type='submit'>Save changes</PrimaryButton>
+          </div>
+        </form>
+      </div>
+
+      <div className='mb-8 rounded-xl border border-red-200 bg-red-50 p-6'>
+        <h2 className='mb-2 text-xl font-semibold text-red-700'>Danger Zone</h2>
+
+        <p className='mb-4 text-sm text-red-600'>
+          Deleting this workspace cannot be undone. All projects and issues
+          inside this workspace will be removed.
+        </p>
+
+        <DangerButton onClick={handleDeleteWorkspace}>
+          Delete workspace
+        </DangerButton>
       </div>
 
       <div>
