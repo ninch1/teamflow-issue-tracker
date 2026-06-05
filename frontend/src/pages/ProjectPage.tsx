@@ -61,8 +61,11 @@ export default function ProjectPage() {
     name: '',
     description: '',
   });
-
   const [isLoading, setIsLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<
+    'ALL' | 'TODO' | 'IN_PROGRESS' | 'DONE'
+  >('ALL');
+  const [isIssuesLoading, setIsIssuesLoading] = useState(false);
 
   useEffect(() => {
     async function initialProject() {
@@ -76,10 +79,8 @@ export default function ProjectPage() {
         }
 
         const projectData = await getProject(workspaceId, projectId);
-        const issuesData = await getIssues(workspaceId, projectId);
 
         setCurrentProject(projectData.project);
-        setIssues(issuesData.issues);
         setEditProjectInfo({
           name: projectData.project.name,
           description: projectData.project.description || '',
@@ -103,6 +104,44 @@ export default function ProjectPage() {
 
     initialProject();
   }, [workspaceId, projectId, navigate]);
+
+  useEffect(() => {
+    async function loadIssues() {
+      try {
+        setIsIssuesLoading(true);
+        setPageError('');
+
+        if (!workspaceId || !projectId) {
+          setPageError('Project not found');
+          return;
+        }
+
+        const issuesData = await getIssues(
+          workspaceId,
+          projectId,
+          statusFilter === 'ALL' ? undefined : statusFilter,
+        );
+
+        setIssues(issuesData.issues);
+      } catch (error: unknown) {
+        if (error instanceof ApiError && error.status === 401) {
+          removeAuthToken();
+          navigate('/login');
+          return;
+        }
+
+        if (error instanceof Error) {
+          setPageError(error.message);
+        } else {
+          setPageError('Could not load issues');
+        }
+      } finally {
+        setIsIssuesLoading(false);
+      }
+    }
+
+    loadIssues();
+  }, [workspaceId, projectId, navigate, statusFilter]);
 
   async function handleCreateIssue(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -131,7 +170,11 @@ export default function ProjectPage() {
       });
       setShowIssueForm(false);
 
-      setIssues((prev) => [...prev, newIssueData.issue]);
+      const createdIssue = newIssueData.issue;
+
+      if (statusFilter === 'ALL' || createdIssue.status === statusFilter) {
+        setIssues((prev) => [...prev, createdIssue]);
+      }
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
         removeAuthToken();
@@ -258,55 +301,86 @@ export default function ProjectPage() {
             </p>
           </div>
 
-          {!showCreateIssueForm && (
-            <PrimaryButton onClick={() => setShowIssueForm(true)}>
-              Create issue
-            </PrimaryButton>
-          )}
+          <div className='flex items-center gap-3'>
+            <select
+              value={statusFilter}
+              onChange={(e) =>
+                setStatusFilter(
+                  e.target.value as 'ALL' | 'TODO' | 'IN_PROGRESS' | 'DONE',
+                )
+              }
+              className='rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
+            >
+              <option value='ALL'>All issues</option>
+              <option value='TODO'>Todo</option>
+              <option value='IN_PROGRESS'>In Progress</option>
+              <option value='DONE'>Done</option>
+            </select>
+
+            {!showCreateIssueForm && (
+              <PrimaryButton onClick={() => setShowIssueForm(true)}>
+                Create issue
+              </PrimaryButton>
+            )}
+          </div>
         </div>
 
-        <div className='mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-          {showCreateIssueForm && (
-            <CreateIssueCard
-              title={newIssueInfo.title}
-              description={newIssueInfo.description}
-              priority={newIssueInfo.priority}
-              type={newIssueInfo.type}
-              onTitleChange={(value) =>
-                setNewIssueInfo((prev) => ({ ...prev, title: value }))
-              }
-              onDescriptionChange={(value) =>
-                setNewIssueInfo((prev) => ({ ...prev, description: value }))
-              }
-              onPriorityChange={(value) =>
-                setNewIssueInfo((prev) => ({ ...prev, priority: value }))
-              }
-              onTypeChange={(value) =>
-                setNewIssueInfo((prev) => ({ ...prev, type: value }))
-              }
-              onSubmit={handleCreateIssue}
-              onCancel={() => {
-                setNewIssueInfo({
-                  title: '',
-                  description: '',
-                  priority: 'MEDIUM',
-                  type: 'TASK',
-                });
-                setFormError('');
-                setShowIssueForm(false);
-              }}
-            />
-          )}
+        {isIssuesLoading ? (
+          <div className='mt-5'>
+            <LoadingCard message='Loading issues...' />
+          </div>
+        ) : (
+          <>
+            <div className='mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+              {showCreateIssueForm && (
+                <CreateIssueCard
+                  title={newIssueInfo.title}
+                  description={newIssueInfo.description}
+                  priority={newIssueInfo.priority}
+                  type={newIssueInfo.type}
+                  onTitleChange={(value) =>
+                    setNewIssueInfo((prev) => ({ ...prev, title: value }))
+                  }
+                  onDescriptionChange={(value) =>
+                    setNewIssueInfo((prev) => ({ ...prev, description: value }))
+                  }
+                  onPriorityChange={(value) =>
+                    setNewIssueInfo((prev) => ({ ...prev, priority: value }))
+                  }
+                  onTypeChange={(value) =>
+                    setNewIssueInfo((prev) => ({ ...prev, type: value }))
+                  }
+                  onSubmit={handleCreateIssue}
+                  onCancel={() => {
+                    setNewIssueInfo({
+                      title: '',
+                      description: '',
+                      priority: 'MEDIUM',
+                      type: 'TASK',
+                    });
+                    setFormError('');
+                    setShowIssueForm(false);
+                  }}
+                />
+              )}
 
-          {currentProject &&
-            issues.map((issue) => (
-              <IssueCard
-                key={issue.id}
-                workspaceId={currentProject.workspaceId}
-                issueInfo={issue}
-              />
-            ))}
-        </div>
+              {currentProject &&
+                issues.map((issue) => (
+                  <IssueCard
+                    key={issue.id}
+                    workspaceId={currentProject.workspaceId}
+                    issueInfo={issue}
+                  />
+                ))}
+            </div>
+
+            {!showCreateIssueForm && issues.length === 0 && (
+              <div className='mt-5 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500'>
+                No issues found for this filter.
+              </div>
+            )}
+          </>
+        )}
 
         {!showCreateIssueForm && issues.length === 0 && (
           <div className='mt-5 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500'>

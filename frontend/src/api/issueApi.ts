@@ -15,11 +15,20 @@ type UpdateIssuePayload = {
   type?: IssueType;
 };
 
-export const getIssues = async (workspaceId: string, projectId: string) => {
+export const getIssues = async (
+  workspaceId: string,
+  projectId: string,
+  statusFilter?: 'TODO' | 'IN_PROGRESS' | 'DONE',
+) => {
   const token = getAuthToken();
 
+  let filterQuery = '';
+  if (statusFilter !== undefined) {
+    filterQuery = '?status=' + statusFilter;
+  }
+
   const response = await fetch(
-    `${BASE_URL}/${workspaceId}/projects/${projectId}/issues`,
+    `${BASE_URL}/${workspaceId}/projects/${projectId}/issues${filterQuery}`,
     {
       method: 'GET',
       headers: {

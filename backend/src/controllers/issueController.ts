@@ -193,15 +193,42 @@ export const getIssues = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Project not found', 404));
   }
 
-  // Get issues newest first.
-  const issues = await prisma.issue.findMany({
+  const { status } = req.query;
+
+  let statusFilter: 'TODO' | 'IN_PROGRESS' | 'DONE' | undefined;
+
+  if (status === 'TODO' || status === 'IN_PROGRESS' || status === 'DONE') {
+    statusFilter = status;
+  }
+  if (status !== undefined && !statusFilter) {
+    throw new ErrorResponse('Please provide valid filter for issues', 400);
+  }
+
+  type queryType = {
+    where: {
+      projectId: string;
+      status?: 'TODO' | 'IN_PROGRESS' | 'DONE';
+    };
+    orderBy: {
+      createdAt: 'desc';
+    };
+  };
+
+  let query: queryType = {
     where: {
       projectId: project.id,
     },
     orderBy: {
       createdAt: 'desc',
     },
-  });
+  };
+
+  if (statusFilter) {
+    query.where.status = statusFilter;
+  }
+
+  // Get issues newest first.
+  const issues = await prisma.issue.findMany(query);
 
   return res.status(200).json({
     message: 'Issues returned successfully',
