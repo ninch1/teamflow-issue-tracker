@@ -19,13 +19,26 @@ export const getIssues = async (
   workspaceId: string,
   projectId: string,
   statusFilter?: 'TODO' | 'IN_PROGRESS' | 'DONE',
+  priorityFilter?: 'LOW' | 'MEDIUM' | 'HIGH',
+  typeFilter?: 'BUG' | 'FEATURE' | 'TASK',
 ) => {
   const token = getAuthToken();
 
-  let filterQuery = '';
-  if (statusFilter !== undefined) {
-    filterQuery = '?status=' + statusFilter;
+  const params = new URLSearchParams();
+
+  if (statusFilter) {
+    params.append('status', statusFilter);
   }
+
+  if (priorityFilter) {
+    params.append('priority', priorityFilter);
+  }
+
+  if (typeFilter) {
+    params.append('type', typeFilter);
+  }
+
+  const filterQuery = params.toString() ? `?${params.toString()}` : '';
 
   const response = await fetch(
     `${BASE_URL}/${workspaceId}/projects/${projectId}/issues${filterQuery}`,

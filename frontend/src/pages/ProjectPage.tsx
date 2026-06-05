@@ -65,6 +65,12 @@ export default function ProjectPage() {
   const [statusFilter, setStatusFilter] = useState<
     'ALL' | 'TODO' | 'IN_PROGRESS' | 'DONE'
   >('ALL');
+  const [priorityFilter, setPriorityFilter] = useState<
+    'ALL' | 'LOW' | 'MEDIUM' | 'HIGH'
+  >('ALL');
+  const [typeFilter, setTypeFilter] = useState<
+    'ALL' | 'BUG' | 'FEATURE' | 'TASK'
+  >('ALL');
   const [isIssuesLoading, setIsIssuesLoading] = useState(false);
 
   useEffect(() => {
@@ -120,6 +126,8 @@ export default function ProjectPage() {
           workspaceId,
           projectId,
           statusFilter === 'ALL' ? undefined : statusFilter,
+          priorityFilter === 'ALL' ? undefined : priorityFilter,
+          typeFilter === 'ALL' ? undefined : typeFilter,
         );
 
         setIssues(issuesData.issues);
@@ -141,7 +149,14 @@ export default function ProjectPage() {
     }
 
     loadIssues();
-  }, [workspaceId, projectId, navigate, statusFilter]);
+  }, [
+    workspaceId,
+    projectId,
+    navigate,
+    statusFilter,
+    priorityFilter,
+    typeFilter,
+  ]);
 
   async function handleCreateIssue(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -172,7 +187,16 @@ export default function ProjectPage() {
 
       const createdIssue = newIssueData.issue;
 
-      if (statusFilter === 'ALL' || createdIssue.status === statusFilter) {
+      const matchesStatus =
+        statusFilter === 'ALL' || createdIssue.status === statusFilter;
+
+      const matchesPriority =
+        priorityFilter === 'ALL' || createdIssue.priority === priorityFilter;
+
+      const matchesType =
+        typeFilter === 'ALL' || createdIssue.type === typeFilter;
+
+      if (matchesStatus && matchesPriority && matchesType) {
         setIssues((prev) => [...prev, createdIssue]);
       }
     } catch (error: unknown) {
@@ -301,7 +325,7 @@ export default function ProjectPage() {
             </p>
           </div>
 
-          <div className='flex items-center gap-3'>
+          <div className='flex flex-wrap items-center gap-3'>
             <select
               value={statusFilter}
               onChange={(e) =>
@@ -311,10 +335,40 @@ export default function ProjectPage() {
               }
               className='rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
             >
-              <option value='ALL'>All issues</option>
+              <option value='ALL'>All statuses</option>
               <option value='TODO'>Todo</option>
               <option value='IN_PROGRESS'>In Progress</option>
               <option value='DONE'>Done</option>
+            </select>
+
+            <select
+              value={priorityFilter}
+              onChange={(e) =>
+                setPriorityFilter(
+                  e.target.value as 'ALL' | 'LOW' | 'MEDIUM' | 'HIGH',
+                )
+              }
+              className='rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
+            >
+              <option value='ALL'>All priorities</option>
+              <option value='LOW'>Low</option>
+              <option value='MEDIUM'>Medium</option>
+              <option value='HIGH'>High</option>
+            </select>
+
+            <select
+              value={typeFilter}
+              onChange={(e) =>
+                setTypeFilter(
+                  e.target.value as 'ALL' | 'BUG' | 'FEATURE' | 'TASK',
+                )
+              }
+              className='rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
+            >
+              <option value='ALL'>All types</option>
+              <option value='BUG'>Bug</option>
+              <option value='FEATURE'>Feature</option>
+              <option value='TASK'>Task</option>
             </select>
 
             {!showCreateIssueForm && (
@@ -376,16 +430,14 @@ export default function ProjectPage() {
 
             {!showCreateIssueForm && issues.length === 0 && (
               <div className='mt-5 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500'>
-                No issues found for this filter.
+                {statusFilter === 'ALL' &&
+                priorityFilter === 'ALL' &&
+                typeFilter === 'ALL'
+                  ? 'No issues yet. Create your first issue to start tracking work.'
+                  : 'No issues found for this filter.'}
               </div>
             )}
           </>
-        )}
-
-        {!showCreateIssueForm && issues.length === 0 && (
-          <div className='mt-5 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500'>
-            No issues yet. Create your first issue to start tracking work.
-          </div>
         )}
       </div>
     </div>

@@ -193,21 +193,39 @@ export const getIssues = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Project not found', 404));
   }
 
-  const { status } = req.query;
+  const { status, priority, type } = req.query;
 
   let statusFilter: 'TODO' | 'IN_PROGRESS' | 'DONE' | undefined;
+  let priorityFilter: 'LOW' | 'MEDIUM' | 'HIGH' | undefined;
+  let typeFilter: 'BUG' | 'FEATURE' | 'TASK' | undefined;
 
   if (status === 'TODO' || status === 'IN_PROGRESS' || status === 'DONE') {
     statusFilter = status;
   }
   if (status !== undefined && !statusFilter) {
-    throw new ErrorResponse('Please provide valid filter for issues', 400);
+    throw new ErrorResponse('Please provide a valid status filter', 400);
+  }
+
+  if (priority === 'LOW' || priority === 'MEDIUM' || priority === 'HIGH') {
+    priorityFilter = priority;
+  }
+  if (priority !== undefined && !priorityFilter) {
+    throw new ErrorResponse('Please provide a valid priority filter', 400);
+  }
+
+  if (type === 'BUG' || type === 'FEATURE' || type === 'TASK') {
+    typeFilter = type;
+  }
+  if (type !== undefined && !typeFilter) {
+    throw new ErrorResponse('Please provide a valid type filter', 400);
   }
 
   type queryType = {
     where: {
       projectId: string;
       status?: 'TODO' | 'IN_PROGRESS' | 'DONE';
+      priority?: 'LOW' | 'MEDIUM' | 'HIGH';
+      type?: 'BUG' | 'FEATURE' | 'TASK';
     };
     orderBy: {
       createdAt: 'desc';
@@ -225,6 +243,12 @@ export const getIssues = asyncHandler(async (req, res, next) => {
 
   if (statusFilter) {
     query.where.status = statusFilter;
+  }
+  if (priorityFilter) {
+    query.where.priority = priorityFilter;
+  }
+  if (typeFilter) {
+    query.where.type = typeFilter;
   }
 
   // Get issues newest first.
