@@ -120,3 +120,29 @@ export const updateIssue = async (
 
   return data;
 };
+
+export const deleteIssue = async (
+  workspaceId: string,
+  projectId: string,
+  issueId: string,
+) => {
+  const token = getAuthToken();
+
+  const response = await fetch(
+    `${BASE_URL}/${workspaceId}/projects/${projectId}/issues/${issueId}`,
+    {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new ApiError(data.error || 'Could not delete issue', response.status);
+  }
+
+  return data;
+};

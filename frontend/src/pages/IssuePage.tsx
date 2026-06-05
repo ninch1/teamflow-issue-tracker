@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getIssue, updateIssue } from '../api/issueApi';
+import { getIssue, updateIssue, deleteIssue } from '../api/issueApi';
 import ErrorAlert from '../components/common/ErrorAlert';
 import ApiError from '../errors/ApiError';
 import { removeAuthToken } from '../utils/authToken';
@@ -10,6 +10,7 @@ import {
   getTypeClass,
 } from '../utils/issueBadgeStyles';
 import PrimaryButton from '../components/common/PrimaryButton';
+import DangerButton from '../components/common/DangerButton';
 
 type IssueType = {
   id: string;
@@ -99,6 +100,41 @@ export default function IssuePage() {
     }
   }
 
+  async function handleDeleteIssue() {
+    setFormError('');
+
+    if (!workspaceId || !projectId || !issueId) {
+      setFormError('Issue not found');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this issue?',
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deleteIssue(workspaceId, projectId, issueId);
+
+      navigate(`/workspaces/${workspaceId}/projects/${projectId}`);
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate('/login');
+        return;
+      }
+
+      if (error instanceof Error) {
+        setFormError(error.message);
+      } else {
+        setFormError('Could not delete issue');
+      }
+    }
+  }
+
   return (
     <div className='w-full max-w-6xl'>
       {pageError && (
@@ -150,23 +186,38 @@ export default function IssuePage() {
           )}
         </div>
       </div>
+      <div className='mt-8 flex flex-col gap-5 lg:flex-row'>
+        <div className='rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-950'>
+          <h2 className='mb-2.5 text-xl font-semibold'>Update Status</h2>
 
-      <div className='mt-8 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-950'>
-        <h2 className='mb-2.5 text-xl font-semibold'>Update Status</h2>
+          <div className='flex gap-3'>
+            <select
+              value={newStatus}
+              onChange={(e) =>
+                setNewStatus(e.target.value as 'TODO' | 'IN_PROGRESS' | 'DONE')
+              }
+              className='rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
+            >
+              <option value='TODO'>TODO</option>
+              <option value='IN_PROGRESS'>In Progress</option>
+              <option value='DONE'>DONE</option>
+            </select>
 
-        <select
-          value={newStatus}
-          onChange={(e) =>
-            setNewStatus(e.target.value as 'TODO' | 'IN_PROGRESS' | 'DONE')
-          }
-          className='mr-5 w-full max-w-max rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
-        >
-          <option value='TODO'>TODO</option>
-          <option value='IN_PROGRESS'>In Progress</option>
-          <option value='DONE'>DONE</option>
-        </select>
+            <PrimaryButton onClick={handleUpdateStatus}>Update</PrimaryButton>
+          </div>
+        </div>
 
-        <PrimaryButton onClick={handleUpdateStatus}>Update</PrimaryButton>
+        <div className='rounded-xl border border-red-200 bg-red-50 p-6 lg:w-80'>
+          <h2 className='mb-2 text-xl font-semibold text-red-700'>
+            Danger Zone
+          </h2>
+
+          <p className='mb-4 text-sm text-red-600'>
+            Deleting this issue cannot be undone.
+          </p>
+
+          <DangerButton onClick={handleDeleteIssue}>Delete issue</DangerButton>
+        </div>
       </div>
     </div>
   );
