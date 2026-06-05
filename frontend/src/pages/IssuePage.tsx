@@ -4,13 +4,11 @@ import { getIssue, updateIssue, deleteIssue } from '../api/issueApi';
 import ErrorAlert from '../components/common/ErrorAlert';
 import ApiError from '../errors/ApiError';
 import { removeAuthToken } from '../utils/authToken';
-import {
-  getStatusClass,
-  getPriorityClass,
-  getTypeClass,
-} from '../utils/issueBadgeStyles';
-import PrimaryButton from '../components/common/PrimaryButton';
 import DangerButton from '../components/common/DangerButton';
+import IssueDetailsCard from '../components/layout/IssueDetailsCard';
+import IssueStatusSection from '../components/layout/IssueStatusSection';
+import IssueEditForm from '../components/layout/IssueEditForm';
+import DangerZone from '../components/common/DangerZone';
 
 type IssueType = {
   id: string;
@@ -215,144 +213,28 @@ export default function IssuePage() {
         <ErrorAlert message={formError} onClose={() => setFormError('')} />
       )}
 
-      <div className='rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
-        <p className='mb-2 text-sm text-slate-500'>Issue</p>
+      {currentIssue && <IssueDetailsCard issue={currentIssue} />}
 
-        <h1 className='text-3xl font-semibold tracking-[-0.04em] text-slate-950'>
-          {currentIssue?.title}
-        </h1>
+      <div className='mb-5 mt-8 flex flex-col gap-5 lg:flex-row'>
+        <IssueStatusSection
+          status={newStatus}
+          onStatusChange={setNewStatus}
+          onSubmit={handleUpdateStatus}
+        />
 
-        <p className='mt-2 text-sm text-slate-500'>
-          {currentIssue?.description || 'No description yet.'}
-        </p>
-
-        <div className='mt-6 flex flex-wrap gap-2'>
-          {currentIssue && (
-            <>
-              <span
-                className={`rounded-full border px-2 py-1 text-xs font-medium ${getStatusClass(
-                  currentIssue.status,
-                )}`}
-              >
-                {currentIssue.status.replace('_', ' ')}
-              </span>
-
-              <span
-                className={`rounded-full border px-2 py-1 text-xs font-medium ${getPriorityClass(
-                  currentIssue.priority,
-                )}`}
-              >
-                {currentIssue.priority}
-              </span>
-
-              <span
-                className={`rounded-full border px-2 py-1 text-xs font-medium ${getTypeClass(
-                  currentIssue.type,
-                )}`}
-              >
-                {currentIssue.type}
-              </span>
-            </>
-          )}
-        </div>
-      </div>
-      <div className='mt-8 mb-5 flex flex-col gap-5 lg:flex-row'>
-        <div className='rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-950'>
-          <h2 className='mb-2.5 text-xl font-semibold'>Update Status</h2>
-
-          <div className='flex gap-3'>
-            <select
-              value={newStatus}
-              onChange={(e) =>
-                setNewStatus(e.target.value as 'TODO' | 'IN_PROGRESS' | 'DONE')
-              }
-              className='rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
-            >
-              <option value='TODO'>TODO</option>
-              <option value='IN_PROGRESS'>In Progress</option>
-              <option value='DONE'>DONE</option>
-            </select>
-
-            <PrimaryButton onClick={handleUpdateStatus}>Update</PrimaryButton>
-          </div>
-        </div>
-
-        <div className='rounded-xl border border-slate-200 bg-white p-6 shadow-sm lg:flex-1'>
-          <h2 className='mb-4 text-xl font-semibold'>Edit Issue</h2>
-
-          <form
-            onSubmit={handleUpdateIssueDetails}
-            className='grid gap-3 md:grid-cols-2'
-          >
-            <input
-              type='text'
-              placeholder='Issue title'
-              value={editIssueInfo.title}
-              onChange={(e) =>
-                setEditIssueInfo((prev) => ({ ...prev, title: e.target.value }))
-              }
-              className='w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 placeholder:text-slate-400 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
-            />
-
-            <input
-              type='text'
-              placeholder='Optional description'
-              value={editIssueInfo.description}
-              onChange={(e) =>
-                setEditIssueInfo((prev) => ({
-                  ...prev,
-                  description: e.target.value,
-                }))
-              }
-              className='w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 placeholder:text-slate-400 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
-            />
-
-            <select
-              value={editIssueInfo.priority}
-              onChange={(e) =>
-                setEditIssueInfo((prev) => ({
-                  ...prev,
-                  priority: e.target.value as 'LOW' | 'MEDIUM' | 'HIGH',
-                }))
-              }
-              className='w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
-            >
-              <option value='LOW'>Low</option>
-              <option value='MEDIUM'>Medium</option>
-              <option value='HIGH'>High</option>
-            </select>
-
-            <select
-              value={editIssueInfo.type}
-              onChange={(e) =>
-                setEditIssueInfo((prev) => ({
-                  ...prev,
-                  type: e.target.value as 'BUG' | 'FEATURE' | 'TASK',
-                }))
-              }
-              className='w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
-            >
-              <option value='BUG'>Bug</option>
-              <option value='FEATURE'>Feature</option>
-              <option value='TASK'>Task</option>
-            </select>
-
-            <div className='md:col-span-2'>
-              <PrimaryButton type='submit'>Save changes</PrimaryButton>
-            </div>
-          </form>
-        </div>
+        <IssueEditForm
+          editIssueInfo={editIssueInfo}
+          setEditIssueInfo={setEditIssueInfo}
+          onSubmit={handleUpdateIssueDetails}
+        />
       </div>
 
-      <div className='rounded-xl border border-red-200 bg-red-50 p-6 lg:w-80'>
-        <h2 className='mb-2 text-xl font-semibold text-red-700'>Danger Zone</h2>
-
-        <p className='mb-4 text-sm text-red-600'>
-          Deleting this issue cannot be undone.
-        </p>
-
-        <DangerButton onClick={handleDeleteIssue}>Delete issue</DangerButton>
-      </div>
+      <DangerZone
+        message='Deleting this issue cannot be undone.'
+        buttonText='Delete issue'
+        onDelete={handleDeleteIssue}
+        fullWidth
+      />
     </div>
   );
 }
