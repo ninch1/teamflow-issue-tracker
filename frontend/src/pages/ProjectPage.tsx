@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getProject, updateProject } from '../api/projectApi';
+import { getProject, updateProject, deleteProject } from '../api/projectApi';
 import { getIssues, createIssue } from '../api/issueApi';
 import IssueCard from '../components/common/IssueCard';
 import CreateIssueCard from '../components/layout/CreateIssueCard';
@@ -8,6 +8,7 @@ import ErrorAlert from '../components/common/ErrorAlert';
 import ApiError from '../errors/ApiError';
 import { removeAuthToken } from '../utils/authToken';
 import PrimaryButton from '../components/common/PrimaryButton';
+import DangerButton from '../components/common/DangerButton';
 
 type ProjectType = {
   id: string;
@@ -174,6 +175,41 @@ export default function ProjectPage() {
     }
   }
 
+  async function handleDeleteProject() {
+    setFormError('');
+
+    if (!workspaceId || !projectId) {
+      setFormError('Project not found');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this project? This will also remove its issues.',
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deleteProject(workspaceId, projectId);
+
+      navigate(`/workspaces/${workspaceId}`);
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate('/login');
+        return;
+      }
+
+      if (error instanceof Error) {
+        setFormError(error.message);
+      } else {
+        setFormError('Could not delete project');
+      }
+    }
+  }
+
   return (
     <div className='w-full max-w-6xl'>
       {pageError && (
@@ -237,6 +273,19 @@ export default function ProjectPage() {
             <PrimaryButton type='submit'>Save changes</PrimaryButton>
           </div>
         </form>
+      </div>
+
+      <div className='mb-8 rounded-xl border border-red-200 bg-red-50 p-6'>
+        <h2 className='mb-2 text-xl font-semibold text-red-700'>Danger Zone</h2>
+
+        <p className='mb-4 text-sm text-red-600'>
+          Deleting this project cannot be undone. All issues inside this project
+          will be removed.
+        </p>
+
+        <DangerButton onClick={handleDeleteProject}>
+          Delete project
+        </DangerButton>
       </div>
 
       <div>

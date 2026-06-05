@@ -113,3 +113,28 @@ export const updateProject = async (
 
   return data;
 };
+
+export const deleteProject = async (workspaceId: string, projectId: string) => {
+  const token = getAuthToken();
+
+  const response = await fetch(
+    `${BASE_URL}/${workspaceId}/projects/${projectId}`,
+    {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new ApiError(
+      data.error || 'Could not delete project',
+      response.status,
+    );
+  }
+
+  return data;
+};
