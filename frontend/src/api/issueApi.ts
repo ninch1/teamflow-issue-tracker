@@ -3,6 +3,18 @@ import { getAuthToken } from '../utils/authToken';
 
 const BASE_URL = 'http://localhost:3000/api/workspace';
 
+type IssueStatus = 'TODO' | 'IN_PROGRESS' | 'DONE';
+type IssuePriority = 'LOW' | 'MEDIUM' | 'HIGH';
+type IssueType = 'BUG' | 'FEATURE' | 'TASK';
+
+type UpdateIssuePayload = {
+  title?: string;
+  description?: string;
+  status?: IssueStatus;
+  priority?: IssuePriority;
+  type?: IssueType;
+};
+
 export const getIssues = async (workspaceId: string, projectId: string) => {
   const token = getAuthToken();
 
@@ -94,7 +106,7 @@ export const updateIssue = async (
   workspaceId: string,
   projectId: string,
   issueId: string,
-  newStatus: 'TODO' | 'IN_PROGRESS' | 'DONE',
+  payload: UpdateIssuePayload,
 ) => {
   const token = getAuthToken();
 
@@ -106,9 +118,7 @@ export const updateIssue = async (
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        status: newStatus,
-      }),
+      body: JSON.stringify(payload),
     },
   );
 

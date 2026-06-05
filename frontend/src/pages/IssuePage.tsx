@@ -24,6 +24,13 @@ type IssueType = {
   updatedAt: string;
 };
 
+type EditIssueInfo = {
+  title: string;
+  description: string;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH';
+  type: 'BUG' | 'FEATURE' | 'TASK';
+};
+
 export default function IssuePage() {
   const { workspaceId, projectId, issueId } = useParams();
   const navigate = useNavigate();
@@ -34,6 +41,12 @@ export default function IssuePage() {
   const [newStatus, setNewStatus] = useState<'TODO' | 'IN_PROGRESS' | 'DONE'>(
     'TODO',
   );
+  const [editIssueInfo, setEditIssueInfo] = useState<EditIssueInfo>({
+    title: '',
+    description: '',
+    priority: 'MEDIUM',
+    type: 'TASK',
+  });
 
   useEffect(() => {
     async function initialIssue() {
@@ -49,6 +62,12 @@ export default function IssuePage() {
 
         setCurrentIssue(issueData.issue);
         setNewStatus(issueData.issue.status);
+        setEditIssueInfo({
+          title: issueData.issue.title,
+          description: issueData.issue.description || '',
+          priority: issueData.issue.priority,
+          type: issueData.issue.type,
+        });
       } catch (error: unknown) {
         if (error instanceof ApiError && error.status === 401) {
           removeAuthToken();
@@ -80,11 +99,17 @@ export default function IssuePage() {
         workspaceId,
         projectId,
         issueId,
-        newStatus,
+        { status: newStatus },
       );
 
       setCurrentIssue(updatedIssueData.issue);
       setNewStatus(updatedIssueData.issue.status);
+      setEditIssueInfo({
+        title: updatedIssueData.issue.title,
+        description: updatedIssueData.issue.description || '',
+        priority: updatedIssueData.issue.priority,
+        type: updatedIssueData.issue.type,
+      });
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
         removeAuthToken();
@@ -131,6 +156,51 @@ export default function IssuePage() {
         setFormError(error.message);
       } else {
         setFormError('Could not delete issue');
+      }
+    }
+  }
+
+  async function handleUpdateIssueDetails(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setFormError('');
+
+    if (!workspaceId || !projectId || !issueId) {
+      setFormError('Issue not found');
+      return;
+    }
+
+    try {
+      const updatedIssueData = await updateIssue(
+        workspaceId,
+        projectId,
+        issueId,
+        {
+          title: editIssueInfo.title,
+          description: editIssueInfo.description,
+          priority: editIssueInfo.priority,
+          type: editIssueInfo.type,
+        },
+      );
+
+      setCurrentIssue(updatedIssueData.issue);
+      setNewStatus(updatedIssueData.issue.status);
+      setEditIssueInfo({
+        title: updatedIssueData.issue.title,
+        description: updatedIssueData.issue.description || '',
+        priority: updatedIssueData.issue.priority,
+        type: updatedIssueData.issue.type,
+      });
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate('/login');
+        return;
+      }
+
+      if (error instanceof Error) {
+        setFormError(error.message);
+      } else {
+        setFormError('Could not update issue');
       }
     }
   }
@@ -186,7 +256,7 @@ export default function IssuePage() {
           )}
         </div>
       </div>
-      <div className='mt-8 flex flex-col gap-5 lg:flex-row'>
+      <div className='mt-8 mb-5 flex flex-col gap-5 lg:flex-row'>
         <div className='rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-950'>
           <h2 className='mb-2.5 text-xl font-semibold'>Update Status</h2>
 
@@ -207,17 +277,81 @@ export default function IssuePage() {
           </div>
         </div>
 
-        <div className='rounded-xl border border-red-200 bg-red-50 p-6 lg:w-80'>
-          <h2 className='mb-2 text-xl font-semibold text-red-700'>
-            Danger Zone
-          </h2>
+        <div className='rounded-xl border border-slate-200 bg-white p-6 shadow-sm lg:flex-1'>
+          <h2 className='mb-4 text-xl font-semibold'>Edit Issue</h2>
 
-          <p className='mb-4 text-sm text-red-600'>
-            Deleting this issue cannot be undone.
-          </p>
+          <form
+            onSubmit={handleUpdateIssueDetails}
+            className='grid gap-3 md:grid-cols-2'
+          >
+            <input
+              type='text'
+              placeholder='Issue title'
+              value={editIssueInfo.title}
+              onChange={(e) =>
+                setEditIssueInfo((prev) => ({ ...prev, title: e.target.value }))
+              }
+              className='w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 placeholder:text-slate-400 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
+            />
 
-          <DangerButton onClick={handleDeleteIssue}>Delete issue</DangerButton>
+            <input
+              type='text'
+              placeholder='Optional description'
+              value={editIssueInfo.description}
+              onChange={(e) =>
+                setEditIssueInfo((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
+              className='w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 placeholder:text-slate-400 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
+            />
+
+            <select
+              value={editIssueInfo.priority}
+              onChange={(e) =>
+                setEditIssueInfo((prev) => ({
+                  ...prev,
+                  priority: e.target.value as 'LOW' | 'MEDIUM' | 'HIGH',
+                }))
+              }
+              className='w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
+            >
+              <option value='LOW'>Low</option>
+              <option value='MEDIUM'>Medium</option>
+              <option value='HIGH'>High</option>
+            </select>
+
+            <select
+              value={editIssueInfo.type}
+              onChange={(e) =>
+                setEditIssueInfo((prev) => ({
+                  ...prev,
+                  type: e.target.value as 'BUG' | 'FEATURE' | 'TASK',
+                }))
+              }
+              className='w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
+            >
+              <option value='BUG'>Bug</option>
+              <option value='FEATURE'>Feature</option>
+              <option value='TASK'>Task</option>
+            </select>
+
+            <div className='md:col-span-2'>
+              <PrimaryButton type='submit'>Save changes</PrimaryButton>
+            </div>
+          </form>
         </div>
+      </div>
+
+      <div className='rounded-xl border border-red-200 bg-red-50 p-6 lg:w-80'>
+        <h2 className='mb-2 text-xl font-semibold text-red-700'>Danger Zone</h2>
+
+        <p className='mb-4 text-sm text-red-600'>
+          Deleting this issue cannot be undone.
+        </p>
+
+        <DangerButton onClick={handleDeleteIssue}>Delete issue</DangerButton>
       </div>
     </div>
   );
