@@ -193,7 +193,15 @@ export const getIssues = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Project not found', 404));
   }
 
-  const { status, priority, type } = req.query;
+  const { status, priority, type, search } = req.query;
+
+  if (search !== undefined && typeof search !== 'string') {
+    throw new ErrorResponse('Search must be string', 400);
+  }
+  let searchFilter: string = '';
+  if (search) {
+    searchFilter = search.trim();
+  }
 
   let statusFilter: 'TODO' | 'IN_PROGRESS' | 'DONE' | undefined;
   let priorityFilter: 'LOW' | 'MEDIUM' | 'HIGH' | undefined;
@@ -226,6 +234,10 @@ export const getIssues = asyncHandler(async (req, res, next) => {
       status?: 'TODO' | 'IN_PROGRESS' | 'DONE';
       priority?: 'LOW' | 'MEDIUM' | 'HIGH';
       type?: 'BUG' | 'FEATURE' | 'TASK';
+      title?: {
+        contains: string;
+        mode: 'insensitive';
+      };
     };
     orderBy: {
       createdAt: 'desc';
@@ -241,6 +253,9 @@ export const getIssues = asyncHandler(async (req, res, next) => {
     },
   };
 
+  if (searchFilter.length !== 0) {
+    query.where.title = { contains: searchFilter, mode: 'insensitive' };
+  }
   if (statusFilter) {
     query.where.status = statusFilter;
   }

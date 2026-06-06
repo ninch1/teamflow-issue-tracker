@@ -13,6 +13,7 @@ type UpdateIssuePayload = {
   status?: IssueStatus;
   priority?: IssuePriority;
   type?: IssueType;
+  search?: string;
 };
 
 export const getIssues = async (
@@ -21,10 +22,15 @@ export const getIssues = async (
   statusFilter?: 'TODO' | 'IN_PROGRESS' | 'DONE',
   priorityFilter?: 'LOW' | 'MEDIUM' | 'HIGH',
   typeFilter?: 'BUG' | 'FEATURE' | 'TASK',
+  search?: string,
 ) => {
   const token = getAuthToken();
 
   const params = new URLSearchParams();
+
+  if (search) {
+    params.append('search', search.trim());
+  }
 
   if (statusFilter) {
     params.append('status', statusFilter);

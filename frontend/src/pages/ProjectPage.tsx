@@ -12,6 +12,7 @@ import ProjectDetailsCard from '../components/layout/ProjectDetailsCard';
 import ProjectEditForm from '../components/layout/ProjectEditForm';
 import DangerZone from '../components/common/DangerZone';
 import LoadingCard from '../components/common/LoadingCard';
+import SearchInput from '../components/common/SearchInput';
 
 type ProjectType = {
   id: string;
@@ -72,6 +73,8 @@ export default function ProjectPage() {
     'ALL' | 'BUG' | 'FEATURE' | 'TASK'
   >('ALL');
   const [isIssuesLoading, setIsIssuesLoading] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
+  const [debouncedSearchValue, setDebouncedSearchValue] = useState('');
 
   useEffect(() => {
     async function initialProject() {
@@ -128,6 +131,7 @@ export default function ProjectPage() {
           statusFilter === 'ALL' ? undefined : statusFilter,
           priorityFilter === 'ALL' ? undefined : priorityFilter,
           typeFilter === 'ALL' ? undefined : typeFilter,
+          debouncedSearchValue,
         );
 
         setIssues(issuesData.issues);
@@ -156,7 +160,17 @@ export default function ProjectPage() {
     statusFilter,
     priorityFilter,
     typeFilter,
+    debouncedSearchValue,
   ]);
+
+  // useEffect for debouncing search
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearchValue(searchValue);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchValue]);
 
   async function handleCreateIssue(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -315,7 +329,7 @@ export default function ProjectPage() {
       />
 
       <div className='mt-5'>
-        <div className='flex items-center justify-between'>
+        <div className='mb-5 flex items-center justify-between'>
           <div>
             <h2 className='text-2xl font-medium tracking-[-0.04em] text-slate-950'>
               Issues
@@ -379,6 +393,8 @@ export default function ProjectPage() {
           </div>
         </div>
 
+        <SearchInput value={searchValue} onChange={setSearchValue} />
+
         {isIssuesLoading ? (
           <div className='mt-5'>
             <LoadingCard message='Loading issues...' />
@@ -432,9 +448,10 @@ export default function ProjectPage() {
               <div className='mt-5 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500'>
                 {statusFilter === 'ALL' &&
                 priorityFilter === 'ALL' &&
-                typeFilter === 'ALL'
+                typeFilter === 'ALL' &&
+                debouncedSearchValue === ''
                   ? 'No issues yet. Create your first issue to start tracking work.'
-                  : 'No issues found for this filter.'}
+                  : 'No issues match your filters.'}
               </div>
             )}
           </>
