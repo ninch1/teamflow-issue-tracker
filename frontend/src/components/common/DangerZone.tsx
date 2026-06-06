@@ -4,16 +4,20 @@ type DangerZoneProps = {
   title?: string;
   message: string;
   buttonText: string;
+  submittingText?: string;
   onDelete: () => void;
   fullWidth?: boolean;
+  isSubmitting?: boolean;
 };
 
 export default function DangerZone({
   title = 'Danger Zone',
   message,
   buttonText,
+  submittingText = 'Deleting...',
   onDelete,
   fullWidth = false,
+  isSubmitting = false,
 }: DangerZoneProps) {
   return (
     <div
@@ -25,7 +29,9 @@ export default function DangerZone({
 
       <p className='mb-4 text-sm text-red-600'>{message}</p>
 
-      <DangerButton onClick={onDelete}>{buttonText}</DangerButton>
+      <DangerButton onClick={onDelete} disabled={isSubmitting}>
+        {isSubmitting ? submittingText : buttonText}
+      </DangerButton>
     </div>
   );
 }

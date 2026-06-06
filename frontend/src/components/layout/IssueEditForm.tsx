@@ -5,12 +5,14 @@ type IssueEditFormProps = {
   editIssueInfo: EditIssueInfo;
   onEditIssueChange: React.Dispatch<React.SetStateAction<EditIssueInfo>>;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  isSubmitting: boolean;
 };
 
 export default function IssueEditForm({
   editIssueInfo,
   onEditIssueChange,
   onSubmit,
+  isSubmitting,
 }: IssueEditFormProps) {
   return (
     <div className='rounded-xl border border-slate-200 bg-white p-6 shadow-sm lg:flex-1'>
@@ -71,7 +73,9 @@ export default function IssueEditForm({
         </select>
 
         <div className='md:col-span-2'>
-          <PrimaryButton type='submit'>Save changes</PrimaryButton>
+          <PrimaryButton type='submit' disabled={isSubmitting}>
+            {isSubmitting ? 'Saving...' : 'Save changes'}
+          </PrimaryButton>
         </div>
       </form>
     </div>

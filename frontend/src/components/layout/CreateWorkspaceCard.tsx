@@ -7,6 +7,7 @@ type CreateWorkspaceCardProps = {
   onDescriptionChange: (value: string) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   onCancel: () => void;
+  isSubmitting: boolean;
 };
 
 export default function CreateWorkspaceCard({
@@ -16,6 +17,7 @@ export default function CreateWorkspaceCard({
   onDescriptionChange,
   onSubmit,
   onCancel,
+  isSubmitting,
 }: CreateWorkspaceCardProps) {
   return (
     <div className='flex w-full flex-col gap-5 rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
@@ -44,11 +46,12 @@ export default function CreateWorkspaceCard({
         />
 
         <div className='flex gap-2'>
-          <PrimaryButton type='submit' fullWidth>
-            Create
+          <PrimaryButton type='submit' fullWidth disabled={isSubmitting}>
+            {isSubmitting ? 'Creating...' : 'Create'}
           </PrimaryButton>
 
           <button
+            disabled={isSubmitting}
             type='button'
             onClick={onCancel}
             className='flex-1 cursor-pointer rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100'

@@ -34,6 +34,8 @@ export default function ProjectPage() {
   const [formError, setFormError] = useState('');
   const [showCreateIssueForm, setShowIssueForm] = useState(false);
   const [isCreatingIssue, setIsCreatingIssue] = useState(false);
+  const [isUpdatingProject, setIsUpdatingProject] = useState(false);
+  const [isDeletingProject, setIsDeletingProject] = useState(false);
   const [newIssueInfo, setNewIssueInfo] = useState<NewIssue>({
     title: '',
     description: '',
@@ -223,6 +225,11 @@ export default function ProjectPage() {
 
   async function handleUpdateProject(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
+    if (isUpdatingProject) {
+      return;
+    }
+
     setFormError('');
 
     if (!workspaceId || !projectId) {
@@ -231,6 +238,8 @@ export default function ProjectPage() {
     }
 
     try {
+      setIsUpdatingProject(true);
+
       const updatedProjectData = await updateProject(workspaceId, projectId, {
         name: editProjectInfo.name,
         description: editProjectInfo.description,
@@ -254,10 +263,16 @@ export default function ProjectPage() {
       } else {
         setFormError('Could not update project');
       }
+    } finally {
+      setIsUpdatingProject(false);
     }
   }
 
   async function handleDeleteProject() {
+    if (isDeletingProject) {
+      return;
+    }
+
     setFormError('');
 
     if (!workspaceId || !projectId) {
@@ -274,6 +289,8 @@ export default function ProjectPage() {
     }
 
     try {
+      setIsDeletingProject(true);
+
       await deleteProject(workspaceId, projectId);
 
       navigate(`/workspaces/${workspaceId}`);
@@ -289,6 +306,8 @@ export default function ProjectPage() {
       } else {
         setFormError('Could not delete project');
       }
+    } finally {
+      setIsDeletingProject(false);
     }
   }
 
@@ -312,10 +331,13 @@ export default function ProjectPage() {
         editProjectInfo={editProjectInfo}
         onEditProjectChange={setEditProjectInfo}
         onSubmit={handleUpdateProject}
+        isSubmitting={isUpdatingProject}
       />
 
       <DangerZone
         buttonText='Delete project'
+        submittingText='Deleting...'
+        isSubmitting={isDeletingProject}
         message='Deleting this project cannot be undone. All issues inside this project will be removed.'
         onDelete={handleDeleteProject}
         fullWidth

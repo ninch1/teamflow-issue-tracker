@@ -46,6 +46,9 @@ export default function WorkspacePage() {
     },
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreatingProject, setIsCreatingProject] = useState(false);
+  const [isUpdatingWorkspace, setIsUpdatingWorkspace] = useState(false);
+  const [isDeletingWorkspace, setIsDeletingWorkspace] = useState(false);
 
   useEffect(() => {
     async function initialWorkspace() {
@@ -89,6 +92,11 @@ export default function WorkspacePage() {
 
   async function handleCreateProject(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
+    if (isCreatingProject) {
+      return;
+    }
+
     setFormError('');
 
     if (!workspaceId) {
@@ -97,6 +105,8 @@ export default function WorkspacePage() {
     }
 
     try {
+      setIsCreatingProject(true);
+
       const newProjectData = await createProject(
         workspaceId,
         newProjectInfo.name,
@@ -119,11 +129,18 @@ export default function WorkspacePage() {
       } else {
         setFormError('Could not create project');
       }
+    } finally {
+      setIsCreatingProject(false);
     }
   }
 
   async function handleUpdateWorkspace(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
+    if (isUpdatingWorkspace) {
+      return;
+    }
+
     setFormError('');
 
     if (!workspaceId) {
@@ -132,6 +149,8 @@ export default function WorkspacePage() {
     }
 
     try {
+      setIsUpdatingWorkspace(true);
+
       const updatedWorkspaceData = await updateWorkspace(workspaceId, {
         name: editWorkspaceInfo.name,
         description: editWorkspaceInfo.description,
@@ -155,10 +174,16 @@ export default function WorkspacePage() {
       } else {
         setFormError('Could not update workspace');
       }
+    } finally {
+      setIsUpdatingWorkspace(false);
     }
   }
 
   async function handleDeleteWorkspace() {
+    if (isDeletingWorkspace) {
+      return;
+    }
+
     setFormError('');
 
     if (!workspaceId) {
@@ -175,6 +200,8 @@ export default function WorkspacePage() {
     }
 
     try {
+      setIsDeletingWorkspace(true);
+
       await deleteWorkspace(workspaceId);
 
       navigate('/dashboard');
@@ -190,6 +217,8 @@ export default function WorkspacePage() {
       } else {
         setFormError('Could not delete workspace');
       }
+    } finally {
+      setIsDeletingWorkspace(false);
     }
   }
 
@@ -215,10 +244,12 @@ export default function WorkspacePage() {
         editWorkspaceInfo={editWorkspaceInfo}
         onEditWorkspaceChange={setEditWorkspaceInfo}
         onSubmit={handleUpdateWorkspace}
+        isSubmitting={isUpdatingWorkspace}
       />
 
       <DangerZone
         buttonText='Delete workspace'
+        isSubmitting={isDeletingWorkspace}
         message='Deleting this workspace cannot be undone. All projects and issues inside this workspace will be removed.'
         onDelete={handleDeleteWorkspace}
         fullWidth
@@ -259,6 +290,7 @@ export default function WorkspacePage() {
                 setFormError('');
                 setShowCreateProjectForm(false);
               }}
+              isSubmitting={isCreatingProject}
             />
           )}
 

@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [formError, setFormError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
 
@@ -17,9 +18,11 @@ export default function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (isSubmitting) return;
     setFormError('');
 
     try {
+      setIsSubmitting(true);
       await loginUser(email, password);
       navigate('/dashboard');
     } catch (error: unknown) {
@@ -28,6 +31,8 @@ export default function LoginPage() {
       } else {
         setFormError('Could not connect to server');
       }
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -56,8 +61,8 @@ export default function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           className='w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 placeholder:text-slate-400 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
         />
-        <PrimaryButton type='submit' fullWidth>
-          Login
+        <PrimaryButton type='submit' fullWidth disabled={isSubmitting}>
+          {isSubmitting ? 'Logging in...' : 'Login'}
         </PrimaryButton>
       </form>
 

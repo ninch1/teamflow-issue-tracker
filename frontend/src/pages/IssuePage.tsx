@@ -26,6 +26,9 @@ export default function IssuePage() {
     type: 'TASK',
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [isUpdatingIssueDetails, setIsUpdatingIssueDetails] = useState(false);
+  const [isDeletingIssue, setIsDeletingIssue] = useState(false);
 
   useEffect(() => {
     async function initialIssue() {
@@ -69,6 +72,10 @@ export default function IssuePage() {
   }, [workspaceId, projectId, issueId, navigate]);
 
   async function handleUpdateStatus() {
+    if (isUpdatingStatus) {
+      return;
+    }
+
     setFormError('');
 
     if (!workspaceId || !projectId || !issueId) {
@@ -77,6 +84,8 @@ export default function IssuePage() {
     }
 
     try {
+      setIsUpdatingStatus(true);
+
       const updatedIssueData = await updateIssue(
         workspaceId,
         projectId,
@@ -104,10 +113,16 @@ export default function IssuePage() {
       } else {
         setFormError('Could not update issue');
       }
+    } finally {
+      setIsUpdatingStatus(false);
     }
   }
 
   async function handleDeleteIssue() {
+    if (isDeletingIssue) {
+      return;
+    }
+
     setFormError('');
 
     if (!workspaceId || !projectId || !issueId) {
@@ -124,6 +139,8 @@ export default function IssuePage() {
     }
 
     try {
+      setIsDeletingIssue(true);
+
       await deleteIssue(workspaceId, projectId, issueId);
 
       navigate(`/workspaces/${workspaceId}/projects/${projectId}`);
@@ -139,11 +156,18 @@ export default function IssuePage() {
       } else {
         setFormError('Could not delete issue');
       }
+    } finally {
+      setIsDeletingIssue(false);
     }
   }
 
   async function handleUpdateIssueDetails(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
+    if (isUpdatingIssueDetails) {
+      return;
+    }
+
     setFormError('');
 
     if (!workspaceId || !projectId || !issueId) {
@@ -152,6 +176,8 @@ export default function IssuePage() {
     }
 
     try {
+      setIsUpdatingIssueDetails(true);
+
       const updatedIssueData = await updateIssue(
         workspaceId,
         projectId,
@@ -184,6 +210,8 @@ export default function IssuePage() {
       } else {
         setFormError('Could not update issue');
       }
+    } finally {
+      setIsUpdatingIssueDetails(false);
     }
   }
 
@@ -208,18 +236,22 @@ export default function IssuePage() {
           status={newStatus}
           onStatusChange={setNewStatus}
           onSubmit={handleUpdateStatus}
+          isSubmitting={isUpdatingStatus}
         />
 
         <IssueEditForm
           editIssueInfo={editIssueInfo}
           onEditIssueChange={setEditIssueInfo}
           onSubmit={handleUpdateIssueDetails}
+          isSubmitting={isUpdatingIssueDetails}
         />
       </div>
 
       <DangerZone
         message='Deleting this issue cannot be undone.'
         buttonText='Delete issue'
+        submittingText='Deleting...'
+        isSubmitting={isDeletingIssue}
         onDelete={handleDeleteIssue}
         fullWidth
       />

@@ -11,14 +11,17 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [formError, setFormError] = useState('');
   const [registered, setRegistered] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useRedirectIfLoggedIn();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (isSubmitting) return;
     setFormError('');
 
     try {
+      setIsSubmitting(true);
       await registerUser(name, email, password);
       setRegistered(true);
     } catch (error: unknown) {
@@ -27,6 +30,8 @@ export default function RegisterPage() {
       } else {
         setFormError('Could not connect to server');
       }
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -85,8 +90,8 @@ export default function RegisterPage() {
           onChange={(e) => setPassword(e.target.value)}
           className='w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 placeholder:text-slate-400 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
         />
-        <PrimaryButton type='submit' fullWidth>
-          Register
+        <PrimaryButton type='submit' fullWidth disabled={isSubmitting}>
+          {isSubmitting ? 'Logging in...' : 'Login'}
         </PrimaryButton>
       </form>
       <p className='text-center text-sm text-slate-500'>

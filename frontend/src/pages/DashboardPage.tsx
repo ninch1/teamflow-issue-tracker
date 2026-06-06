@@ -20,6 +20,7 @@ export default function DashboardPage() {
   const [pageError, setPageError] = useState('');
   const [formError, setFormError] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [isCreatingWorkspace, setIsCreatingWorkspace] = useState(false);
   const [newWorkspaceInfo, setNewWorkspaceInfo] = useState<NewWorkspace>({
     name: '',
     description: '',
@@ -60,9 +61,16 @@ export default function DashboardPage() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
+    if (isCreatingWorkspace) {
+      return;
+    }
+
     setFormError('');
 
     try {
+      setIsCreatingWorkspace(true);
+
       const newWorkspace = await createWorkspace(
         newWorkspaceInfo.name,
         newWorkspaceInfo.description,
@@ -86,6 +94,8 @@ export default function DashboardPage() {
       } else {
         setFormError('Could not create workspace');
       }
+    } finally {
+      setIsCreatingWorkspace(false);
     }
   }
 
@@ -133,6 +143,7 @@ export default function DashboardPage() {
                   setShowCreateForm(false);
                   setFormError('');
                 }}
+                isSubmitting={isCreatingWorkspace}
               />
             ) : (
               <AddWorkspaceCard onClick={() => setShowCreateForm(true)} />

@@ -7,12 +7,14 @@ type WorkspaceEditFormProps = {
     React.SetStateAction<EditWorkspaceInfo>
   >;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
+  isSubmitting: boolean;
 };
 
 export default function WorkspaceEditForm({
   editWorkspaceInfo,
   onEditWorkspaceChange,
   onSubmit,
+  isSubmitting,
 }: WorkspaceEditFormProps) {
   return (
     <div className='mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
@@ -48,7 +50,9 @@ export default function WorkspaceEditForm({
         />
 
         <div className='md:col-span-2'>
-          <PrimaryButton type='submit'>Save changes</PrimaryButton>
+          <PrimaryButton type='submit' disabled={isSubmitting}>
+            {isSubmitting ? 'Saving...' : 'Save changes'}
+          </PrimaryButton>
         </div>
       </form>
     </div>

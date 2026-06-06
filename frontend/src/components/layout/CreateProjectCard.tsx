@@ -7,6 +7,7 @@ type CreateProjectCardProps = {
   onDescriptionChange: (value: string) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   onCancel: () => void;
+  isSubmitting: boolean;
 };
 
 export default function CreateProjectCard({
@@ -16,6 +17,7 @@ export default function CreateProjectCard({
   onDescriptionChange,
   onSubmit,
   onCancel,
+  isSubmitting,
 }: CreateProjectCardProps) {
   return (
     <div className='flex w-full flex-col gap-5 rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
@@ -42,14 +44,15 @@ export default function CreateProjectCard({
         />
 
         <div className='flex gap-2'>
-          <PrimaryButton type='submit' fullWidth>
-            Create
+          <PrimaryButton type='submit' fullWidth disabled={isSubmitting}>
+            {isSubmitting ? 'Creating...' : 'Create'}
           </PrimaryButton>
 
           <button
             type='button'
+            disabled={isSubmitting}
             onClick={onCancel}
-            className='flex-1 cursor-pointer rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100'
+            className='flex-1 cursor-pointer rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60'
           >
             Cancel
           </button>

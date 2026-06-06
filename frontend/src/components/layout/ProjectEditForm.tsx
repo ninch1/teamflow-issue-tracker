@@ -3,19 +3,16 @@ import type { EditProjectInfo } from '../../types/projectTypes';
 
 type ProjectEditFormProps = {
   editProjectInfo: EditProjectInfo;
-  onEditProjectChange: React.Dispatch<
-    React.SetStateAction<{
-      name: string;
-      description: string;
-    }>
-  >;
+  onEditProjectChange: React.Dispatch<React.SetStateAction<EditProjectInfo>>;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
+  isSubmitting: boolean;
 };
 
 export default function ProjectEditForm({
   editProjectInfo,
   onEditProjectChange,
   onSubmit,
+  isSubmitting,
 }: ProjectEditFormProps) {
   return (
     <div className='mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
@@ -51,7 +48,9 @@ export default function ProjectEditForm({
         />
 
         <div className='md:col-span-2'>
-          <PrimaryButton type='submit'>Save changes</PrimaryButton>
+          <PrimaryButton type='submit' disabled={isSubmitting}>
+            {isSubmitting ? 'Saving...' : 'Save changes'}
+          </PrimaryButton>
         </div>
       </form>
     </div>
