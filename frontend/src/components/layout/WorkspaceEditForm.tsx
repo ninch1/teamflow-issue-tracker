@@ -1,16 +1,11 @@
 import PrimaryButton from '../common/PrimaryButton';
-
-type EditWorkspace = {
-  name: string;
-  description: string;
-};
+import type { EditWorkspaceInfo } from '../../types/workspaceTypes';
 
 type WorkspaceEditFormProps = {
-  editWorkspaceInfo: {
-    name: string;
-    description: string;
-  };
-  onEditWorkspaceChange: React.Dispatch<React.SetStateAction<EditWorkspace>>;
+  editWorkspaceInfo: EditWorkspaceInfo;
+  onEditWorkspaceChange: React.Dispatch<
+    React.SetStateAction<EditWorkspaceInfo>
+  >;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
 };
 

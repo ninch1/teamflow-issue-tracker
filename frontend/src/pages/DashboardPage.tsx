@@ -8,15 +8,7 @@ import ErrorAlert from '../components/common/ErrorAlert';
 import ApiError from '../errors/ApiError';
 import { removeAuthToken } from '../utils/authToken';
 import LoadingCard from '../components/common/LoadingCard';
-
-type WorkspaceData = {
-  id: string;
-  name: string;
-  description: string | null;
-  role: string;
-  createdAt: string;
-  updatedAt: string;
-};
+import type { Workspace } from '../types/workspaceTypes';
 
 type NewWorkspace = {
   name: string;
@@ -24,9 +16,7 @@ type NewWorkspace = {
 };
 
 export default function DashboardPage() {
-  const [workspaceCardsData, setWorkspaceCardsData] = useState<WorkspaceData[]>(
-    [],
-  );
+  const [workspaceCardsData, setWorkspaceCardsData] = useState<Workspace[]>([]);
   const [pageError, setPageError] = useState('');
   const [formError, setFormError] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);

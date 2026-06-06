@@ -1,10 +1,9 @@
 import PrimaryButton from '../common/PrimaryButton';
+import type { IssueStatus } from '../../types/issueTypes';
 
 type IssueStatusSectionProps = {
-  status: 'TODO' | 'IN_PROGRESS' | 'DONE';
-  onStatusChange: React.Dispatch<
-    React.SetStateAction<'TODO' | 'IN_PROGRESS' | 'DONE'>
-  >;
+  status: IssueStatus;
+  onStatusChange: React.Dispatch<React.SetStateAction<IssueStatus>>;
   onSubmit(): Promise<void>;
 };
 
@@ -20,9 +19,7 @@ export default function IssueStatusSection({
       <div className='flex gap-3'>
         <select
           value={status}
-          onChange={(e) =>
-            onStatusChange(e.target.value as 'TODO' | 'IN_PROGRESS' | 'DONE')
-          }
+          onChange={(e) => onStatusChange(e.target.value as IssueStatus)}
           className='rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
         >
           <option value='TODO'>TODO</option>

@@ -9,36 +9,16 @@ import IssueStatusSection from '../components/layout/IssueStatusSection';
 import IssueEditForm from '../components/layout/IssueEditForm';
 import DangerZone from '../components/common/DangerZone';
 import LoadingCard from '../components/common/LoadingCard';
-
-type IssueType = {
-  id: string;
-  title: string;
-  description: string | null;
-  status: 'TODO' | 'IN_PROGRESS' | 'DONE';
-  priority: 'LOW' | 'MEDIUM' | 'HIGH';
-  type: 'BUG' | 'FEATURE' | 'TASK';
-  projectId: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-type EditIssueInfo = {
-  title: string;
-  description: string;
-  priority: 'LOW' | 'MEDIUM' | 'HIGH';
-  type: 'BUG' | 'FEATURE' | 'TASK';
-};
+import type { Issue, IssueStatus, EditIssueInfo } from '../types/issueTypes';
 
 export default function IssuePage() {
   const { workspaceId, projectId, issueId } = useParams();
   const navigate = useNavigate();
 
-  const [currentIssue, setCurrentIssue] = useState<IssueType | null>(null);
+  const [currentIssue, setCurrentIssue] = useState<Issue | null>(null);
   const [pageError, setPageError] = useState('');
   const [formError, setFormError] = useState('');
-  const [newStatus, setNewStatus] = useState<'TODO' | 'IN_PROGRESS' | 'DONE'>(
-    'TODO',
-  );
+  const [newStatus, setNewStatus] = useState<IssueStatus>('TODO');
   const [editIssueInfo, setEditIssueInfo] = useState<EditIssueInfo>({
     title: '',
     description: '',

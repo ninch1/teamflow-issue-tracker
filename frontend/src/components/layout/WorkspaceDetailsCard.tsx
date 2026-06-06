@@ -1,12 +1,7 @@
+import type { Workspace } from '../../types/workspaceTypes';
+
 type WorkspaceDetailsCardProps = {
-  workspace: {
-    id: string;
-    name: string;
-    description: string | null;
-    role: 'OWNER' | 'ADMIN' | 'MEMBER';
-    createdAt: string;
-    updatedAt: string;
-  };
+  workspace: Workspace;
 };
 
 export default function WorkspaceDetailsCard({

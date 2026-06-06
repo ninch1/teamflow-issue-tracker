@@ -16,29 +16,8 @@ import WorkspaceDetailsCard from '../components/layout/WorkspaceDetailsCard';
 import WorkspaceEditForm from '../components/layout/WorkspaceEditForm';
 import DangerZone from '../components/common/DangerZone';
 import LoadingCard from '../components/common/LoadingCard';
-
-type WorkspaceType = {
-  id: string;
-  name: string;
-  description: string | null;
-  role: 'OWNER' | 'ADMIN' | 'MEMBER';
-  createdAt: string;
-  updatedAt: string;
-};
-
-type EditWorkspace = {
-  name: string;
-  description: string;
-};
-
-type ProjectType = {
-  id: string;
-  name: string;
-  description: string | null;
-  workspaceId: string;
-  createdAt: string;
-  updatedAt: string;
-};
+import type { Project } from '../types/projectTypes';
+import type { Workspace, EditWorkspaceInfo } from '../types/workspaceTypes';
 
 type NewProject = {
   name: string;
@@ -49,9 +28,10 @@ export default function WorkspacePage() {
   const { workspaceId } = useParams();
   const navigate = useNavigate();
 
-  const [currentWorkspace, setCurrentWorkspace] =
-    useState<WorkspaceType | null>(null);
-  const [currentProjects, setCurrentProjects] = useState<ProjectType[]>([]);
+  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(
+    null,
+  );
+  const [currentProjects, setCurrentProjects] = useState<Project[]>([]);
   const [pageError, setPageError] = useState('');
   const [formError, setFormError] = useState('');
   const [showCreateProjectForm, setShowCreateProjectForm] = useState(false);
@@ -59,10 +39,12 @@ export default function WorkspacePage() {
     name: '',
     description: '',
   });
-  const [editWorkspaceInfo, setEditWorkspaceInfo] = useState<EditWorkspace>({
-    name: '',
-    description: '',
-  });
+  const [editWorkspaceInfo, setEditWorkspaceInfo] = useState<EditWorkspaceInfo>(
+    {
+      name: '',
+      description: '',
+    },
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

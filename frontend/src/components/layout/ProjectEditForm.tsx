@@ -1,7 +1,8 @@
 import PrimaryButton from '../common/PrimaryButton';
+import type { EditProjectInfo } from '../../types/projectTypes';
 
 type ProjectEditFormProps = {
-  editProjectInfo: { name: string; description: string };
+  editProjectInfo: EditProjectInfo;
   onEditProjectChange: React.Dispatch<
     React.SetStateAction<{
       name: string;

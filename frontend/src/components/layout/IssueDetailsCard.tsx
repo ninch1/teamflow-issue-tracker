@@ -3,19 +3,10 @@ import {
   getPriorityClass,
   getTypeClass,
 } from '../../utils/issueBadgeStyles';
+import type { Issue } from '../../types/issueTypes';
 
 type IssueDetailsCardProps = {
-  issue: {
-    id: string;
-    title: string;
-    description: string | null;
-    status: 'TODO' | 'IN_PROGRESS' | 'DONE';
-    priority: 'LOW' | 'MEDIUM' | 'HIGH';
-    type: 'BUG' | 'FEATURE' | 'TASK';
-    projectId: string;
-    createdAt: string;
-    updatedAt: string;
-  };
+  issue: Issue;
 };
 
 export default function IssueDetailsCard({ issue }: IssueDetailsCardProps) {

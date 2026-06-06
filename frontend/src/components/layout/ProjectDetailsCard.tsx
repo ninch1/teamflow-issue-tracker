@@ -1,12 +1,7 @@
+import type { Project } from '../../types/projectTypes';
+
 type ProjectDetailsCardProps = {
-  project: {
-    id: string;
-    name: string;
-    description: string | null;
-    workspaceId: string;
-    createdAt: string;
-    updatedAt: string;
-  };
+  project: Project;
 };
 
 export default function ProjectDetailsCard({

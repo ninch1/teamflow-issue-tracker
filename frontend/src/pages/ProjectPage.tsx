@@ -13,42 +13,23 @@ import ProjectEditForm from '../components/layout/ProjectEditForm';
 import DangerZone from '../components/common/DangerZone';
 import LoadingCard from '../components/common/LoadingCard';
 import SearchInput from '../components/common/SearchInput';
+import type {
+  Issue,
+  IssuePriority,
+  IssueStatus,
+  IssueType,
+  EditIssueInfo,
+} from '../types/issueTypes';
+import type { Project, EditProjectInfo } from '../types/projectTypes';
 
-type ProjectType = {
-  id: string;
-  name: string;
-  description: string | null;
-  workspaceId: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-type IssueType = {
-  id: string;
-  title: string;
-  description: string | null;
-  status: string;
-  priority: string;
-  projectId: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-type NewIssue = {
-  title: string;
-  description: string;
-  priority: 'LOW' | 'MEDIUM' | 'HIGH';
-  type: 'BUG' | 'FEATURE' | 'TASK';
-};
+type NewIssue = EditIssueInfo;
 
 export default function ProjectPage() {
   const { workspaceId, projectId } = useParams();
   const navigate = useNavigate();
 
-  const [currentProject, setCurrentProject] = useState<ProjectType | null>(
-    null,
-  );
-  const [issues, setIssues] = useState<IssueType[]>([]);
+  const [currentProject, setCurrentProject] = useState<Project | null>(null);
+  const [issues, setIssues] = useState<Issue[]>([]);
   const [pageError, setPageError] = useState('');
   const [formError, setFormError] = useState('');
   const [showCreateIssueForm, setShowIssueForm] = useState(false);
@@ -58,20 +39,16 @@ export default function ProjectPage() {
     priority: 'MEDIUM',
     type: 'TASK',
   });
-  const [editProjectInfo, setEditProjectInfo] = useState({
+  const [editProjectInfo, setEditProjectInfo] = useState<EditProjectInfo>({
     name: '',
     description: '',
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<
-    'ALL' | 'TODO' | 'IN_PROGRESS' | 'DONE'
-  >('ALL');
-  const [priorityFilter, setPriorityFilter] = useState<
-    'ALL' | 'LOW' | 'MEDIUM' | 'HIGH'
-  >('ALL');
-  const [typeFilter, setTypeFilter] = useState<
-    'ALL' | 'BUG' | 'FEATURE' | 'TASK'
-  >('ALL');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | IssueStatus>('ALL');
+  const [priorityFilter, setPriorityFilter] = useState<'ALL' | IssuePriority>(
+    'ALL',
+  );
+  const [typeFilter, setTypeFilter] = useState<'ALL' | IssueType>('ALL');
   const [isIssuesLoading, setIsIssuesLoading] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [debouncedSearchValue, setDebouncedSearchValue] = useState('');

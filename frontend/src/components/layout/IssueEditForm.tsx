@@ -1,14 +1,5 @@
 import PrimaryButton from '../common/PrimaryButton';
-
-type IssuePriority = 'LOW' | 'MEDIUM' | 'HIGH';
-type IssueType = 'BUG' | 'FEATURE' | 'TASK';
-
-type EditIssueInfo = {
-  title: string;
-  description: string;
-  priority: IssuePriority;
-  type: IssueType;
-};
+import type { EditIssueInfo } from '../../types/issueTypes';
 
 type IssueEditFormProps = {
   editIssueInfo: EditIssueInfo;

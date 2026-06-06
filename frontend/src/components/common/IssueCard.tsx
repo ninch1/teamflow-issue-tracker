@@ -1,18 +1,10 @@
 import { Link } from 'react-router-dom';
 import { getStatusClass, getPriorityClass } from '../../utils/issueBadgeStyles';
+import type { Issue } from '../../types/issueTypes';
 
 type IssueCardProps = {
   workspaceId: string;
-  issueInfo: {
-    id: string;
-    title: string;
-    description: string | null;
-    status: string;
-    priority: string;
-    projectId: string;
-    createdAt: string;
-    updatedAt: string;
-  };
+  issueInfo: Issue;
 };
 
 export default function IssueCard({ workspaceId, issueInfo }: IssueCardProps) {

@@ -1,11 +1,12 @@
 import ApiError from '../errors/ApiError';
 import { getAuthToken } from '../utils/authToken';
+import type {
+  IssueStatus,
+  IssuePriority,
+  IssueType,
+} from '../types/issueTypes';
 
 const BASE_URL = 'http://localhost:3000/api/workspace';
-
-type IssueStatus = 'TODO' | 'IN_PROGRESS' | 'DONE';
-type IssuePriority = 'LOW' | 'MEDIUM' | 'HIGH';
-type IssueType = 'BUG' | 'FEATURE' | 'TASK';
 
 type UpdateIssuePayload = {
   title?: string;
@@ -19,9 +20,9 @@ type UpdateIssuePayload = {
 export const getIssues = async (
   workspaceId: string,
   projectId: string,
-  statusFilter?: 'TODO' | 'IN_PROGRESS' | 'DONE',
-  priorityFilter?: 'LOW' | 'MEDIUM' | 'HIGH',
-  typeFilter?: 'BUG' | 'FEATURE' | 'TASK',
+  statusFilter?: IssueStatus,
+  priorityFilter?: IssuePriority,
+  typeFilter?: IssueType,
   search?: string,
 ) => {
   const token = getAuthToken();
