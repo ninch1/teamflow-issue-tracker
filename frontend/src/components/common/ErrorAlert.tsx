@@ -9,7 +9,7 @@ export default function ErrorAlert({ message, onClose }: ErrorAlertProps) {
   }
 
   return (
-    <div className='mt-5 flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600'>
+    <div className='mb-5 flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600'>
       <p>{message}</p>
 
       <button

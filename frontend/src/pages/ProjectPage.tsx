@@ -33,6 +33,7 @@ export default function ProjectPage() {
   const [pageError, setPageError] = useState('');
   const [formError, setFormError] = useState('');
   const [showCreateIssueForm, setShowIssueForm] = useState(false);
+  const [isCreatingIssue, setIsCreatingIssue] = useState(false);
   const [newIssueInfo, setNewIssueInfo] = useState<NewIssue>({
     title: '',
     description: '',
@@ -151,6 +152,11 @@ export default function ProjectPage() {
 
   async function handleCreateIssue(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
+    if (isCreatingIssue) {
+      return;
+    }
+
     setFormError('');
 
     if (!workspaceId || !projectId) {
@@ -159,6 +165,8 @@ export default function ProjectPage() {
     }
 
     try {
+      setIsCreatingIssue(true);
+
       const newIssueData = await createIssue(
         workspaceId,
         projectId,
@@ -187,7 +195,13 @@ export default function ProjectPage() {
       const matchesType =
         typeFilter === 'ALL' || createdIssue.type === typeFilter;
 
-      if (matchesStatus && matchesPriority && matchesType) {
+      const matchesSearch =
+        debouncedSearchValue.trim() === '' ||
+        createdIssue.title
+          .toLowerCase()
+          .includes(debouncedSearchValue.trim().toLowerCase());
+
+      if (matchesStatus && matchesPriority && matchesType && matchesSearch) {
         setIssues((prev) => [...prev, createdIssue]);
       }
     } catch (error: unknown) {
@@ -202,6 +216,8 @@ export default function ProjectPage() {
       } else {
         setFormError('Could not create issue');
       }
+    } finally {
+      setIsCreatingIssue(false);
     }
   }
 
@@ -408,6 +424,7 @@ export default function ProjectPage() {
                     setFormError('');
                     setShowIssueForm(false);
                   }}
+                  isSubmitting={isCreatingIssue}
                 />
               )}
 

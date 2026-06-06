@@ -11,6 +11,7 @@ type CreateIssueCardProps = {
   type: 'BUG' | 'FEATURE' | 'TASK';
   onPriorityChange: (value: 'LOW' | 'MEDIUM' | 'HIGH') => void;
   onTypeChange: (value: 'BUG' | 'FEATURE' | 'TASK') => void;
+  isSubmitting: boolean;
 };
 
 export default function CreateIssueCard({
@@ -24,6 +25,7 @@ export default function CreateIssueCard({
   onTypeChange,
   onSubmit,
   onCancel,
+  isSubmitting,
 }: CreateIssueCardProps) {
   return (
     <div className='flex w-full flex-col gap-5 rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
@@ -74,12 +76,13 @@ export default function CreateIssueCard({
         </select>
 
         <div className='flex gap-2'>
-          <PrimaryButton type='submit' fullWidth>
-            Create
+          <PrimaryButton disabled={isSubmitting} type='submit' fullWidth>
+            {isSubmitting ? 'Creating...' : 'Create'}
           </PrimaryButton>
 
           <button
             type='button'
+            disabled={isSubmitting}
             onClick={onCancel}
             className='flex-1 cursor-pointer rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100'
           >
