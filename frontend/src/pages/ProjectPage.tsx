@@ -57,6 +57,20 @@ export default function ProjectPage() {
   const [searchValue, setSearchValue] = useState('');
   const [debouncedSearchValue, setDebouncedSearchValue] = useState('');
 
+  const hasActiveFilters =
+    statusFilter !== 'ALL' ||
+    priorityFilter !== 'ALL' ||
+    typeFilter !== 'ALL' ||
+    searchValue.trim() !== '';
+
+  function handleResetFilters() {
+    setStatusFilter('ALL');
+    setPriorityFilter('ALL');
+    setTypeFilter('ALL');
+    setSearchValue('');
+    setDebouncedSearchValue('');
+  }
+
   useEffect(() => {
     async function initialProject() {
       try {
@@ -402,6 +416,16 @@ export default function ProjectPage() {
               <option value='FEATURE'>Feature</option>
               <option value='TASK'>Task</option>
             </select>
+
+            {hasActiveFilters && (
+              <button
+                type='button'
+                onClick={handleResetFilters}
+                className='rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100'
+              >
+                Reset filters
+              </button>
+            )}
 
             {!showCreateIssueForm && (
               <PrimaryButton onClick={() => setShowIssueForm(true)}>
