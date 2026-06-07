@@ -63,6 +63,10 @@ export default function ProjectPage() {
     typeFilter !== 'ALL' ||
     searchValue.trim() !== '';
 
+  const issueCountText = hasActiveFilters
+    ? `Showing ${issues.length} issue${issues.length === 1 ? '' : 's'}`
+    : `${issues.length} total issue${issues.length === 1 ? '' : 's'}`;
+
   function handleResetFilters() {
     setStatusFilter('ALL');
     setPriorityFilter('ALL');
@@ -367,7 +371,8 @@ export default function ProjectPage() {
               Issues
             </h2>
             <p className='pr-5 text-sm text-slate-500'>
-              Track tasks, bugs, and feature work inside this project.
+              Track tasks, bugs, and feature work inside this project.{' '}
+              {issueCountText}.
             </p>
           </div>
 
