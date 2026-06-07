@@ -181,6 +181,12 @@ export default function ProjectPage() {
     }
 
     setFormError('');
+    setSuccessMessage('');
+
+    if (!newIssueInfo.title.trim()) {
+      setFormError('Issue title is required');
+      return;
+    }
 
     if (!workspaceId || !projectId) {
       setFormError('Project not found');
@@ -253,6 +259,11 @@ export default function ProjectPage() {
 
     setFormError('');
     setSuccessMessage('');
+
+    if (!editProjectInfo.name.trim()) {
+      setFormError('Project name is required');
+      return;
+    }
 
     if (!workspaceId || !projectId) {
       setFormError('Project not found');

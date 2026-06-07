@@ -9,6 +9,7 @@ import ApiError from '../errors/ApiError';
 import { removeAuthToken } from '../utils/authToken';
 import LoadingCard from '../components/common/LoadingCard';
 import type { Workspace } from '../types/workspaceTypes';
+import SuccessAlert from '../components/common/SuccessAlert';
 
 type NewWorkspace = {
   name: string;
@@ -26,6 +27,7 @@ export default function DashboardPage() {
     description: '',
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const navigate = useNavigate();
 
@@ -67,6 +69,12 @@ export default function DashboardPage() {
     }
 
     setFormError('');
+    setSuccessMessage('');
+
+    if (!newWorkspaceInfo.name.trim()) {
+      setFormError('Workspace name is required');
+      return;
+    }
 
     try {
       setIsCreatingWorkspace(true);
@@ -82,6 +90,7 @@ export default function DashboardPage() {
 
       setNewWorkspaceInfo({ name: '', description: '' });
       setShowCreateForm(false);
+      setSuccessMessage('Workspace created successfully.');
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
         removeAuthToken();
@@ -98,6 +107,18 @@ export default function DashboardPage() {
       setIsCreatingWorkspace(false);
     }
   }
+
+  useEffect(() => {
+    if (!successMessage) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setSuccessMessage('');
+    }, 3000);
+
+    return () => clearTimeout(timeoutId);
+  }, [successMessage]);
 
   if (isLoading) {
     return <LoadingCard message='Loading dashboard...' />;
@@ -122,42 +143,47 @@ export default function DashboardPage() {
           <ErrorAlert message={formError} onClose={() => setFormError('')} />
         )}
 
-        {workspaceCardsData.length > 0 && (
-          <div className='grid gap-4 pt-2.5 sm:grid-cols-2 lg:grid-cols-3'>
-            {showCreateForm ? (
-              <CreateWorkspaceCard
-                name={newWorkspaceInfo.name}
-                description={newWorkspaceInfo.description}
-                onNameChange={(value) =>
-                  setNewWorkspaceInfo((prev) => ({ ...prev, name: value }))
-                }
-                onDescriptionChange={(value) =>
-                  setNewWorkspaceInfo((prev) => ({
-                    ...prev,
-                    description: value,
-                  }))
-                }
-                onSubmit={handleSubmit}
-                onCancel={() => {
-                  setNewWorkspaceInfo({ name: '', description: '' });
-                  setShowCreateForm(false);
-                  setFormError('');
-                }}
-                isSubmitting={isCreatingWorkspace}
-              />
-            ) : (
-              <AddWorkspaceCard onClick={() => setShowCreateForm(true)} />
-            )}
-
-            {workspaceCardsData.map((data) => (
-              <WorkspaceCard key={data.id} workspaceInfo={data} />
-            ))}
-          </div>
+        {successMessage && (
+          <SuccessAlert
+            message={successMessage}
+            onClose={() => setSuccessMessage('')}
+          />
         )}
 
-        {workspaceCardsData.length === 0 && (
-          <p className='rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600'>
-            No workspaces yet.
+        <div className='grid gap-4 pt-2.5 sm:grid-cols-2 lg:grid-cols-3'>
+          {showCreateForm ? (
+            <CreateWorkspaceCard
+              name={newWorkspaceInfo.name}
+              description={newWorkspaceInfo.description}
+              onNameChange={(value) =>
+                setNewWorkspaceInfo((prev) => ({ ...prev, name: value }))
+              }
+              onDescriptionChange={(value) =>
+                setNewWorkspaceInfo((prev) => ({
+                  ...prev,
+                  description: value,
+                }))
+              }
+              onSubmit={handleSubmit}
+              onCancel={() => {
+                setNewWorkspaceInfo({ name: '', description: '' });
+                setShowCreateForm(false);
+                setFormError('');
+              }}
+              isSubmitting={isCreatingWorkspace}
+            />
+          ) : (
+            <AddWorkspaceCard onClick={() => setShowCreateForm(true)} />
+          )}
+
+          {workspaceCardsData.map((data) => (
+            <WorkspaceCard key={data.id} workspaceInfo={data} />
+          ))}
+        </div>
+
+        {workspaceCardsData.length === 0 && !showCreateForm && (
+          <p className='mt-5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600'>
+            No workspaces yet. Create your first workspace to get started.
           </p>
         )}
       </main>

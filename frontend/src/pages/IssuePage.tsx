@@ -129,6 +129,7 @@ export default function IssuePage() {
     }
 
     setFormError('');
+    setSuccessMessage('');
 
     if (!workspaceId || !projectId || !issueId) {
       setFormError('Issue not found');
@@ -175,6 +176,11 @@ export default function IssuePage() {
 
     setFormError('');
     setSuccessMessage('');
+
+    if (!editIssueInfo.title.trim()) {
+      setFormError('Issue title is required');
+      return;
+    }
 
     if (!workspaceId || !projectId || !issueId) {
       setFormError('Issue not found');

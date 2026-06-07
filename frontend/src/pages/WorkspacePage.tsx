@@ -101,6 +101,12 @@ export default function WorkspacePage() {
     }
 
     setFormError('');
+    setSuccessMessage('');
+
+    if (!newProjectInfo.name.trim()) {
+      setFormError('Project name is required');
+      return;
+    }
 
     if (!workspaceId) {
       setFormError('Workspace not found');
@@ -120,6 +126,8 @@ export default function WorkspacePage() {
       setShowCreateProjectForm(false);
 
       setCurrentProjects((prev) => [...prev, newProjectData.project]);
+
+      setSuccessMessage('Created new project.');
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
         removeAuthToken();
@@ -146,6 +154,11 @@ export default function WorkspacePage() {
 
     setFormError('');
     setSuccessMessage('');
+
+    if (!editWorkspaceInfo.name.trim()) {
+      setFormError('Workspace name is required');
+      return;
+    }
 
     if (!workspaceId) {
       setFormError('Workspace not found');
@@ -190,6 +203,7 @@ export default function WorkspacePage() {
     }
 
     setFormError('');
+    setSuccessMessage('');
 
     if (!workspaceId) {
       setFormError('Workspace not found');
@@ -275,6 +289,7 @@ export default function WorkspacePage() {
 
       <DangerZone
         buttonText='Delete workspace'
+        submittingText='Deleting...'
         isSubmitting={isDeletingWorkspace}
         message='Deleting this workspace cannot be undone. All projects and issues inside this workspace will be removed.'
         onDelete={handleDeleteWorkspace}
