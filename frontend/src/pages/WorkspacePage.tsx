@@ -227,6 +227,18 @@ export default function WorkspacePage() {
     }
   }
 
+  useEffect(() => {
+    if (!successMessage) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setSuccessMessage('');
+    }, 3000);
+
+    return () => clearTimeout(timeoutId);
+  }, [successMessage]);
+
   if (isLoading) {
     return <LoadingCard message='Loading workspace...' />;
   }

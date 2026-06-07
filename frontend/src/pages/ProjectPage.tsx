@@ -334,6 +334,18 @@ export default function ProjectPage() {
     }
   }
 
+  useEffect(() => {
+    if (!successMessage) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setSuccessMessage('');
+    }, 3000);
+
+    return () => clearTimeout(timeoutId);
+  }, [successMessage]);
+
   if (isLoading) {
     return <LoadingCard message='Loading project...' />;
   }
