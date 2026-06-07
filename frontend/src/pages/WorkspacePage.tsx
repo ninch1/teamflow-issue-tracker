@@ -19,6 +19,7 @@ import LoadingCard from '../components/common/LoadingCard';
 import type { Project } from '../types/projectTypes';
 import type { Workspace, EditWorkspaceInfo } from '../types/workspaceTypes';
 import BackLink from '../components/common/BackLink';
+import SuccessAlert from '../components/common/SuccessAlert';
 
 type NewProject = {
   name: string;
@@ -50,6 +51,7 @@ export default function WorkspacePage() {
   const [isCreatingProject, setIsCreatingProject] = useState(false);
   const [isUpdatingWorkspace, setIsUpdatingWorkspace] = useState(false);
   const [isDeletingWorkspace, setIsDeletingWorkspace] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     async function initialWorkspace() {
@@ -143,6 +145,7 @@ export default function WorkspacePage() {
     }
 
     setFormError('');
+    setSuccessMessage('');
 
     if (!workspaceId) {
       setFormError('Workspace not found');
@@ -163,6 +166,7 @@ export default function WorkspacePage() {
         name: updatedWorkspaceData.workspace.name,
         description: updatedWorkspaceData.workspace.description || '',
       });
+      setSuccessMessage('Workspace saved successfully.');
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
         removeAuthToken();
@@ -237,6 +241,13 @@ export default function WorkspacePage() {
 
       {formError && (
         <ErrorAlert message={formError} onClose={() => setFormError('')} />
+      )}
+
+      {successMessage && (
+        <SuccessAlert
+          message={successMessage}
+          onClose={() => setSuccessMessage('')}
+        />
       )}
 
       {currentWorkspace && (

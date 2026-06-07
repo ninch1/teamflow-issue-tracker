@@ -11,6 +11,7 @@ import DangerZone from '../components/common/DangerZone';
 import LoadingCard from '../components/common/LoadingCard';
 import type { Issue, IssueStatus, EditIssueInfo } from '../types/issueTypes';
 import BackLink from '../components/common/BackLink';
+import SuccessAlert from '../components/common/SuccessAlert';
 
 export default function IssuePage() {
   const { workspaceId, projectId, issueId } = useParams();
@@ -30,6 +31,7 @@ export default function IssuePage() {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [isUpdatingIssueDetails, setIsUpdatingIssueDetails] = useState(false);
   const [isDeletingIssue, setIsDeletingIssue] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     async function initialIssue() {
@@ -78,6 +80,7 @@ export default function IssuePage() {
     }
 
     setFormError('');
+    setSuccessMessage('');
 
     if (!workspaceId || !projectId || !issueId) {
       setFormError('Issue not found');
@@ -102,6 +105,7 @@ export default function IssuePage() {
         priority: updatedIssueData.issue.priority,
         type: updatedIssueData.issue.type,
       });
+      setSuccessMessage('Status updated successfully.');
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
         removeAuthToken();
@@ -170,6 +174,7 @@ export default function IssuePage() {
     }
 
     setFormError('');
+    setSuccessMessage('');
 
     if (!workspaceId || !projectId || !issueId) {
       setFormError('Issue not found');
@@ -199,6 +204,7 @@ export default function IssuePage() {
         priority: updatedIssueData.issue.priority,
         type: updatedIssueData.issue.type,
       });
+      setSuccessMessage('Issue updated successfully.');
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
         removeAuthToken();
@@ -232,6 +238,13 @@ export default function IssuePage() {
 
       {formError && (
         <ErrorAlert message={formError} onClose={() => setFormError('')} />
+      )}
+
+      {successMessage && (
+        <SuccessAlert
+          message={successMessage}
+          onClose={() => setSuccessMessage('')}
+        />
       )}
 
       {currentIssue && <IssueDetailsCard issue={currentIssue} />}

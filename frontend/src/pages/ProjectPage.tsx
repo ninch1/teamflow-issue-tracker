@@ -22,6 +22,7 @@ import type {
 } from '../types/issueTypes';
 import type { Project, EditProjectInfo } from '../types/projectTypes';
 import BackLink from '../components/common/BackLink';
+import SuccessAlert from '../components/common/SuccessAlert';
 
 type NewIssue = EditIssueInfo;
 
@@ -56,6 +57,7 @@ export default function ProjectPage() {
   const [isIssuesLoading, setIsIssuesLoading] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [debouncedSearchValue, setDebouncedSearchValue] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const hasActiveFilters =
     statusFilter !== 'ALL' ||
@@ -250,6 +252,7 @@ export default function ProjectPage() {
     }
 
     setFormError('');
+    setSuccessMessage('');
 
     if (!workspaceId || !projectId) {
       setFormError('Project not found');
@@ -270,6 +273,7 @@ export default function ProjectPage() {
         name: updatedProjectData.project.name,
         description: updatedProjectData.project.description || '',
       });
+      setSuccessMessage('Project saved successfully.');
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
         removeAuthToken();
@@ -344,6 +348,13 @@ export default function ProjectPage() {
 
       {formError && (
         <ErrorAlert message={formError} onClose={() => setFormError('')} />
+      )}
+
+      {successMessage && (
+        <SuccessAlert
+          message={successMessage}
+          onClose={() => setSuccessMessage('')}
+        />
       )}
 
       {currentProject && <ProjectDetailsCard project={currentProject} />}
