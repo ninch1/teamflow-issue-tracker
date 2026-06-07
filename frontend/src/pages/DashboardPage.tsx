@@ -84,9 +84,7 @@ export default function DashboardPage() {
         newWorkspaceInfo.description,
       );
 
-      setWorkspaceCardsData((prev) => {
-        return [...prev, newWorkspace.workspace];
-      });
+      setWorkspaceCardsData((prev) => [...prev, newWorkspace.workspace]);
 
       setNewWorkspaceInfo({ name: '', description: '' });
       setShowCreateForm(false);
@@ -126,31 +124,47 @@ export default function DashboardPage() {
 
   return (
     <div className='w-full max-w-6xl'>
-      <h1 className='mb-10 text-3xl font-semibold tracking-[-0.04em] text-slate-950'>
-        Dashboard
-      </h1>
+      <div className='rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
+        <p className='mb-2 text-sm text-slate-500'>Dashboard</p>
 
-      <h2 className='mb-5 text-2xl tracking-[-0.04em] text-slate-950'>
-        Your Workspaces
-      </h2>
+        <h1 className='text-3xl font-semibold tracking-[-0.04em] text-slate-950'>
+          Your workspaces
+        </h1>
 
-      <main>
-        {pageError && (
-          <ErrorAlert message={pageError} onClose={() => setPageError('')} />
-        )}
+        <p className='mt-2 text-sm text-slate-500'>
+          Manage your workspaces, projects, and issues from one place.
+        </p>
+      </div>
 
-        {formError && (
-          <ErrorAlert message={formError} onClose={() => setFormError('')} />
-        )}
+      {pageError && (
+        <ErrorAlert message={pageError} onClose={() => setPageError('')} />
+      )}
 
-        {successMessage && (
-          <SuccessAlert
-            message={successMessage}
-            onClose={() => setSuccessMessage('')}
-          />
-        )}
+      {formError && (
+        <ErrorAlert message={formError} onClose={() => setFormError('')} />
+      )}
 
-        <div className='grid gap-4 pt-2.5 sm:grid-cols-2 lg:grid-cols-3'>
+      {successMessage && (
+        <SuccessAlert
+          message={successMessage}
+          onClose={() => setSuccessMessage('')}
+        />
+      )}
+
+      <main className='mt-8'>
+        <div className='flex items-center justify-between'>
+          <div>
+            <h2 className='text-2xl font-medium tracking-[-0.04em] text-slate-950'>
+              Workspaces
+            </h2>
+
+            <p className='text-sm text-slate-500'>
+              Choose a workspace or create a new one.
+            </p>
+          </div>
+        </div>
+
+        <div className='mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
           {showCreateForm ? (
             <CreateWorkspaceCard
               name={newWorkspaceInfo.name}

@@ -267,7 +267,7 @@ export default function IssuePage() {
 
       {currentIssue && <IssueDetailsCard issue={currentIssue} />}
 
-      <div className='mb-5 mt-8 flex flex-col gap-5 lg:flex-row'>
+      <div className='my-8 flex flex-col gap-5 lg:flex-row'>
         <IssueStatusSection
           status={newStatus}
           onStatusChange={setNewStatus}

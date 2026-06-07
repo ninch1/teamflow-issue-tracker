@@ -127,7 +127,7 @@ export default function WorkspacePage() {
 
       setCurrentProjects((prev) => [...prev, newProjectData.project]);
 
-      setSuccessMessage('Created new project.');
+      setSuccessMessage('Project created successfully.');
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
         removeAuthToken();
@@ -296,8 +296,8 @@ export default function WorkspacePage() {
         fullWidth
       />
 
-      <div className='mt-5'>
-        <div className='flex items-center justify-between'>
+      <main className='mt-5'>
+        <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
           <div>
             <h2 className='text-2xl font-medium tracking-[-0.04em] text-slate-950'>
               Projects
@@ -345,7 +345,7 @@ export default function WorkspacePage() {
             No projects yet. Create your first project to start tracking work.
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

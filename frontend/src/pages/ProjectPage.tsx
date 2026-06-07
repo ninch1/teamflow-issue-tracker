@@ -309,6 +309,7 @@ export default function ProjectPage() {
     }
 
     setFormError('');
+    setSuccessMessage('');
 
     if (!workspaceId || !projectId) {
       setFormError('Project not found');
@@ -399,7 +400,7 @@ export default function ProjectPage() {
         fullWidth
       />
 
-      <div className='mt-5'>
+      <main className='mt-8'>
         <IssueFiltersBar
           issueCountText={issueCountText}
           statusFilter={statusFilter}
@@ -478,7 +479,7 @@ export default function ProjectPage() {
             )}
           </>
         )}
-      </div>
+      </main>
     </div>
   );
 }
