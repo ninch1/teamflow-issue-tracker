@@ -21,6 +21,7 @@ import type {
   EditIssueInfo,
 } from '../types/issueTypes';
 import type { Project, EditProjectInfo } from '../types/projectTypes';
+import BackLink from '../components/common/BackLink';
 
 type NewIssue = EditIssueInfo;
 
@@ -317,6 +318,8 @@ export default function ProjectPage() {
 
   return (
     <div className='w-full max-w-6xl'>
+      <BackLink to={`/workspaces/${workspaceId}`}>Back to workspace</BackLink>
+
       {pageError && (
         <ErrorAlert message={pageError} onClose={() => setPageError('')} />
       )}

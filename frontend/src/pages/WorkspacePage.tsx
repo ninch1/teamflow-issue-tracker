@@ -18,6 +18,7 @@ import DangerZone from '../components/common/DangerZone';
 import LoadingCard from '../components/common/LoadingCard';
 import type { Project } from '../types/projectTypes';
 import type { Workspace, EditWorkspaceInfo } from '../types/workspaceTypes';
+import BackLink from '../components/common/BackLink';
 
 type NewProject = {
   name: string;
@@ -228,6 +229,8 @@ export default function WorkspacePage() {
 
   return (
     <div className='w-full max-w-6xl'>
+      <BackLink to='/dashboard'>Back to dashboard</BackLink>
+
       {pageError && (
         <ErrorAlert message={pageError} onClose={() => setPageError('')} />
       )}

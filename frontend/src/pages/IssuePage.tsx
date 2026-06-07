@@ -10,6 +10,7 @@ import IssueEditForm from '../components/layout/IssueEditForm';
 import DangerZone from '../components/common/DangerZone';
 import LoadingCard from '../components/common/LoadingCard';
 import type { Issue, IssueStatus, EditIssueInfo } from '../types/issueTypes';
+import BackLink from '../components/common/BackLink';
 
 export default function IssuePage() {
   const { workspaceId, projectId, issueId } = useParams();
@@ -221,6 +222,10 @@ export default function IssuePage() {
 
   return (
     <div className='w-full max-w-6xl'>
+      <BackLink to={`/workspaces/${workspaceId}/projects/${projectId}`}>
+        Back to Project
+      </BackLink>
+
       {pageError && (
         <ErrorAlert message={pageError} onClose={() => setPageError('')} />
       )}
