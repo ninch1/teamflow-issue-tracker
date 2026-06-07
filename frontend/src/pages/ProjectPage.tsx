@@ -7,12 +7,10 @@ import CreateIssueCard from '../components/layout/CreateIssueCard';
 import ErrorAlert from '../components/common/ErrorAlert';
 import ApiError from '../errors/ApiError';
 import { removeAuthToken } from '../utils/authToken';
-import PrimaryButton from '../components/common/PrimaryButton';
 import ProjectDetailsCard from '../components/layout/ProjectDetailsCard';
 import ProjectEditForm from '../components/layout/ProjectEditForm';
 import DangerZone from '../components/common/DangerZone';
 import LoadingCard from '../components/common/LoadingCard';
-import SearchInput from '../components/common/SearchInput';
 import type {
   Issue,
   IssuePriority,
@@ -23,6 +21,7 @@ import type {
 import type { Project, EditProjectInfo } from '../types/projectTypes';
 import BackLink from '../components/common/BackLink';
 import SuccessAlert from '../components/common/SuccessAlert';
+import IssueFiltersBar from '../components/layout/IssueFiltersBar';
 
 type NewIssue = EditIssueInfo;
 
@@ -233,6 +232,8 @@ export default function ProjectPage() {
       if (matchesStatus && matchesPriority && matchesType && matchesSearch) {
         setIssues((prev) => [...prev, createdIssue]);
       }
+
+      setSuccessMessage('Issue created successfully.');
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
         removeAuthToken();
@@ -399,82 +400,21 @@ export default function ProjectPage() {
       />
 
       <div className='mt-5'>
-        <div className='mb-5 flex items-center justify-between'>
-          <div>
-            <h2 className='text-2xl font-medium tracking-[-0.04em] text-slate-950'>
-              Issues
-            </h2>
-            <p className='pr-5 text-sm text-slate-500'>
-              Track tasks, bugs, and feature work inside this project.{' '}
-              {issueCountText}.
-            </p>
-          </div>
-
-          <div className='flex flex-wrap items-center gap-3'>
-            <select
-              value={statusFilter}
-              onChange={(e) =>
-                setStatusFilter(
-                  e.target.value as 'ALL' | 'TODO' | 'IN_PROGRESS' | 'DONE',
-                )
-              }
-              className='rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
-            >
-              <option value='ALL'>All statuses</option>
-              <option value='TODO'>Todo</option>
-              <option value='IN_PROGRESS'>In Progress</option>
-              <option value='DONE'>Done</option>
-            </select>
-
-            <select
-              value={priorityFilter}
-              onChange={(e) =>
-                setPriorityFilter(
-                  e.target.value as 'ALL' | 'LOW' | 'MEDIUM' | 'HIGH',
-                )
-              }
-              className='rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
-            >
-              <option value='ALL'>All priorities</option>
-              <option value='LOW'>Low</option>
-              <option value='MEDIUM'>Medium</option>
-              <option value='HIGH'>High</option>
-            </select>
-
-            <select
-              value={typeFilter}
-              onChange={(e) =>
-                setTypeFilter(
-                  e.target.value as 'ALL' | 'BUG' | 'FEATURE' | 'TASK',
-                )
-              }
-              className='rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20'
-            >
-              <option value='ALL'>All types</option>
-              <option value='BUG'>Bug</option>
-              <option value='FEATURE'>Feature</option>
-              <option value='TASK'>Task</option>
-            </select>
-
-            {hasActiveFilters && (
-              <button
-                type='button'
-                onClick={handleResetFilters}
-                className='rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100'
-              >
-                Reset filters
-              </button>
-            )}
-
-            {!showCreateIssueForm && (
-              <PrimaryButton onClick={() => setShowIssueForm(true)}>
-                Create issue
-              </PrimaryButton>
-            )}
-          </div>
-        </div>
-
-        <SearchInput value={searchValue} onChange={setSearchValue} />
+        <IssueFiltersBar
+          issueCountText={issueCountText}
+          statusFilter={statusFilter}
+          priorityFilter={priorityFilter}
+          typeFilter={typeFilter}
+          hasActiveFilters={hasActiveFilters}
+          showCreateIssueForm={showCreateIssueForm}
+          onStatusFilterChange={setStatusFilter}
+          onPriorityFilterChange={setPriorityFilter}
+          onTypeFilterChange={setTypeFilter}
+          onResetFilters={handleResetFilters}
+          onShowCreateIssueForm={() => setShowIssueForm(true)}
+          searchValue={searchValue}
+          onSearchChange={setSearchValue}
+        />
 
         {isIssuesLoading ? (
           <div className='mt-5'>
