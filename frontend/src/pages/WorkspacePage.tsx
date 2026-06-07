@@ -20,6 +20,7 @@ import type { Project } from '../types/projectTypes';
 import type { Workspace, EditWorkspaceInfo } from '../types/workspaceTypes';
 import BackLink from '../components/common/BackLink';
 import SuccessAlert from '../components/common/SuccessAlert';
+import EmptyState from '../components/common/EmptyState';
 
 type NewProject = {
   name: string;
@@ -341,9 +342,7 @@ export default function WorkspacePage() {
         </div>
 
         {!showCreateProjectForm && currentProjects.length === 0 && (
-          <div className='mt-5 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500'>
-            No projects yet. Create your first project to start tracking work.
-          </div>
+          <EmptyState message='No projects yet. Create your first project to start tracking work.' />
         )}
       </main>
     </div>

@@ -22,6 +22,7 @@ import type { Project, EditProjectInfo } from '../types/projectTypes';
 import BackLink from '../components/common/BackLink';
 import SuccessAlert from '../components/common/SuccessAlert';
 import IssueFiltersBar from '../components/layout/IssueFiltersBar';
+import EmptyState from '../components/common/EmptyState';
 
 type NewIssue = EditIssueInfo;
 
@@ -347,6 +348,12 @@ export default function ProjectPage() {
     }
   }
 
+  const hasNoIssueFilters =
+    statusFilter === 'ALL' &&
+    priorityFilter === 'ALL' &&
+    typeFilter === 'ALL' &&
+    debouncedSearchValue === '';
+
   useEffect(() => {
     if (!successMessage) {
       return;
@@ -468,14 +475,13 @@ export default function ProjectPage() {
             </div>
 
             {!showCreateIssueForm && issues.length === 0 && (
-              <div className='mt-5 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500'>
-                {statusFilter === 'ALL' &&
-                priorityFilter === 'ALL' &&
-                typeFilter === 'ALL' &&
-                debouncedSearchValue === ''
-                  ? 'No issues yet. Create your first issue to start tracking work.'
-                  : 'No issues match your filters.'}
-              </div>
+              <EmptyState
+                message={
+                  hasNoIssueFilters
+                    ? 'No issues yet. Create your first issue to start tracking work.'
+                    : 'No issues match your filters.'
+                }
+              />
             )}
           </>
         )}

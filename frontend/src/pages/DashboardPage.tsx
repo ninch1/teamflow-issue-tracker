@@ -10,6 +10,7 @@ import { removeAuthToken } from '../utils/authToken';
 import LoadingCard from '../components/common/LoadingCard';
 import type { Workspace } from '../types/workspaceTypes';
 import SuccessAlert from '../components/common/SuccessAlert';
+import EmptyState from '../components/common/EmptyState';
 
 type NewWorkspace = {
   name: string;
@@ -196,9 +197,7 @@ export default function DashboardPage() {
         </div>
 
         {workspaceCardsData.length === 0 && !showCreateForm && (
-          <p className='mt-5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600'>
-            No workspaces yet. Create your first workspace to get started.
-          </p>
+          <EmptyState message=' No workspaces yet. Create your first workspace to get started.' />
         )}
       </main>
     </div>
