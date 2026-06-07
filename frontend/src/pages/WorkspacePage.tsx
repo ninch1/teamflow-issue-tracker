@@ -21,6 +21,10 @@ import type { Workspace, EditWorkspaceInfo } from '../types/workspaceTypes';
 import BackLink from '../components/common/BackLink';
 import SuccessAlert from '../components/common/SuccessAlert';
 import EmptyState from '../components/common/EmptyState';
+import type { Member } from '../types/memberTypes';
+import ContextSidebar from '../components/layout/ContextSidebar';
+import WorkspaceMembersPanel from '../components/common/WorkspaceMembersPanel';
+import { getMembers } from '../api/membersApi';
 
 type NewProject = {
   name: string;
@@ -53,6 +57,7 @@ export default function WorkspacePage() {
   const [isUpdatingWorkspace, setIsUpdatingWorkspace] = useState(false);
   const [isDeletingWorkspace, setIsDeletingWorkspace] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [members, setMembers] = useState<Member[]>([]);
 
   useEffect(() => {
     async function initialWorkspace() {
@@ -67,9 +72,11 @@ export default function WorkspacePage() {
 
         const workspaceData = await getWorkspace(workspaceId);
         const projectsData = await getProjects(workspaceId);
+        const membersData = await getMembers(workspaceId);
 
         setCurrentWorkspace(workspaceData.workspace);
         setCurrentProjects(projectsData.projects);
+        setMembers(membersData.members);
         setEditWorkspaceInfo({
           name: workspaceData.workspace.name,
           description: workspaceData.workspace.description || '',
@@ -259,92 +266,98 @@ export default function WorkspacePage() {
   }
 
   return (
-    <div className='w-full max-w-6xl'>
-      <BackLink to='/dashboard'>Back to dashboard</BackLink>
+    <div className='flex w-full mx-auto max-w-7xl gap-6'>
+      <div className='min-w-0 flex-1'>
+        <BackLink to='/dashboard'>Back to dashboard</BackLink>
 
-      {pageError && (
-        <ErrorAlert message={pageError} onClose={() => setPageError('')} />
-      )}
+        {pageError && (
+          <ErrorAlert message={pageError} onClose={() => setPageError('')} />
+        )}
 
-      {formError && (
-        <ErrorAlert message={formError} onClose={() => setFormError('')} />
-      )}
+        {formError && (
+          <ErrorAlert message={formError} onClose={() => setFormError('')} />
+        )}
 
-      {successMessage && (
-        <SuccessAlert
-          message={successMessage}
-          onClose={() => setSuccessMessage('')}
+        {successMessage && (
+          <SuccessAlert
+            message={successMessage}
+            onClose={() => setSuccessMessage('')}
+          />
+        )}
+
+        {currentWorkspace && (
+          <WorkspaceDetailsCard workspace={currentWorkspace} />
+        )}
+
+        <WorkspaceEditForm
+          editWorkspaceInfo={editWorkspaceInfo}
+          onEditWorkspaceChange={setEditWorkspaceInfo}
+          onSubmit={handleUpdateWorkspace}
+          isSubmitting={isUpdatingWorkspace}
         />
-      )}
 
-      {currentWorkspace && (
-        <WorkspaceDetailsCard workspace={currentWorkspace} />
-      )}
+        <DangerZone
+          buttonText='Delete workspace'
+          submittingText='Deleting...'
+          isSubmitting={isDeletingWorkspace}
+          message='Deleting this workspace cannot be undone. All projects and issues inside this workspace will be removed.'
+          onDelete={handleDeleteWorkspace}
+          fullWidth
+        />
 
-      <WorkspaceEditForm
-        editWorkspaceInfo={editWorkspaceInfo}
-        onEditWorkspaceChange={setEditWorkspaceInfo}
-        onSubmit={handleUpdateWorkspace}
-        isSubmitting={isUpdatingWorkspace}
-      />
+        <main className='mt-5'>
+          <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+            <div>
+              <h2 className='text-2xl font-medium tracking-[-0.04em] text-slate-950'>
+                Projects
+              </h2>
+              <p className='text-sm text-slate-500'>
+                Track projects inside this workspace.
+              </p>
+            </div>
 
-      <DangerZone
-        buttonText='Delete workspace'
-        submittingText='Deleting...'
-        isSubmitting={isDeletingWorkspace}
-        message='Deleting this workspace cannot be undone. All projects and issues inside this workspace will be removed.'
-        onDelete={handleDeleteWorkspace}
-        fullWidth
-      />
-
-      <main className='mt-5'>
-        <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-          <div>
-            <h2 className='text-2xl font-medium tracking-[-0.04em] text-slate-950'>
-              Projects
-            </h2>
-            <p className='text-sm text-slate-500'>
-              Track projects inside this workspace.
-            </p>
+            {!showCreateProjectForm && (
+              <PrimaryButton onClick={() => setShowCreateProjectForm(true)}>
+                Create project
+              </PrimaryButton>
+            )}
           </div>
 
-          {!showCreateProjectForm && (
-            <PrimaryButton onClick={() => setShowCreateProjectForm(true)}>
-              Create project
-            </PrimaryButton>
+          <div className='mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+            {showCreateProjectForm && (
+              <CreateProjectCard
+                name={newProjectInfo.name}
+                description={newProjectInfo.description}
+                onNameChange={(value) =>
+                  setNewProjectInfo((prev) => ({ ...prev, name: value }))
+                }
+                onDescriptionChange={(value) =>
+                  setNewProjectInfo((prev) => ({ ...prev, description: value }))
+                }
+                onSubmit={handleCreateProject}
+                onCancel={() => {
+                  setNewProjectInfo({ name: '', description: '' });
+                  setFormError('');
+                  setShowCreateProjectForm(false);
+                }}
+                isSubmitting={isCreatingProject}
+              />
+            )}
+
+            {currentProjects.map((project) => (
+              <ProjectCard key={project.id} projectInfo={project} />
+            ))}
+          </div>
+
+          {!showCreateProjectForm && currentProjects.length === 0 && (
+            <EmptyState message='No projects yet. Create your first project to start tracking work.' />
           )}
-        </div>
+        </main>
+      </div>
 
-        <div className='mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-          {showCreateProjectForm && (
-            <CreateProjectCard
-              name={newProjectInfo.name}
-              description={newProjectInfo.description}
-              onNameChange={(value) =>
-                setNewProjectInfo((prev) => ({ ...prev, name: value }))
-              }
-              onDescriptionChange={(value) =>
-                setNewProjectInfo((prev) => ({ ...prev, description: value }))
-              }
-              onSubmit={handleCreateProject}
-              onCancel={() => {
-                setNewProjectInfo({ name: '', description: '' });
-                setFormError('');
-                setShowCreateProjectForm(false);
-              }}
-              isSubmitting={isCreatingProject}
-            />
-          )}
-
-          {currentProjects.map((project) => (
-            <ProjectCard key={project.id} projectInfo={project} />
-          ))}
-        </div>
-
-        {!showCreateProjectForm && currentProjects.length === 0 && (
-          <EmptyState message='No projects yet. Create your first project to start tracking work.' />
-        )}
-      </main>
+      <ContextSidebar>
+        <WorkspaceMembersPanel members={members} />
+      </ContextSidebar>
     </div>
   );
 }

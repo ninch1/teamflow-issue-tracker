@@ -25,28 +25,63 @@ export const register = asyncHandler(async (req, res, next) => {
   // validates email
   const email = userInfo.email.trim().toLowerCase();
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   if (!emailRegex.test(email)) {
     return next(new ErrorResponse('Invalid email', 400));
   }
 
   // validates name
-  const name = userInfo.name.trim();
-  const nameRegex = /^[A-Za-z]{2,30}( [A-Za-z]{2,30}){1,2}$/;
-  if (!nameRegex.test(name)) {
+  const rawName = userInfo.name.trim();
+
+  if (!rawName) {
+    return next(new ErrorResponse('Name is required', 400));
+  }
+
+  const nameParts = rawName.split(/\s+/);
+
+  if (nameParts.length < 2) {
+    return next(
+      new ErrorResponse('Name must include first and last name', 400),
+    );
+  }
+
+  if (nameParts.length > 3) {
     return next(
       new ErrorResponse(
-        'Name must include first and last name using letters only',
+        'Name can include at most first, middle, and last name',
         400,
       ),
     );
   }
 
+  for (const part of nameParts) {
+    if (!/^[A-Za-z]+$/.test(part)) {
+      return next(new ErrorResponse('Name can only contain letters', 400));
+    }
+
+    if (part.length < 2) {
+      return next(
+        new ErrorResponse('Each name must be at least 2 characters', 400),
+      );
+    }
+
+    if (part.length > 30) {
+      return next(
+        new ErrorResponse('Each name must be 30 characters or less', 400),
+      );
+    }
+  }
+
+  const name = nameParts.join(' ');
+
   // validates and encrypts password
   const password = userInfo.password;
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,64}$/;
+
   if (!passwordRegex.test(password)) {
     return next(new ErrorResponse('Please create a stronger password', 400));
   }
+
   const passwordHash = await bcrypt.hash(password, saltRounds);
 
   // Creates user

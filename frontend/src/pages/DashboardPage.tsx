@@ -124,82 +124,84 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className='w-full max-w-6xl'>
-      <div className='rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
-        <p className='mb-2 text-sm text-slate-500'>Dashboard</p>
+    <div className='flex w-full max-w-7xl gap-6'>
+      <div className='w-full max-w-6xl'>
+        <div className='rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
+          <p className='mb-2 text-sm text-slate-500'>Dashboard</p>
 
-        <h1 className='text-3xl font-semibold tracking-[-0.04em] text-slate-950'>
-          Your workspaces
-        </h1>
+          <h1 className='text-3xl font-semibold tracking-[-0.04em] text-slate-950'>
+            Your workspaces
+          </h1>
 
-        <p className='mt-2 text-sm text-slate-500'>
-          Manage your workspaces, projects, and issues from one place.
-        </p>
-      </div>
-
-      {pageError && (
-        <ErrorAlert message={pageError} onClose={() => setPageError('')} />
-      )}
-
-      {formError && (
-        <ErrorAlert message={formError} onClose={() => setFormError('')} />
-      )}
-
-      {successMessage && (
-        <SuccessAlert
-          message={successMessage}
-          onClose={() => setSuccessMessage('')}
-        />
-      )}
-
-      <main className='mt-8'>
-        <div className='flex items-center justify-between'>
-          <div>
-            <h2 className='text-2xl font-medium tracking-[-0.04em] text-slate-950'>
-              Workspaces
-            </h2>
-
-            <p className='text-sm text-slate-500'>
-              Choose a workspace or create a new one.
-            </p>
-          </div>
+          <p className='mt-2 text-sm text-slate-500'>
+            Manage your workspaces, projects, and issues from one place.
+          </p>
         </div>
 
-        <div className='mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-          {showCreateForm ? (
-            <CreateWorkspaceCard
-              name={newWorkspaceInfo.name}
-              description={newWorkspaceInfo.description}
-              onNameChange={(value) =>
-                setNewWorkspaceInfo((prev) => ({ ...prev, name: value }))
-              }
-              onDescriptionChange={(value) =>
-                setNewWorkspaceInfo((prev) => ({
-                  ...prev,
-                  description: value,
-                }))
-              }
-              onSubmit={handleSubmit}
-              onCancel={() => {
-                setNewWorkspaceInfo({ name: '', description: '' });
-                setShowCreateForm(false);
-                setFormError('');
-              }}
-              isSubmitting={isCreatingWorkspace}
-            />
-          ) : (
-            <AddWorkspaceCard onClick={() => setShowCreateForm(true)} />
-          )}
-
-          {workspaceCardsData.map((data) => (
-            <WorkspaceCard key={data.id} workspaceInfo={data} />
-          ))}
-        </div>
-
-        {workspaceCardsData.length === 0 && !showCreateForm && (
-          <EmptyState message=' No workspaces yet. Create your first workspace to get started.' />
+        {pageError && (
+          <ErrorAlert message={pageError} onClose={() => setPageError('')} />
         )}
-      </main>
+
+        {formError && (
+          <ErrorAlert message={formError} onClose={() => setFormError('')} />
+        )}
+
+        {successMessage && (
+          <SuccessAlert
+            message={successMessage}
+            onClose={() => setSuccessMessage('')}
+          />
+        )}
+
+        <main className='mt-8'>
+          <div className='flex items-center justify-between'>
+            <div>
+              <h2 className='text-2xl font-medium tracking-[-0.04em] text-slate-950'>
+                Workspaces
+              </h2>
+
+              <p className='text-sm text-slate-500'>
+                Choose a workspace or create a new one.
+              </p>
+            </div>
+          </div>
+
+          <div className='mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+            {showCreateForm ? (
+              <CreateWorkspaceCard
+                name={newWorkspaceInfo.name}
+                description={newWorkspaceInfo.description}
+                onNameChange={(value) =>
+                  setNewWorkspaceInfo((prev) => ({ ...prev, name: value }))
+                }
+                onDescriptionChange={(value) =>
+                  setNewWorkspaceInfo((prev) => ({
+                    ...prev,
+                    description: value,
+                  }))
+                }
+                onSubmit={handleSubmit}
+                onCancel={() => {
+                  setNewWorkspaceInfo({ name: '', description: '' });
+                  setShowCreateForm(false);
+                  setFormError('');
+                }}
+                isSubmitting={isCreatingWorkspace}
+              />
+            ) : (
+              <AddWorkspaceCard onClick={() => setShowCreateForm(true)} />
+            )}
+
+            {workspaceCardsData.map((data) => (
+              <WorkspaceCard key={data.id} workspaceInfo={data} />
+            ))}
+          </div>
+
+          {workspaceCardsData.length === 0 && !showCreateForm && (
+            <EmptyState message=' No workspaces yet. Create your first workspace to get started.' />
+          )}
+        </main>
+      </div>
     </div>
   );
 }
