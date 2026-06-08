@@ -21,7 +21,7 @@ import type { Workspace, EditWorkspaceInfo } from '../types/workspaceTypes';
 import BackLink from '../components/common/BackLink';
 import SuccessAlert from '../components/common/SuccessAlert';
 import EmptyState from '../components/common/EmptyState';
-import PendingInvitationsCard from '../components/layout/PendingInvitationsCard';
+import { useWorkspaceContext } from '../context/workspaceContextValue';
 
 type NewProject = {
   name: string;
@@ -54,6 +54,8 @@ export default function WorkspacePage() {
   const [isUpdatingWorkspace, setIsUpdatingWorkspace] = useState(false);
   const [isDeletingWorkspace, setIsDeletingWorkspace] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+
+  const { canManageWorkspace } = useWorkspaceContext();
 
   useEffect(() => {
     async function initialWorkspace() {
@@ -282,21 +284,25 @@ export default function WorkspacePage() {
         <WorkspaceDetailsCard workspace={currentWorkspace} />
       )}
 
-      <WorkspaceEditForm
-        editWorkspaceInfo={editWorkspaceInfo}
-        onEditWorkspaceChange={setEditWorkspaceInfo}
-        onSubmit={handleUpdateWorkspace}
-        isSubmitting={isUpdatingWorkspace}
-      />
+      {canManageWorkspace && (
+        <WorkspaceEditForm
+          editWorkspaceInfo={editWorkspaceInfo}
+          onEditWorkspaceChange={setEditWorkspaceInfo}
+          onSubmit={handleUpdateWorkspace}
+          isSubmitting={isUpdatingWorkspace}
+        />
+      )}
 
-      <DangerZone
-        buttonText='Delete workspace'
-        submittingText='Deleting...'
-        isSubmitting={isDeletingWorkspace}
-        message='Deleting this workspace cannot be undone. All projects and issues inside this workspace will be removed.'
-        onDelete={handleDeleteWorkspace}
-        fullWidth
-      />
+      {canManageWorkspace && (
+        <DangerZone
+          buttonText='Delete workspace'
+          submittingText='Deleting...'
+          isSubmitting={isDeletingWorkspace}
+          message='Deleting this workspace cannot be undone. All projects and issues inside this workspace will be removed.'
+          onDelete={handleDeleteWorkspace}
+          fullWidth
+        />
+      )}
 
       <main className='mt-5'>
         <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
@@ -309,7 +315,7 @@ export default function WorkspacePage() {
             </p>
           </div>
 
-          {!showCreateProjectForm && (
+          {canManageWorkspace && !showCreateProjectForm && (
             <PrimaryButton onClick={() => setShowCreateProjectForm(true)}>
               Create project
             </PrimaryButton>
@@ -317,7 +323,7 @@ export default function WorkspacePage() {
         </div>
 
         <div className='mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-          {showCreateProjectForm && (
+          {canManageWorkspace && showCreateProjectForm && (
             <CreateProjectCard
               name={newProjectInfo.name}
               description={newProjectInfo.description}

@@ -23,6 +23,7 @@ import BackLink from '../components/common/BackLink';
 import SuccessAlert from '../components/common/SuccessAlert';
 import IssueFiltersBar from '../components/layout/IssueFiltersBar';
 import EmptyState from '../components/common/EmptyState';
+import { useWorkspaceContext } from '../context/workspaceContextValue';
 
 type NewIssue = EditIssueInfo;
 
@@ -68,6 +69,8 @@ export default function ProjectPage() {
   const issueCountText = hasActiveFilters
     ? `Showing ${issues.length} issue${issues.length === 1 ? '' : 's'}`
     : `${issues.length} total issue${issues.length === 1 ? '' : 's'}`;
+
+  const { canManageWorkspace } = useWorkspaceContext();
 
   function handleResetFilters() {
     setStatusFilter('ALL');
@@ -391,21 +394,25 @@ export default function ProjectPage() {
 
       {currentProject && <ProjectDetailsCard project={currentProject} />}
 
-      <ProjectEditForm
-        editProjectInfo={editProjectInfo}
-        onEditProjectChange={setEditProjectInfo}
-        onSubmit={handleUpdateProject}
-        isSubmitting={isUpdatingProject}
-      />
+      {canManageWorkspace && (
+        <ProjectEditForm
+          editProjectInfo={editProjectInfo}
+          onEditProjectChange={setEditProjectInfo}
+          onSubmit={handleUpdateProject}
+          isSubmitting={isUpdatingProject}
+        />
+      )}
 
-      <DangerZone
-        buttonText='Delete project'
-        submittingText='Deleting...'
-        isSubmitting={isDeletingProject}
-        message='Deleting this project cannot be undone. All issues inside this project will be removed.'
-        onDelete={handleDeleteProject}
-        fullWidth
-      />
+      {canManageWorkspace && (
+        <DangerZone
+          buttonText='Delete project'
+          submittingText='Deleting...'
+          isSubmitting={isDeletingProject}
+          message='Deleting this project cannot be undone. All issues inside this project will be removed.'
+          onDelete={handleDeleteProject}
+          fullWidth
+        />
+      )}
 
       <main className='mt-8'>
         <IssueFiltersBar

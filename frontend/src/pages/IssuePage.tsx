@@ -12,6 +12,7 @@ import LoadingCard from '../components/common/LoadingCard';
 import type { Issue, IssueStatus, EditIssueInfo } from '../types/issueTypes';
 import BackLink from '../components/common/BackLink';
 import SuccessAlert from '../components/common/SuccessAlert';
+import { useWorkspaceContext } from '../context/workspaceContextValue';
 
 export default function IssuePage() {
   const { workspaceId, projectId, issueId } = useParams();
@@ -32,6 +33,8 @@ export default function IssuePage() {
   const [isUpdatingIssueDetails, setIsUpdatingIssueDetails] = useState(false);
   const [isDeletingIssue, setIsDeletingIssue] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+
+  const { canManageWorkspace } = useWorkspaceContext();
 
   useEffect(() => {
     async function initialIssue() {
@@ -283,14 +286,16 @@ export default function IssuePage() {
         />
       </div>
 
-      <DangerZone
-        message='Deleting this issue cannot be undone.'
-        buttonText='Delete issue'
-        submittingText='Deleting...'
-        isSubmitting={isDeletingIssue}
-        onDelete={handleDeleteIssue}
-        fullWidth
-      />
+      {canManageWorkspace && (
+        <DangerZone
+          message='Deleting this issue cannot be undone.'
+          buttonText='Delete issue'
+          submittingText='Deleting...'
+          isSubmitting={isDeletingIssue}
+          onDelete={handleDeleteIssue}
+          fullWidth
+        />
+      )}
     </div>
   );
 }

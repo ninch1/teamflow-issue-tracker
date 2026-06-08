@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Member } from '../../types/memberTypes';
 import { inviteMember } from '../../api/invitationApi';
 import ApiError from '../../errors/ApiError';
+import { useWorkspaceContext } from '../../context/workspaceContextValue';
 
 type WorkspaceMembersPanelProps = {
   workspaceId: string;
@@ -30,6 +31,8 @@ export default function WorkspaceMembersPanel({
   const [inviteError, setInviteError] = useState('');
   const [inviteSuccess, setInviteSuccess] = useState('');
   const [isInviting, setIsInviting] = useState(false);
+
+  const { canManageWorkspace } = useWorkspaceContext();
 
   useEffect(() => {
     if (!inviteError && !inviteSuccess) {
@@ -92,30 +95,32 @@ export default function WorkspaceMembersPanel({
         </p>
       </div>
 
-      <form onSubmit={handleInviteMember} className='mb-4 space-y-2'>
-        <input
-          type='email'
-          value={inviteEmail}
-          onChange={(e) => setInviteEmail(e.target.value)}
-          placeholder='Invite by email'
-          disabled={isInviting}
-          className='w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 placeholder:text-slate-400 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20 disabled:cursor-not-allowed disabled:opacity-60'
-        />
+      {canManageWorkspace && (
+        <form onSubmit={handleInviteMember} className='mb-4 space-y-2'>
+          <input
+            type='email'
+            value={inviteEmail}
+            onChange={(e) => setInviteEmail(e.target.value)}
+            placeholder='Invite by email'
+            disabled={isInviting}
+            className='w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 placeholder:text-slate-400 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20 disabled:cursor-not-allowed disabled:opacity-60'
+          />
 
-        <button
-          type='submit'
-          disabled={isInviting}
-          className='w-full rounded-lg bg-[#5e6ad2] px-3 py-2 text-sm font-medium text-white hover:bg-[#828fff] disabled:cursor-not-allowed disabled:opacity-60'
-        >
-          {isInviting ? 'Sending...' : 'Send invite'}
-        </button>
+          <button
+            type='submit'
+            disabled={isInviting}
+            className='w-full rounded-lg bg-[#5e6ad2] px-3 py-2 text-sm font-medium text-white hover:bg-[#828fff] disabled:cursor-not-allowed disabled:opacity-60'
+          >
+            {isInviting ? 'Sending...' : 'Send invite'}
+          </button>
 
-        {inviteError && <p className='text-xs text-red-600'>{inviteError}</p>}
+          {inviteError && <p className='text-xs text-red-600'>{inviteError}</p>}
 
-        {inviteSuccess && (
-          <p className='text-xs text-green-700'>{inviteSuccess}</p>
-        )}
-      </form>
+          {inviteSuccess && (
+            <p className='text-xs text-green-700'>{inviteSuccess}</p>
+          )}
+        </form>
+      )}
 
       <div className='space-y-3'>
         {members.map((member) => (

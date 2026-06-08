@@ -4,25 +4,31 @@ import ContextSidebar from '../components/layout/ContextSidebar';
 import WorkspaceMembersPanel from '../components/common/WorkspaceMembersPanel';
 import MobileDrawer from '../components/layout/MobileDrawer';
 import { getMembers } from '../api/membersApi';
+import { getMe } from '../api/authApi';
 import ApiError from '../errors/ApiError';
 import { removeAuthToken } from '../utils/authToken';
 import type { Member } from '../types/memberTypes';
+import { WorkspaceProvider } from '../context/WorkspaceContext';
 
 export default function WorkspaceLayout() {
   const { workspaceId } = useParams();
   const navigate = useNavigate();
 
   const [members, setMembers] = useState<Member[]>([]);
+  const [currentUserId, setCurrentUserId] = useState('');
   const [isMembersDrawerOpen, setIsMembersDrawerOpen] = useState(false);
 
   useEffect(() => {
-    async function loadMembers() {
+    async function loadWorkspaceLayoutData() {
       if (!workspaceId) {
         return;
       }
 
       try {
+        const meData = await getMe();
         const membersData = await getMembers(workspaceId);
+
+        setCurrentUserId(meData.user.id);
         setMembers(membersData.members);
       } catch (error: unknown) {
         if (error instanceof ApiError && error.status === 401) {
@@ -35,14 +41,29 @@ export default function WorkspaceLayout() {
       }
     }
 
-    loadMembers();
+    loadWorkspaceLayoutData();
   }, [workspaceId, navigate]);
 
+  const currentMember = members.find(
+    (member) => member.user.id === currentUserId,
+  );
+
+  const currentUserRole = currentMember?.role ?? null;
+
+  const canManageWorkspace =
+    currentUserRole === 'OWNER' || currentUserRole === 'ADMIN';
+
   return (
-    <>
+    <WorkspaceProvider
+      value={{
+        members,
+        currentUserRole,
+        canManageWorkspace,
+      }}
+    >
       <div className='flex w-full gap-6'>
         <div className='min-w-0 flex-1'>
-          <div className='flex justify-end xl:hidden'>
+          <div className='mb-5 flex justify-end xl:hidden'>
             <button
               type='button'
               onClick={() => setIsMembersDrawerOpen(true)}
@@ -74,6 +95,6 @@ export default function WorkspaceLayout() {
           <WorkspaceMembersPanel workspaceId={workspaceId} members={members} />
         )}
       </MobileDrawer>
-    </>
+    </WorkspaceProvider>
   );
 }

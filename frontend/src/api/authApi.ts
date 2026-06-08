@@ -1,21 +1,27 @@
-import { setAuthToken } from '../utils/authToken';
+import { getAuthToken, setAuthToken } from '../utils/authToken';
+import ApiError from '../errors/ApiError';
 
 // API functions for authentication requests.
 
 const BASE_URL = 'http://localhost:3000/api/auth';
 
-export const getMe = async (token: string) => {
+export const getMe = async () => {
+  const authToken = getAuthToken();
+
   const response = await fetch(`${BASE_URL}/me`, {
     method: 'GET',
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${authToken}`,
     },
   });
 
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.error || 'Session expired. Please log in again');
+    throw new ApiError(
+      data.error || 'Session expired. Please log in again',
+      response.status,
+    );
   }
 
   return data;

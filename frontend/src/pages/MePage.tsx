@@ -36,7 +36,7 @@ export default function MePage() {
         setIsLoading(true);
         setPageError('');
 
-        const data = await getMe(token);
+        const data = await getMe();
         setUserData(data);
       } catch (error: unknown) {
         if (error instanceof ApiError && error.status === 401) {
