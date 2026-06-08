@@ -87,7 +87,7 @@ workspaceRouter
   .route('/:workspaceId/members/:memberId')
   .delete(
     authMiddleware,
-    workspaceRoleMiddleware([WorkspaceRole.OWNER]),
+    workspaceRoleMiddleware([WorkspaceRole.OWNER, WorkspaceRole.ADMIN]),
     removeWorkspaceMember,
   );
 

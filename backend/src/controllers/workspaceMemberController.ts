@@ -147,11 +147,26 @@ export const removeWorkspaceMember = asyncHandler(async (req, res, next) => {
   if (typeof workspaceId !== 'string') {
     return next(new ErrorResponse('Please choose workspace', 400));
   }
+
   if (typeof memberId !== 'string') {
     return next(new ErrorResponse('Please choose member', 400));
   }
 
-  // check membership
+  const currentMembership = await prisma.workspaceMember.findUnique({
+    where: {
+      userId_workspaceId: {
+        userId: user.id,
+        workspaceId,
+      },
+    },
+  });
+
+  if (!currentMembership) {
+    return next(
+      new ErrorResponse('You do not have access to this workspace', 403),
+    );
+  }
+
   const membership = await prisma.workspaceMember.findFirst({
     where: {
       id: memberId,
@@ -162,11 +177,24 @@ export const removeWorkspaceMember = asyncHandler(async (req, res, next) => {
   if (!membership) {
     return next(new ErrorResponse('Membership not found', 404));
   }
+
+  if (membership.userId === user.id) {
+    return next(new ErrorResponse('You cannot remove yourself', 400));
+  }
+
   if (membership.role === WorkspaceRole.OWNER) {
     return next(new ErrorResponse('Owner cannot be removed', 400));
   }
 
-  // delete membership
+  if (
+    currentMembership.role === WorkspaceRole.ADMIN &&
+    membership.role !== WorkspaceRole.MEMBER
+  ) {
+    return next(
+      new ErrorResponse('Admins can only remove regular members', 403),
+    );
+  }
+
   const deletedMembership = await prisma.workspaceMember.delete({
     where: {
       id: memberId,
