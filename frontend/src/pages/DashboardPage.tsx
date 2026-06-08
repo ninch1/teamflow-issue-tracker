@@ -11,6 +11,13 @@ import LoadingCard from '../components/common/LoadingCard';
 import type { Workspace } from '../types/workspaceTypes';
 import SuccessAlert from '../components/common/SuccessAlert';
 import EmptyState from '../components/common/EmptyState';
+import PendingInvitationsCard from '../components/layout/PendingInvitationsCard';
+import {
+  getInvitations,
+  acceptInvitation,
+  declineInvitation,
+} from '../api/invitationApi';
+import type { Invitation } from '../types/invitationTypes';
 
 type NewWorkspace = {
   name: string;
@@ -29,6 +36,9 @@ export default function DashboardPage() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [invitationActionLoadingId, setInvitationActionLoadingId] =
+    useState('');
 
   const navigate = useNavigate();
 
@@ -41,7 +51,10 @@ export default function DashboardPage() {
         const workspacesData = await getWorkspaces();
         const workspacesArr = workspacesData.workspaces;
 
+        const invitationsData = await getInvitations();
+
         setWorkspaceCardsData(workspacesArr);
+        setInvitations(invitationsData.invitationsResponse);
       } catch (error: unknown) {
         if (error instanceof ApiError && error.status === 401) {
           removeAuthToken();
@@ -119,6 +132,81 @@ export default function DashboardPage() {
     return () => clearTimeout(timeoutId);
   }, [successMessage]);
 
+  async function handleAcceptInvitation(invitationId: string) {
+    if (invitationActionLoadingId) {
+      return;
+    }
+
+    setPageError('');
+    setFormError('');
+    setSuccessMessage('');
+
+    try {
+      setInvitationActionLoadingId(invitationId);
+
+      await acceptInvitation(invitationId);
+
+      setInvitations((prev) =>
+        prev.filter((invitation) => invitation.id !== invitationId),
+      );
+
+      const workspacesData = await getWorkspaces();
+      setWorkspaceCardsData(workspacesData.workspaces);
+
+      setSuccessMessage('Invitation accepted successfully.');
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate('/login');
+        return;
+      }
+
+      if (error instanceof Error) {
+        setPageError(error.message);
+      } else {
+        setPageError('Could not accept invitation');
+      }
+    } finally {
+      setInvitationActionLoadingId('');
+    }
+  }
+
+  async function handleDeclineInvitation(invitationId: string) {
+    if (invitationActionLoadingId) {
+      return;
+    }
+
+    setPageError('');
+    setFormError('');
+    setSuccessMessage('');
+
+    try {
+      setInvitationActionLoadingId(invitationId);
+
+      await declineInvitation(invitationId);
+
+      setInvitations((prev) =>
+        prev.filter((invitation) => invitation.id !== invitationId),
+      );
+
+      setSuccessMessage('Invitation declined.');
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate('/login');
+        return;
+      }
+
+      if (error instanceof Error) {
+        setPageError(error.message);
+      } else {
+        setPageError('Could not decline invitation');
+      }
+    } finally {
+      setInvitationActionLoadingId('');
+    }
+  }
+
   if (isLoading) {
     return <LoadingCard message='Loading dashboard...' />;
   }
@@ -126,7 +214,7 @@ export default function DashboardPage() {
   return (
     <div className='flex w-full max-w-7xl gap-6'>
       <div className='w-full max-w-6xl'>
-        <div className='rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
+        <div className='mb-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
           <p className='mb-2 text-sm text-slate-500'>Dashboard</p>
 
           <h1 className='text-3xl font-semibold tracking-[-0.04em] text-slate-950'>
@@ -152,6 +240,13 @@ export default function DashboardPage() {
             onClose={() => setSuccessMessage('')}
           />
         )}
+
+        <PendingInvitationsCard
+          invitations={invitations}
+          onAccept={handleAcceptInvitation}
+          onDecline={handleDeclineInvitation}
+          actionLoadingId={invitationActionLoadingId}
+        />
 
         <main className='mt-8'>
           <div className='flex items-center justify-between'>
@@ -198,7 +293,7 @@ export default function DashboardPage() {
           </div>
 
           {workspaceCardsData.length === 0 && !showCreateForm && (
-            <EmptyState message=' No workspaces yet. Create your first workspace to get started.' />
+            <EmptyState message='No workspaces yet. Create your first workspace to get started.' />
           )}
         </main>
       </div>

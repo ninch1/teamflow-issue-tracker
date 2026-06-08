@@ -21,6 +21,7 @@ import type { Workspace, EditWorkspaceInfo } from '../types/workspaceTypes';
 import BackLink from '../components/common/BackLink';
 import SuccessAlert from '../components/common/SuccessAlert';
 import EmptyState from '../components/common/EmptyState';
+import PendingInvitationsCard from '../components/layout/PendingInvitationsCard';
 
 type NewProject = {
   name: string;
