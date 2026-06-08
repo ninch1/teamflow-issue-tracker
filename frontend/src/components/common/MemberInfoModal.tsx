@@ -2,7 +2,12 @@ import type { Member } from '../../types/memberTypes';
 
 type MemberInfoModalProps = {
   member: Member;
+  currentUserId: string;
+  currentUserRole: 'OWNER' | 'ADMIN' | 'MEMBER' | null;
+  isRemoving: boolean;
+  removeError: string;
   onClose: () => void;
+  onRemove: () => void;
 };
 
 function getInitials(name: string | null | undefined, email: string) {
@@ -21,8 +26,19 @@ function getInitials(name: string | null | undefined, email: string) {
 
 export default function MemberInfoModal({
   member,
+  currentUserId,
+  currentUserRole,
+  isRemoving,
+  removeError,
   onClose,
+  onRemove,
 }: MemberInfoModalProps) {
+  const isCurrentUser = member.user.id === currentUserId;
+
+  const canRemoveMember =
+    !isCurrentUser &&
+    (currentUserRole === 'OWNER' ||
+      (currentUserRole === 'ADMIN' && member.role === 'MEMBER'));
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center px-4'>
       <button
@@ -84,6 +100,31 @@ export default function MemberInfoModal({
             </p>
           </div>
         </div>
+        {canRemoveMember && (
+          <div className='mt-5 rounded-lg border border-red-200 bg-red-50 p-4'>
+            <h3 className='text-sm font-semibold text-red-700'>
+              Remove member
+            </h3>
+            <p className='mt-1 text-sm text-red-600'>
+              This member will lose access to the workspace.
+            </p>
+
+            {removeError && (
+              <p className='mt-2 text-sm font-medium text-red-700'>
+                {removeError}
+              </p>
+            )}
+
+            <button
+              type='button'
+              disabled={isRemoving}
+              onClick={onRemove}
+              className='mt-3 w-full rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60'
+            >
+              {isRemoving ? 'Removing...' : 'Remove member'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

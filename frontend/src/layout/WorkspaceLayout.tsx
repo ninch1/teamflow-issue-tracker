@@ -10,6 +10,7 @@ import { removeAuthToken } from '../utils/authToken';
 import type { Member } from '../types/memberTypes';
 import { WorkspaceProvider } from '../context/WorkspaceContext';
 import MemberInfoModal from '../components/common/MemberInfoModal';
+import { removeMember } from '../api/membersApi';
 
 export default function WorkspaceLayout() {
   const { workspaceId } = useParams();
@@ -20,6 +21,8 @@ export default function WorkspaceLayout() {
   const [isMembersDrawerOpen, setIsMembersDrawerOpen] = useState(false);
   const [showMemberInfo, setShowMemberInfo] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState<string>('');
+  const [isRemovingMember, setIsRemovingMember] = useState(false);
+  const [removeMemberError, setRemoveMemberError] = useState('');
 
   useEffect(() => {
     async function loadWorkspaceLayoutData() {
@@ -72,6 +75,49 @@ export default function WorkspaceLayout() {
   function handleCloseMemberInfo() {
     setShowMemberInfo(false);
     setSelectedMemberId('');
+    setRemoveMemberError('');
+  }
+
+  async function handleRemoveSelectedMember() {
+    if (!workspaceId || !selectedMemberId || isRemovingMember) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      'Are you sure you want to remove this member from the workspace?',
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setIsRemovingMember(true);
+      setRemoveMemberError('');
+
+      await removeMember(workspaceId, selectedMemberId);
+
+      setMembers((prev) =>
+        prev.filter((member) => member.id !== selectedMemberId),
+      );
+
+      setSelectedMemberId('');
+      setShowMemberInfo(false);
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate('/login');
+        return;
+      }
+
+      if (error instanceof Error) {
+        setRemoveMemberError(error.message);
+      } else {
+        setRemoveMemberError('Could not remove member');
+      }
+    } finally {
+      setIsRemovingMember(false);
+    }
   }
 
   return (
@@ -85,7 +131,12 @@ export default function WorkspaceLayout() {
       {showMemberInfo && selectedMember && (
         <MemberInfoModal
           member={selectedMember}
+          currentUserId={currentUserId}
+          currentUserRole={currentUserRole}
+          isRemoving={isRemovingMember}
+          removeError={removeMemberError}
           onClose={handleCloseMemberInfo}
+          onRemove={handleRemoveSelectedMember}
         />
       )}
       <div className='flex w-full gap-6'>

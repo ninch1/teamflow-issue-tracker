@@ -24,3 +24,28 @@ export const getMembers = async (workspaceId: string) => {
 
   return data;
 };
+
+export const removeMember = async (workspaceId: string, memberId: string) => {
+  const authToken = getAuthToken();
+
+  const response = await fetch(
+    `${BASE_URL}/${workspaceId}/members/${memberId}`,
+    {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    },
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new ApiError(
+      data.error || 'Session expired. Please log in again',
+      response.status,
+    );
+  }
+
+  return data;
+};
