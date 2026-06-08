@@ -31,11 +31,18 @@ export default (roles: WorkspaceRole[]) => {
     });
 
     if (!membership) {
-      return next(new ErrorResponse('Unauthorized access', 401));
+      return next(
+        new ErrorResponse('You do not have access to this workspace', 403),
+      );
     }
 
     if (!roles.includes(membership.role)) {
-      return next(new ErrorResponse('Unauthorized access', 401));
+      return next(
+        new ErrorResponse(
+          'You do not have permission to perform this action',
+          403,
+        ),
+      );
     }
 
     next();
