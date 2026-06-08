@@ -22,7 +22,8 @@ export default function WorkspaceMembersPanel({
   members,
 }: WorkspaceMembersPanelProps) {
   return (
-    <div className='rounded-xl border border-slate-200 bg-white p-5 shadow-sm'>
+    <div className='rounded-xl border border-slate-200 bg-white mt-10 p-5 shadow-sm'>
+      {/* using mt-10 to match mb-4 of BackLink and p-6 of AppLayout */}
       <div className='mb-4'>
         <h2 className='text-lg font-semibold text-slate-950'>
           Workspace members
@@ -42,7 +43,7 @@ export default function WorkspaceMembersPanel({
               {getInitials(member.user.name, member.user.email)}
             </div>
 
-            <div className='min-w-0 max-w-[140px] flex-1'>
+            <div className='min-w-0 max-w-35 flex-1'>
               <p
                 title={member.user.name || 'Unnamed user'}
                 className='truncate text-sm font-medium text-slate-950'

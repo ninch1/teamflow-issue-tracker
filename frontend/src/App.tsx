@@ -8,6 +8,7 @@ import AppLayout from './layout/AppLayout';
 import WorkspacePage from './pages/WorkspacePage';
 import ProjectPage from './pages/ProjectPage';
 import IssuePage from './pages/IssuePage';
+import WorkspaceLayout from './layout/WorkspaceLayout';
 
 function App() {
   return (
@@ -17,38 +18,18 @@ function App() {
         <Route path='/login' element={<LoginPage />} />
         <Route path='/register' element={<RegisterPage />} />
         <Route path='/me' element={<MePage />} />
-        <Route
-          path='/dashboard'
-          element={
-            <AppLayout>
-              <DashboardPage />
-            </AppLayout>
-          }
-        />
-        <Route
-          path='/workspaces/:workspaceId'
-          element={
-            <AppLayout>
-              <WorkspacePage />
-            </AppLayout>
-          }
-        />
-        <Route
-          path='/workspaces/:workspaceId/projects/:projectId'
-          element={
-            <AppLayout>
-              <ProjectPage />
-            </AppLayout>
-          }
-        />
-        <Route
-          path='/workspaces/:workspaceId/projects/:projectId/issues/:issueId'
-          element={
-            <AppLayout>
-              <IssuePage />
-            </AppLayout>
-          }
-        />
+        <Route element={<AppLayout />}>
+          <Route path='/dashboard' element={<DashboardPage />} />
+
+          <Route path='/workspaces/:workspaceId' element={<WorkspaceLayout />}>
+            <Route index element={<WorkspacePage />} />
+            <Route path='projects/:projectId' element={<ProjectPage />} />
+            <Route
+              path='projects/:projectId/issues/:issueId'
+              element={<IssuePage />}
+            />
+          </Route>
+        </Route>
       </Routes>
     </div>
   );
