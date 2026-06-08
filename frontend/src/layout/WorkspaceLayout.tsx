@@ -56,7 +56,12 @@ export default function WorkspaceLayout() {
         </div>
 
         <ContextSidebar>
-          <WorkspaceMembersPanel members={members} />
+          {workspaceId && (
+            <WorkspaceMembersPanel
+              workspaceId={workspaceId}
+              members={members}
+            />
+          )}
         </ContextSidebar>
       </div>
 
@@ -65,7 +70,9 @@ export default function WorkspaceLayout() {
         title='Workspace members'
         onClose={() => setIsMembersDrawerOpen(false)}
       >
-        <WorkspaceMembersPanel members={members} />
+        {workspaceId && (
+          <WorkspaceMembersPanel workspaceId={workspaceId} members={members} />
+        )}
       </MobileDrawer>
     </>
   );

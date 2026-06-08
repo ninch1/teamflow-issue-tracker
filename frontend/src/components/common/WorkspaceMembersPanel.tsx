@@ -1,6 +1,10 @@
+import { useEffect, useState } from 'react';
 import type { Member } from '../../types/memberTypes';
+import { inviteMember } from '../../api/invitationApi';
+import ApiError from '../../errors/ApiError';
 
 type WorkspaceMembersPanelProps = {
+  workspaceId: string;
   members: Member[];
 };
 
@@ -19,11 +23,66 @@ function getInitials(name: string | null | undefined, email: string) {
 }
 
 export default function WorkspaceMembersPanel({
+  workspaceId,
   members,
 }: WorkspaceMembersPanelProps) {
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteError, setInviteError] = useState('');
+  const [inviteSuccess, setInviteSuccess] = useState('');
+  const [isInviting, setIsInviting] = useState(false);
+
+  useEffect(() => {
+    if (!inviteError && !inviteSuccess) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setInviteError('');
+      setInviteSuccess('');
+    }, 3000);
+
+    return () => clearTimeout(timeoutId);
+  }, [inviteError, inviteSuccess]);
+
+  async function handleInviteMember(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (isInviting) {
+      return;
+    }
+
+    setInviteError('');
+    setInviteSuccess('');
+
+    const email = inviteEmail.trim().toLowerCase();
+
+    if (!email) {
+      setInviteError('Email is required');
+      return;
+    }
+
+    try {
+      setIsInviting(true);
+
+      await inviteMember(workspaceId, email);
+
+      setInviteEmail('');
+      setInviteSuccess('Invitation sent successfully.');
+    } catch (error: unknown) {
+      if (error instanceof ApiError) {
+        setInviteError(error.message);
+      } else if (error instanceof Error) {
+        setInviteError(error.message);
+      } else {
+        setInviteError('Could not send invitation');
+      }
+    } finally {
+      setIsInviting(false);
+    }
+  }
+
   return (
-    <div className='rounded-xl border border-slate-200 bg-white mt-10 p-5 shadow-sm'>
-      {/* using mt-10 to match mb-4 of BackLink and p-6 of AppLayout */}
+    <div className='mt-10 rounded-xl border border-slate-200 bg-white p-5 shadow-sm'>
       <div className='mb-4'>
         <h2 className='text-lg font-semibold text-slate-950'>
           Workspace members
@@ -32,6 +91,31 @@ export default function WorkspaceMembersPanel({
           {members.length} member{members.length === 1 ? '' : 's'}
         </p>
       </div>
+
+      <form onSubmit={handleInviteMember} className='mb-4 space-y-2'>
+        <input
+          type='email'
+          value={inviteEmail}
+          onChange={(e) => setInviteEmail(e.target.value)}
+          placeholder='Invite by email'
+          disabled={isInviting}
+          className='w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 placeholder:text-slate-400 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20 disabled:cursor-not-allowed disabled:opacity-60'
+        />
+
+        <button
+          type='submit'
+          disabled={isInviting}
+          className='w-full rounded-lg bg-[#5e6ad2] px-3 py-2 text-sm font-medium text-white hover:bg-[#828fff] disabled:cursor-not-allowed disabled:opacity-60'
+        >
+          {isInviting ? 'Sending...' : 'Send invite'}
+        </button>
+
+        {inviteError && <p className='text-xs text-red-600'>{inviteError}</p>}
+
+        {inviteSuccess && (
+          <p className='text-xs text-green-700'>{inviteSuccess}</p>
+        )}
+      </form>
 
       <div className='space-y-3'>
         {members.map((member) => (
