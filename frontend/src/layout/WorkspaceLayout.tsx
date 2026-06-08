@@ -25,6 +25,21 @@ export default function WorkspaceLayout() {
   const [removeMemberError, setRemoveMemberError] = useState('');
   const [isUpdatingMemberRole, setIsUpdatingMemberRole] = useState(false);
   const [updateMemberRoleError, setUpdateMemberRoleError] = useState('');
+  const [memberActionSuccess, setMemberActionSuccess] = useState('');
+
+  useEffect(() => {
+    if (!memberActionSuccess) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setMemberActionSuccess('');
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [memberActionSuccess]);
 
   useEffect(() => {
     async function loadWorkspaceLayoutData() {
@@ -79,6 +94,7 @@ export default function WorkspaceLayout() {
     setSelectedMemberId('');
     setRemoveMemberError('');
     setUpdateMemberRoleError('');
+    setMemberActionSuccess('');
   }
 
   async function handleRemoveSelectedMember() {
@@ -144,6 +160,8 @@ export default function WorkspaceLayout() {
             : member,
         ),
       );
+
+      setMemberActionSuccess('Member role was updated successfully.');
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
         removeAuthToken();
@@ -178,6 +196,7 @@ export default function WorkspaceLayout() {
           removeError={removeMemberError}
           isUpdatingRole={isUpdatingMemberRole}
           updateRoleError={updateMemberRoleError}
+          actionSuccess={memberActionSuccess}
           onClose={handleCloseMemberInfo}
           onRemove={handleRemoveSelectedMember}
           onUpdateRole={handleUpdateSelectedMemberRole}
@@ -204,6 +223,7 @@ export default function WorkspaceLayout() {
               workspaceId={workspaceId}
               members={members}
               handleMemberClick={handleMemberClick}
+              currentUserId={currentUserId}
             />
           )}
         </ContextSidebar>
@@ -219,6 +239,7 @@ export default function WorkspaceLayout() {
             workspaceId={workspaceId}
             members={members}
             handleMemberClick={handleMemberClick}
+            currentUserId={currentUserId}
           />
         )}
       </MobileDrawer>

@@ -8,6 +8,7 @@ type WorkspaceMembersPanelProps = {
   workspaceId: string;
   members: Member[];
   handleMemberClick(memberId: string): void;
+  currentUserId: string;
 };
 
 function getInitials(name: string | null | undefined, email: string) {
@@ -28,6 +29,7 @@ export default function WorkspaceMembersPanel({
   workspaceId,
   members,
   handleMemberClick,
+  currentUserId,
 }: WorkspaceMembersPanelProps) {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteError, setInviteError] = useState('');
@@ -125,37 +127,48 @@ export default function WorkspaceMembersPanel({
       )}
 
       <div className='space-y-3'>
-        {members.map((member) => (
-          <div
-            key={member.id}
-            onClick={() => handleMemberClick(member.id)}
-            className='flex items-center gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3'
-          >
-            <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#5e6ad2]/10 text-sm font-semibold text-[#5e6ad2]'>
-              {getInitials(member.user.name, member.user.email)}
+        {members.map((member) => {
+          const isCurrentUser = member.user.id === currentUserId;
+          return (
+            <div
+              key={member.id}
+              onClick={() => handleMemberClick(member.id)}
+              className='flex items-center gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3'
+            >
+              <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#5e6ad2]/10 text-sm font-semibold text-[#5e6ad2]'>
+                {getInitials(member.user.name, member.user.email)}
+              </div>
+
+              <div className='min-w-0 max-w-35 flex-1'>
+                <div className='flex min-w-0 items-center gap-2'>
+                  <p
+                    className='truncate text-sm font-medium text-slate-950'
+                    title={member.user.name || member.user.email}
+                  >
+                    {member.user.name || 'Unnamed user'}
+                  </p>
+
+                  {isCurrentUser && (
+                    <span className='shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500'>
+                      You
+                    </span>
+                  )}
+                </div>
+
+                <p
+                  title={member.user.email}
+                  className='truncate text-xs text-slate-500'
+                >
+                  {member.user.email}
+                </p>
+              </div>
+
+              <span className='shrink-0 rounded-full border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-600'>
+                {member.role}
+              </span>
             </div>
-
-            <div className='min-w-0 max-w-35 flex-1'>
-              <p
-                title={member.user.name || 'Unnamed user'}
-                className='truncate text-sm font-medium text-slate-950'
-              >
-                {member.user.name || 'Unnamed user'}
-              </p>
-
-              <p
-                title={member.user.email}
-                className='truncate text-xs text-slate-500'
-              >
-                {member.user.email}
-              </p>
-            </div>
-
-            <span className='shrink-0 rounded-full border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-600'>
-              {member.role}
-            </span>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

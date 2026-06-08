@@ -7,10 +7,11 @@ type MemberInfoModalProps = {
   currentUserRole: 'OWNER' | 'ADMIN' | 'MEMBER' | null;
   isRemoving: boolean;
   removeError: string;
-  onClose: () => void;
-  onRemove: () => void;
   isUpdatingRole: boolean;
   updateRoleError: string;
+  actionSuccess: string;
+  onClose: () => void;
+  onRemove: () => void;
   onUpdateRole: (role: 'ADMIN' | 'MEMBER') => void;
 };
 
@@ -34,10 +35,11 @@ export default function MemberInfoModal({
   currentUserRole,
   isRemoving,
   removeError,
-  onClose,
-  onRemove,
   isUpdatingRole,
   updateRoleError,
+  actionSuccess,
+  onClose,
+  onRemove,
   onUpdateRole,
 }: MemberInfoModalProps) {
   const [selectedRole, setSelectedRole] = useState<'ADMIN' | 'MEMBER'>(
@@ -50,6 +52,9 @@ export default function MemberInfoModal({
     !isCurrentUser &&
     (currentUserRole === 'OWNER' ||
       (currentUserRole === 'ADMIN' && member.role === 'MEMBER'));
+
+  const canManageAnyMember =
+    currentUserRole === 'OWNER' || currentUserRole === 'ADMIN';
 
   const canUpdateRole =
     currentUserRole === 'OWNER' && !isCurrentUser && member.role !== 'OWNER';
@@ -115,6 +120,25 @@ export default function MemberInfoModal({
             </p>
           </div>
         </div>
+
+        {actionSuccess && (
+          <div className='mt-5 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700'>
+            {actionSuccess}
+          </div>
+        )}
+
+        {isCurrentUser && (
+          <div className='mt-5 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600'>
+            You cannot manage your own membership from here.
+          </div>
+        )}
+
+        {canManageAnyMember && !isCurrentUser && (
+          <div className='mt-5 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600'>
+            Owners can update member roles. Owners and admins can remove regular
+            members.
+          </div>
+        )}
 
         {canUpdateRole && (
           <div className='mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4'>
