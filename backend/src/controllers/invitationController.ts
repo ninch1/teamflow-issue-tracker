@@ -82,6 +82,9 @@ export const sendInvitation = asyncHandler(async (req, res, next) => {
     },
   });
 
+  // If an old invitation exists, only block duplicate pending invites.
+  // Accepted/declined invitations can be reused because active membership
+  // was already checked above, so the user is not currently in this workspace.
   if (existingInvitation) {
     if (existingInvitation.status === InvitationStatus.PENDING) {
       return next(
@@ -92,41 +95,30 @@ export const sendInvitation = asyncHandler(async (req, res, next) => {
       );
     }
 
-    if (existingInvitation.status === InvitationStatus.ACCEPTED) {
-      return next(
-        new ErrorResponse(
-          'This user has already accepted an invitation to this workspace',
-          400,
-        ),
-      );
-    }
+    const invitation = await prisma.workspaceInvitation.update({
+      where: {
+        id: existingInvitation.id,
+      },
+      data: {
+        status: InvitationStatus.PENDING,
+        role: WorkspaceRole.MEMBER,
+        invitedById: user.id,
+      },
+    });
 
-    if (existingInvitation.status === InvitationStatus.DECLINED) {
-      const invitation = await prisma.workspaceInvitation.update({
-        where: {
-          id: existingInvitation.id,
-        },
-        data: {
-          status: InvitationStatus.PENDING,
-          role: WorkspaceRole.MEMBER,
-          invitedById: user.id,
-        },
-      });
-
-      return res.status(200).json({
-        message: 'Invitation was sent again successfully',
-        invitation: {
-          id: invitation.id,
-          email: invitation.email,
-          role: invitation.role,
-          status: invitation.status,
-          workspaceId: invitation.workspaceId,
-          invitedById: invitation.invitedById,
-          createdAt: invitation.createdAt,
-          updatedAt: invitation.updatedAt,
-        },
-      });
-    }
+    return res.status(200).json({
+      message: 'Invitation was sent successfully',
+      invitation: {
+        id: invitation.id,
+        email: invitation.email,
+        role: invitation.role,
+        status: invitation.status,
+        workspaceId: invitation.workspaceId,
+        invitedById: invitation.invitedById,
+        createdAt: invitation.createdAt,
+        updatedAt: invitation.updatedAt,
+      },
+    });
   }
 
   const invitation = await prisma.workspaceInvitation.create({

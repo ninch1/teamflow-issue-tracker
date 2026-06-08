@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Member } from '../../types/memberTypes';
 
 type MemberInfoModalProps = {
@@ -8,6 +9,9 @@ type MemberInfoModalProps = {
   removeError: string;
   onClose: () => void;
   onRemove: () => void;
+  isUpdatingRole: boolean;
+  updateRoleError: string;
+  onUpdateRole: (role: 'ADMIN' | 'MEMBER') => void;
 };
 
 function getInitials(name: string | null | undefined, email: string) {
@@ -32,13 +36,24 @@ export default function MemberInfoModal({
   removeError,
   onClose,
   onRemove,
+  isUpdatingRole,
+  updateRoleError,
+  onUpdateRole,
 }: MemberInfoModalProps) {
+  const [selectedRole, setSelectedRole] = useState<'ADMIN' | 'MEMBER'>(
+    member.role === 'ADMIN' ? 'ADMIN' : 'MEMBER',
+  );
+
   const isCurrentUser = member.user.id === currentUserId;
 
   const canRemoveMember =
     !isCurrentUser &&
     (currentUserRole === 'OWNER' ||
       (currentUserRole === 'ADMIN' && member.role === 'MEMBER'));
+
+  const canUpdateRole =
+    currentUserRole === 'OWNER' && !isCurrentUser && member.role !== 'OWNER';
+
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center px-4'>
       <button
@@ -100,6 +115,47 @@ export default function MemberInfoModal({
             </p>
           </div>
         </div>
+
+        {canUpdateRole && (
+          <div className='mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4'>
+            <h3 className='text-sm font-semibold text-slate-950'>
+              Update role
+            </h3>
+            <p className='mt-1 text-sm text-slate-500'>
+              Change this member&apos;s workspace permissions.
+            </p>
+
+            <div className='mt-3 flex gap-2'>
+              <select
+                value={selectedRole}
+                onChange={(e) =>
+                  setSelectedRole(e.target.value as 'ADMIN' | 'MEMBER')
+                }
+                disabled={isUpdatingRole}
+                className='min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20 disabled:cursor-not-allowed disabled:opacity-60'
+              >
+                <option value='MEMBER'>Member</option>
+                <option value='ADMIN'>Admin</option>
+              </select>
+
+              <button
+                type='button'
+                disabled={isUpdatingRole || selectedRole === member.role}
+                onClick={() => onUpdateRole(selectedRole)}
+                className='rounded-lg bg-[#5e6ad2] px-3 py-2 text-sm font-medium text-white hover:bg-[#828fff] disabled:cursor-not-allowed disabled:opacity-60'
+              >
+                {isUpdatingRole ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+
+            {updateRoleError && (
+              <p className='mt-2 text-sm font-medium text-red-600'>
+                {updateRoleError}
+              </p>
+            )}
+          </div>
+        )}
+
         {canRemoveMember && (
           <div className='mt-5 rounded-lg border border-red-200 bg-red-50 p-4'>
             <h3 className='text-sm font-semibold text-red-700'>

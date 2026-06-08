@@ -49,3 +49,34 @@ export const removeMember = async (workspaceId: string, memberId: string) => {
 
   return data;
 };
+
+export const updateMemberRole = async (
+  workspaceId: string,
+  memberId: string,
+  role: 'ADMIN' | 'MEMBER',
+) => {
+  const authToken = getAuthToken();
+
+  const response = await fetch(
+    `${BASE_URL}/${workspaceId}/members/${memberId}/role`,
+    {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
+      },
+      body: JSON.stringify({ role }),
+    },
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new ApiError(
+      data.error || 'Could not update member role',
+      response.status,
+    );
+  }
+
+  return data;
+};

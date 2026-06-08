@@ -10,7 +10,7 @@ import { removeAuthToken } from '../utils/authToken';
 import type { Member } from '../types/memberTypes';
 import { WorkspaceProvider } from '../context/WorkspaceContext';
 import MemberInfoModal from '../components/common/MemberInfoModal';
-import { removeMember } from '../api/membersApi';
+import { removeMember, updateMemberRole } from '../api/membersApi';
 
 export default function WorkspaceLayout() {
   const { workspaceId } = useParams();
@@ -23,6 +23,8 @@ export default function WorkspaceLayout() {
   const [selectedMemberId, setSelectedMemberId] = useState<string>('');
   const [isRemovingMember, setIsRemovingMember] = useState(false);
   const [removeMemberError, setRemoveMemberError] = useState('');
+  const [isUpdatingMemberRole, setIsUpdatingMemberRole] = useState(false);
+  const [updateMemberRoleError, setUpdateMemberRoleError] = useState('');
 
   useEffect(() => {
     async function loadWorkspaceLayoutData() {
@@ -76,6 +78,7 @@ export default function WorkspaceLayout() {
     setShowMemberInfo(false);
     setSelectedMemberId('');
     setRemoveMemberError('');
+    setUpdateMemberRoleError('');
   }
 
   async function handleRemoveSelectedMember() {
@@ -120,6 +123,44 @@ export default function WorkspaceLayout() {
     }
   }
 
+  async function handleUpdateSelectedMemberRole(role: 'ADMIN' | 'MEMBER') {
+    if (!workspaceId || !selectedMemberId || isUpdatingMemberRole) {
+      return;
+    }
+
+    try {
+      setIsUpdatingMemberRole(true);
+      setUpdateMemberRoleError('');
+
+      const data = await updateMemberRole(workspaceId, selectedMemberId, role);
+
+      setMembers((prev) =>
+        prev.map((member) =>
+          member.id === selectedMemberId
+            ? {
+                ...member,
+                role: data.membership.role,
+              }
+            : member,
+        ),
+      );
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate('/login');
+        return;
+      }
+
+      if (error instanceof Error) {
+        setUpdateMemberRoleError(error.message);
+      } else {
+        setUpdateMemberRoleError('Could not update member role');
+      }
+    } finally {
+      setIsUpdatingMemberRole(false);
+    }
+  }
+
   return (
     <WorkspaceProvider
       value={{
@@ -135,8 +176,11 @@ export default function WorkspaceLayout() {
           currentUserRole={currentUserRole}
           isRemoving={isRemovingMember}
           removeError={removeMemberError}
+          isUpdatingRole={isUpdatingMemberRole}
+          updateRoleError={updateMemberRoleError}
           onClose={handleCloseMemberInfo}
           onRemove={handleRemoveSelectedMember}
+          onUpdateRole={handleUpdateSelectedMemberRole}
         />
       )}
       <div className='flex w-full gap-6'>
