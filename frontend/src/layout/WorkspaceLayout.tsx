@@ -9,6 +9,7 @@ import ApiError from '../errors/ApiError';
 import { removeAuthToken } from '../utils/authToken';
 import type { Member } from '../types/memberTypes';
 import { WorkspaceProvider } from '../context/WorkspaceContext';
+import MemberInfoModal from '../components/common/MemberInfoModal';
 
 export default function WorkspaceLayout() {
   const { workspaceId } = useParams();
@@ -17,6 +18,8 @@ export default function WorkspaceLayout() {
   const [members, setMembers] = useState<Member[]>([]);
   const [currentUserId, setCurrentUserId] = useState('');
   const [isMembersDrawerOpen, setIsMembersDrawerOpen] = useState(false);
+  const [showMemberInfo, setShowMemberInfo] = useState(false);
+  const [selectedMemberId, setSelectedMemberId] = useState<string>('');
 
   useEffect(() => {
     async function loadWorkspaceLayoutData() {
@@ -53,6 +56,24 @@ export default function WorkspaceLayout() {
   const canManageWorkspace =
     currentUserRole === 'OWNER' || currentUserRole === 'ADMIN';
 
+  function handleMemberClick(memberId: string) {
+    if (!memberId) {
+      return;
+    }
+
+    setSelectedMemberId(memberId);
+    setShowMemberInfo(true);
+  }
+
+  const selectedMember = members.find(
+    (member) => member.id === selectedMemberId,
+  );
+
+  function handleCloseMemberInfo() {
+    setShowMemberInfo(false);
+    setSelectedMemberId('');
+  }
+
   return (
     <WorkspaceProvider
       value={{
@@ -61,6 +82,12 @@ export default function WorkspaceLayout() {
         canManageWorkspace,
       }}
     >
+      {showMemberInfo && selectedMember && (
+        <MemberInfoModal
+          member={selectedMember}
+          onClose={handleCloseMemberInfo}
+        />
+      )}
       <div className='flex w-full gap-6'>
         <div className='min-w-0 flex-1'>
           <div className='mb-5 flex justify-end xl:hidden'>
@@ -81,6 +108,7 @@ export default function WorkspaceLayout() {
             <WorkspaceMembersPanel
               workspaceId={workspaceId}
               members={members}
+              handleMemberClick={handleMemberClick}
             />
           )}
         </ContextSidebar>
@@ -92,7 +120,11 @@ export default function WorkspaceLayout() {
         onClose={() => setIsMembersDrawerOpen(false)}
       >
         {workspaceId && (
-          <WorkspaceMembersPanel workspaceId={workspaceId} members={members} />
+          <WorkspaceMembersPanel
+            workspaceId={workspaceId}
+            members={members}
+            handleMemberClick={handleMemberClick}
+          />
         )}
       </MobileDrawer>
     </WorkspaceProvider>

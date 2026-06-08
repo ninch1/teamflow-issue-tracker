@@ -7,6 +7,7 @@ import { useWorkspaceContext } from '../../context/workspaceContextValue';
 type WorkspaceMembersPanelProps = {
   workspaceId: string;
   members: Member[];
+  handleMemberClick(memberId: string): void;
 };
 
 function getInitials(name: string | null | undefined, email: string) {
@@ -26,6 +27,7 @@ function getInitials(name: string | null | undefined, email: string) {
 export default function WorkspaceMembersPanel({
   workspaceId,
   members,
+  handleMemberClick,
 }: WorkspaceMembersPanelProps) {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteError, setInviteError] = useState('');
@@ -126,6 +128,7 @@ export default function WorkspaceMembersPanel({
         {members.map((member) => (
           <div
             key={member.id}
+            onClick={() => handleMemberClick(member.id)}
             className='flex items-center gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3'
           >
             <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#5e6ad2]/10 text-sm font-semibold text-[#5e6ad2]'>
