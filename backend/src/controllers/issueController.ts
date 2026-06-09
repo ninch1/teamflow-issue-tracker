@@ -6,6 +6,7 @@ import {
   IssuePriority,
   IssueStatus,
   IssueType,
+  ActivityType,
 } from '../generated/prisma/client';
 
 // Allows issue titles with letters, numbers, spaces, and basic punctuation.
@@ -460,6 +461,22 @@ export const updateIssue = asyncHandler(async (req, res, next) => {
     },
     data: dataToUpdate,
   });
+
+  // Create activity record - only for status changes
+  if (dataToUpdate.status !== undefined) {
+    await prisma.activity.create({
+      data: {
+        workspaceId: workspaceId,
+        projectId: projectId,
+        issueId: issueId,
+        userId: user.id,
+        type: ActivityType.ISSUE_STATUS_CHANGED,
+        message: 'Issue status was updated',
+        oldValue: issue.status,
+        newValue: updatedIssue.status,
+      },
+    });
+  }
 
   return res.status(200).json({
     message: 'Issue updated successfully',

@@ -157,6 +157,8 @@ export const getWorkspace = asyncHandler(async (req, res, next) => {
     .json({ message: 'Got workspace', workspace: workspaceResponse });
 });
 
+// ... existing code ...
+
 // Deletes workspace based on id
 export const deleteWorkspace = asyncHandler(async (req, res, next) => {
   // Get authenticated user added by authMiddleware.
@@ -185,7 +187,20 @@ export const deleteWorkspace = asyncHandler(async (req, res, next) => {
 
   // Use a transaction so workspace-related data is deleted together.
   // Delete child records first, then delete the workspace.
-  const [, , , , deletedWorkspace] = await prisma.$transaction([
+  const [
+    deletedActivities,
+    deletedInvitations,
+    deletedIssues,
+    deletedProjects,
+    deletedMembers,
+    deletedWorkspace,
+  ] = await prisma.$transaction([
+    prisma.activity.deleteMany({
+      where: {
+        workspaceId,
+      },
+    }),
+
     prisma.workspaceInvitation.deleteMany({
       where: {
         workspaceId,

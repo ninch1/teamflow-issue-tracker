@@ -21,6 +21,7 @@ model User {
   updatedAt                DateTime              @updatedAt
   workspaceMembers         WorkspaceMember[]
   sentWorkspaceInvitations WorkspaceInvitation[]
+  activities               Activity[]
 }
 
 model Workspace {
@@ -32,6 +33,7 @@ model Workspace {
   workspaceMembers     WorkspaceMember[]
   projects             Project[]
   workspaceInvitations WorkspaceInvitation[]
+  activities           Activity[]
 }
 
 model WorkspaceMember {
@@ -64,9 +66,10 @@ model Project {
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
   workspaceId String
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  issues    Issue[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  issues     Issue[]
+  activities Activity[]
 }
 
 model Issue {
@@ -80,8 +83,9 @@ model Issue {
   project   Project @relation(fields: [projectId], references: [id])
   projectId String
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  activities Activity[]
 }
 
 enum IssueStatus {
@@ -124,4 +128,30 @@ enum InvitationStatus {
   PENDING
   ACCEPTED
   DECLINED
+}
+
+model Activity {
+  id          String @id @default(uuid())
+  workspaceId String
+  userId      String
+
+  type    ActivityType
+  message String
+
+  issueId   String?
+  projectId String?
+
+  oldValue String?
+  newValue String?
+
+  createdAt DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+  issue     Issue?    @relation(fields: [issueId], references: [id])
+  project   Project?  @relation(fields: [projectId], references: [id])
+}
+
+enum ActivityType {
+  ISSUE_STATUS_CHANGED
 }

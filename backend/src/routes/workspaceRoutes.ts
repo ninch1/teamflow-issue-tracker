@@ -18,6 +18,7 @@ import {
 import authMiddleware from '../middleware/authMiddleware';
 import workspaceRoleMiddleware from '../middleware/workspaceRoleMiddleware';
 import { WorkspaceRole } from '../generated/prisma/client';
+import { getActivities } from '../controllers/activityController';
 
 const workspaceRouter = express.Router();
 
@@ -89,6 +90,18 @@ workspaceRouter
     authMiddleware,
     workspaceRoleMiddleware([WorkspaceRole.OWNER, WorkspaceRole.ADMIN]),
     removeWorkspaceMember,
+  );
+
+workspaceRouter
+  .route('/:workspaceId/activity')
+  .get(
+    authMiddleware,
+    workspaceRoleMiddleware([
+      WorkspaceRole.OWNER,
+      WorkspaceRole.ADMIN,
+      WorkspaceRole.MEMBER,
+    ]),
+    getActivities,
   );
 
 export default workspaceRouter;
