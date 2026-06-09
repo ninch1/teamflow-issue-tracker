@@ -11,6 +11,9 @@ import type { Member } from '../types/memberTypes';
 import { WorkspaceProvider } from '../context/WorkspaceContext';
 import MemberInfoModal from '../components/common/MemberInfoModal';
 import { removeMember, updateMemberRole } from '../api/membersApi';
+import { getWorkspaceActivities } from '../api/activityApi';
+import type { Activity } from '../types/activityTypes';
+import ActivityPanel from '../components/activity/ActivityPanel';
 
 export default function WorkspaceLayout() {
   const { workspaceId } = useParams();
@@ -26,6 +29,9 @@ export default function WorkspaceLayout() {
   const [isUpdatingMemberRole, setIsUpdatingMemberRole] = useState(false);
   const [updateMemberRoleError, setUpdateMemberRoleError] = useState('');
   const [memberActionSuccess, setMemberActionSuccess] = useState('');
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [activitiesError, setActivitiesError] = useState('');
+  const [isLoadingActivities, setIsLoadingActivities] = useState(false);
 
   useEffect(() => {
     if (!memberActionSuccess) {
@@ -42,17 +48,21 @@ export default function WorkspaceLayout() {
   }, [memberActionSuccess]);
 
   useEffect(() => {
-    async function loadWorkspaceLayoutData() {
-      if (!workspaceId) {
-        return;
-      }
+    if (!workspaceId) {
+      return;
+    }
 
+    const activeWorkspaceId = workspaceId;
+
+    async function loadWorkspaceData() {
       try {
-        const meData = await getMe();
-        const membersData = await getMembers(workspaceId);
+        const [membersData, currentUserData] = await Promise.all([
+          getMembers(activeWorkspaceId),
+          getMe(),
+        ]);
 
-        setCurrentUserId(meData.user.id);
         setMembers(membersData.members);
+        setCurrentUserId(currentUserData.user.id);
       } catch (error: unknown) {
         if (error instanceof ApiError && error.status === 401) {
           removeAuthToken();
@@ -60,11 +70,45 @@ export default function WorkspaceLayout() {
           return;
         }
 
-        setMembers([]);
+        console.error('Failed to load workspace data:', error);
       }
     }
 
-    loadWorkspaceLayoutData();
+    loadWorkspaceData();
+  }, [workspaceId, navigate]);
+
+  useEffect(() => {
+    if (!workspaceId) {
+      return;
+    }
+
+    const activeWorkspaceId = workspaceId;
+
+    async function loadActivities() {
+      try {
+        setIsLoadingActivities(true);
+        setActivitiesError('');
+
+        const data = await getWorkspaceActivities(activeWorkspaceId);
+        setActivities(data.activities);
+      } catch (error: unknown) {
+        if (error instanceof ApiError && error.status === 401) {
+          removeAuthToken();
+          navigate('/login');
+          return;
+        }
+
+        if (error instanceof Error) {
+          setActivitiesError(error.message);
+        } else {
+          setActivitiesError('Could not load workspace activity');
+        }
+      } finally {
+        setIsLoadingActivities(false);
+      }
+    }
+
+    loadActivities();
   }, [workspaceId, navigate]);
 
   const currentMember = members.find(
@@ -179,6 +223,10 @@ export default function WorkspaceLayout() {
     }
   }
 
+  if (!workspaceId) {
+    return null;
+  }
+
   return (
     <WorkspaceProvider
       value={{
@@ -218,14 +266,21 @@ export default function WorkspaceLayout() {
         </div>
 
         <ContextSidebar>
-          {workspaceId && (
+          <div className='space-y-5'>
             <WorkspaceMembersPanel
               workspaceId={workspaceId}
               members={members}
-              handleMemberClick={handleMemberClick}
               currentUserId={currentUserId}
+              canManageWorkspace={canManageWorkspace}
+              onMemberClick={handleMemberClick}
             />
-          )}
+
+            <ActivityPanel
+              activities={activities}
+              isLoading={isLoadingActivities}
+              error={activitiesError}
+            />
+          </div>
         </ContextSidebar>
       </div>
 
@@ -238,8 +293,9 @@ export default function WorkspaceLayout() {
           <WorkspaceMembersPanel
             workspaceId={workspaceId}
             members={members}
-            handleMemberClick={handleMemberClick}
             currentUserId={currentUserId}
+            canManageWorkspace={canManageWorkspace}
+            onMemberClick={handleMemberClick}
           />
         )}
       </MobileDrawer>

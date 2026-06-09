@@ -463,7 +463,10 @@ export const updateIssue = asyncHandler(async (req, res, next) => {
   });
 
   // Create activity record - only for status changes
-  if (dataToUpdate.status !== undefined) {
+  if (
+    dataToUpdate.status !== undefined &&
+    dataToUpdate.status !== issue.status
+  ) {
     await prisma.activity.create({
       data: {
         workspaceId: workspaceId,
@@ -471,7 +474,7 @@ export const updateIssue = asyncHandler(async (req, res, next) => {
         issueId: issueId,
         userId: user.id,
         type: ActivityType.ISSUE_STATUS_CHANGED,
-        message: 'Issue status was updated',
+        message: `${user.name} changed issue "${updatedIssue.title}" from ${issue.status} to ${updatedIssue.status}`,
         oldValue: issue.status,
         newValue: updatedIssue.status,
       },

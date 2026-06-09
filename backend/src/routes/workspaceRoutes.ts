@@ -93,7 +93,7 @@ workspaceRouter
   );
 
 workspaceRouter
-  .route('/:workspaceId/activity')
+  .route('/:workspaceId/activities')
   .get(
     authMiddleware,
     workspaceRoleMiddleware([
