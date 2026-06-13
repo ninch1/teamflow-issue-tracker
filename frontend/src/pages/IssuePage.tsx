@@ -271,20 +271,22 @@ export default function IssuePage() {
       {currentIssue && <IssueDetailsCard issue={currentIssue} />}
 
       <div className='my-8 flex flex-col gap-5 lg:flex-row'>
-        <IssueStatusSection
-          status={newStatus}
-          onStatusChange={setNewStatus}
-          onSubmit={handleUpdateStatus}
-          isSubmitting={isUpdatingStatus}
-        />
+  <IssueStatusSection
+    status={newStatus}
+    onStatusChange={setNewStatus}
+    onSubmit={handleUpdateStatus}
+    isSubmitting={isUpdatingStatus}
+  />
 
-        <IssueEditForm
-          editIssueInfo={editIssueInfo}
-          onEditIssueChange={setEditIssueInfo}
-          onSubmit={handleUpdateIssueDetails}
-          isSubmitting={isUpdatingIssueDetails}
-        />
-      </div>
+  {canManageWorkspace && (
+    <IssueEditForm
+      editIssueInfo={editIssueInfo}
+      onEditIssueChange={setEditIssueInfo}
+      onSubmit={handleUpdateIssueDetails}
+      isSubmitting={isUpdatingIssueDetails}
+    />
+  )}
+</div>
 
       {canManageWorkspace && (
         <DangerZone
