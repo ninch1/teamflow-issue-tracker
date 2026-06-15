@@ -1,18 +1,18 @@
-import prisma from '../lib/prisma';
-import ErrorResponse from '../errors/ErrorResponse';
-import asyncHandler from '../middleware/asyncHandler';
-import { AuthRequest } from '../types/auth';
+import prisma from "../lib/prisma";
+import ErrorResponse from "../errors/ErrorResponse";
+import asyncHandler from "../middleware/asyncHandler";
+import { AuthRequest } from "../types/auth";
 import {
   IssuePriority,
   IssueStatus,
   IssueType,
   ActivityType,
-} from '../generated/prisma/client';
+} from "../generated/prisma/client";
 import {
   createActivity,
   formatIssuePriority,
   formatIssueStatus,
-} from '../utils/createActivity';
+} from "../utils/createActivity";
 
 // Allows issue titles with letters, numbers, spaces, and basic punctuation.
 const issueTitleRegex = /^[A-Za-z0-9 _'.,!?-]{2,100}$/;
@@ -104,30 +104,30 @@ export const createIssue = asyncHandler(async (req, res, next) => {
   const user = authReq.user;
 
   if (!user) {
-    return next(new ErrorResponse('Unauthorized access', 401));
+    return next(new ErrorResponse("Unauthorized access", 401));
   }
 
   // Get workspace and project ids from nested route params.
   const workspaceId = req.params.workspaceId;
   const projectId = req.params.projectId;
 
-  if (typeof workspaceId !== 'string') {
-    return next(new ErrorResponse('Workspace id is required', 400));
+  if (typeof workspaceId !== "string") {
+    return next(new ErrorResponse("Workspace id is required", 400));
   }
 
-  if (typeof projectId !== 'string') {
-    return next(new ErrorResponse('Project id is required', 400));
+  if (typeof projectId !== "string") {
+    return next(new ErrorResponse("Project id is required", 400));
   }
 
   if (!req.body) {
-    return next(new ErrorResponse('Issue data is required', 400));
+    return next(new ErrorResponse("Issue data is required", 400));
   }
 
   const { title, description, status, priority, type, assigneeId } = req.body;
 
   // Validate required issue title.
-  if (typeof title !== 'string') {
-    return next(new ErrorResponse('Issue title is required', 400));
+  if (typeof title !== "string") {
+    return next(new ErrorResponse("Issue title is required", 400));
   }
 
   const trimmedTitle = title.trim();
@@ -135,7 +135,7 @@ export const createIssue = asyncHandler(async (req, res, next) => {
   if (!issueTitleRegex.test(trimmedTitle)) {
     return next(
       new ErrorResponse(
-        'Issue title must be 2-100 characters and can include letters, numbers, spaces, and basic punctuation',
+        "Issue title must be 2-100 characters and can include letters, numbers, spaces, and basic punctuation",
         400,
       ),
     );
@@ -145,8 +145,8 @@ export const createIssue = asyncHandler(async (req, res, next) => {
   let trimmedDescription: string | undefined;
 
   if (description !== undefined) {
-    if (typeof description !== 'string') {
-      return next(new ErrorResponse('Issue description must be a string', 400));
+    if (typeof description !== "string") {
+      return next(new ErrorResponse("Issue description must be a string", 400));
     }
 
     trimmedDescription = description.trim();
@@ -154,7 +154,7 @@ export const createIssue = asyncHandler(async (req, res, next) => {
     if (trimmedDescription.length > 1000) {
       return next(
         new ErrorResponse(
-          'Issue description must be 1000 characters or less',
+          "Issue description must be 1000 characters or less",
           400,
         ),
       );
@@ -168,7 +168,7 @@ export const createIssue = asyncHandler(async (req, res, next) => {
 
   if (status !== undefined) {
     if (!isIssueStatus(status)) {
-      return next(new ErrorResponse('Invalid issue status', 400));
+      return next(new ErrorResponse("Invalid issue status", 400));
     }
 
     issueStatus = status;
@@ -176,7 +176,7 @@ export const createIssue = asyncHandler(async (req, res, next) => {
 
   if (priority !== undefined) {
     if (!isIssuePriority(priority)) {
-      return next(new ErrorResponse('Invalid issue priority', 400));
+      return next(new ErrorResponse("Invalid issue priority", 400));
     }
 
     issuePriority = priority;
@@ -184,16 +184,16 @@ export const createIssue = asyncHandler(async (req, res, next) => {
 
   if (type !== undefined) {
     if (!isIssueType(type)) {
-      return next(new ErrorResponse('Invalid issue type', 400));
+      return next(new ErrorResponse("Invalid issue type", 400));
     }
 
     issueType = type;
   }
 
   if (assigneeId !== undefined) {
-    if (assigneeId !== null && typeof assigneeId !== 'string') {
+    if (assigneeId !== null && typeof assigneeId !== "string") {
       return next(
-        new ErrorResponse('Assignee id must be a string or null', 400),
+        new ErrorResponse("Assignee id must be a string or null", 400),
       );
     }
 
@@ -206,7 +206,7 @@ export const createIssue = asyncHandler(async (req, res, next) => {
       });
 
       if (!assignee) {
-        return next(new ErrorResponse('Assignee not found', 404));
+        return next(new ErrorResponse("Assignee not found", 404));
       }
     }
   }
@@ -220,7 +220,7 @@ export const createIssue = asyncHandler(async (req, res, next) => {
   });
 
   if (!project) {
-    return next(new ErrorResponse('Project not found', 404));
+    return next(new ErrorResponse("Project not found", 404));
   }
 
   // Create issue inside the selected project.
@@ -232,7 +232,7 @@ export const createIssue = asyncHandler(async (req, res, next) => {
       priority: issuePriority,
       type: issueType,
       projectId: project.id,
-      assigneeId: typeof assigneeId === 'string' ? assigneeId : undefined,
+      assigneeId: typeof assigneeId === "string" ? assigneeId : undefined,
     },
     include: issueInclude,
   });
@@ -246,7 +246,7 @@ export const createIssue = asyncHandler(async (req, res, next) => {
     message: `${user.name} created issue "${issue.title}"`,
   });
 
-  if (typeof assigneeId === 'string') {
+  if (typeof assigneeId === "string") {
     const assigneeName = await getAssigneeDisplayName(workspaceId, assigneeId);
 
     await createActivity({
@@ -262,7 +262,7 @@ export const createIssue = asyncHandler(async (req, res, next) => {
   }
 
   return res.status(201).json({
-    message: 'Issue created successfully',
+    message: "Issue created successfully",
     issue,
   });
 });
@@ -273,18 +273,18 @@ export const getIssues = asyncHandler(async (req, res, next) => {
   const user = authReq.user;
 
   if (!user) {
-    return next(new ErrorResponse('Unauthorized access', 401));
+    return next(new ErrorResponse("Unauthorized access", 401));
   }
 
   const workspaceId = req.params.workspaceId;
   const projectId = req.params.projectId;
 
-  if (typeof workspaceId !== 'string') {
-    return next(new ErrorResponse('Workspace id is required', 400));
+  if (typeof workspaceId !== "string") {
+    return next(new ErrorResponse("Workspace id is required", 400));
   }
 
-  if (typeof projectId !== 'string') {
-    return next(new ErrorResponse('Project id is required', 400));
+  if (typeof projectId !== "string") {
+    return next(new ErrorResponse("Project id is required", 400));
   }
 
   // Make sure the project exists inside this workspace.
@@ -296,57 +296,66 @@ export const getIssues = asyncHandler(async (req, res, next) => {
   });
 
   if (!project) {
-    return next(new ErrorResponse('Project not found', 404));
+    return next(new ErrorResponse("Project not found", 404));
   }
 
-  const { status, priority, type, search } = req.query;
+  const { status, priority, type, search, labelId } = req.query;
 
-  if (search !== undefined && typeof search !== 'string') {
-    throw new ErrorResponse('Search must be string', 400);
+  if (search !== undefined && typeof search !== "string") {
+    throw new ErrorResponse("Search must be string", 400);
   }
-  let searchFilter: string = '';
+  let searchFilter: string = "";
   if (search) {
     searchFilter = search.trim();
   }
 
-  let statusFilter: 'TODO' | 'IN_PROGRESS' | 'DONE' | undefined;
-  let priorityFilter: 'LOW' | 'MEDIUM' | 'HIGH' | undefined;
-  let typeFilter: 'BUG' | 'FEATURE' | 'TASK' | undefined;
+  let statusFilter: "TODO" | "IN_PROGRESS" | "DONE" | undefined;
+  let priorityFilter: "LOW" | "MEDIUM" | "HIGH" | undefined;
+  let typeFilter: "BUG" | "FEATURE" | "TASK" | undefined;
 
-  if (status === 'TODO' || status === 'IN_PROGRESS' || status === 'DONE') {
+  if (status === "TODO" || status === "IN_PROGRESS" || status === "DONE") {
     statusFilter = status;
   }
   if (status !== undefined && !statusFilter) {
-    throw new ErrorResponse('Please provide a valid status filter', 400);
+    throw new ErrorResponse("Please provide a valid status filter", 400);
   }
 
-  if (priority === 'LOW' || priority === 'MEDIUM' || priority === 'HIGH') {
+  if (priority === "LOW" || priority === "MEDIUM" || priority === "HIGH") {
     priorityFilter = priority;
   }
   if (priority !== undefined && !priorityFilter) {
-    throw new ErrorResponse('Please provide a valid priority filter', 400);
+    throw new ErrorResponse("Please provide a valid priority filter", 400);
   }
 
-  if (type === 'BUG' || type === 'FEATURE' || type === 'TASK') {
+  if (type === "BUG" || type === "FEATURE" || type === "TASK") {
     typeFilter = type;
   }
   if (type !== undefined && !typeFilter) {
-    throw new ErrorResponse('Please provide a valid type filter', 400);
+    throw new ErrorResponse("Please provide a valid type filter", 400);
+  }
+
+  if (labelId !== undefined && typeof labelId !== "string") {
+    return next(new ErrorResponse("Label id must be a string", 400));
   }
 
   type queryType = {
     where: {
       projectId: string;
-      status?: 'TODO' | 'IN_PROGRESS' | 'DONE';
-      priority?: 'LOW' | 'MEDIUM' | 'HIGH';
-      type?: 'BUG' | 'FEATURE' | 'TASK';
+      status?: "TODO" | "IN_PROGRESS" | "DONE";
+      priority?: "LOW" | "MEDIUM" | "HIGH";
+      type?: "BUG" | "FEATURE" | "TASK";
       title?: {
         contains: string;
-        mode: 'insensitive';
+        mode: "insensitive";
+      };
+      labels?: {
+        some: {
+          labelId: string;
+        };
       };
     };
     orderBy: {
-      createdAt: 'desc';
+      createdAt: "desc";
     };
   };
 
@@ -355,12 +364,12 @@ export const getIssues = asyncHandler(async (req, res, next) => {
       projectId: project.id,
     },
     orderBy: {
-      createdAt: 'desc',
+      createdAt: "desc",
     },
   };
 
   if (searchFilter.length !== 0) {
-    query.where.title = { contains: searchFilter, mode: 'insensitive' };
+    query.where.title = { contains: searchFilter, mode: "insensitive" };
   }
   if (statusFilter) {
     query.where.status = statusFilter;
@@ -372,6 +381,14 @@ export const getIssues = asyncHandler(async (req, res, next) => {
     query.where.type = typeFilter;
   }
 
+  if (labelId) {
+    query.where.labels = {
+      some: {
+        labelId,
+      },
+    };
+  }
+
   // Get issues newest first.
   const issues = await prisma.issue.findMany({
     where: query.where,
@@ -380,7 +397,7 @@ export const getIssues = asyncHandler(async (req, res, next) => {
   });
 
   return res.status(200).json({
-    message: 'Issues returned successfully',
+    message: "Issues returned successfully",
     issues,
   });
 });
@@ -391,23 +408,23 @@ export const getIssue = asyncHandler(async (req, res, next) => {
   const user = authReq.user;
 
   if (!user) {
-    return next(new ErrorResponse('Unauthorized access', 401));
+    return next(new ErrorResponse("Unauthorized access", 401));
   }
 
   const workspaceId = req.params.workspaceId;
   const projectId = req.params.projectId;
   const issueId = req.params.issueId;
 
-  if (typeof workspaceId !== 'string') {
-    return next(new ErrorResponse('Workspace id is required', 400));
+  if (typeof workspaceId !== "string") {
+    return next(new ErrorResponse("Workspace id is required", 400));
   }
 
-  if (typeof projectId !== 'string') {
-    return next(new ErrorResponse('Project id is required', 400));
+  if (typeof projectId !== "string") {
+    return next(new ErrorResponse("Project id is required", 400));
   }
 
-  if (typeof issueId !== 'string') {
-    return next(new ErrorResponse('Issue id is required', 400));
+  if (typeof issueId !== "string") {
+    return next(new ErrorResponse("Issue id is required", 400));
   }
 
   // Find issue only if it belongs to this project and workspace.
@@ -423,11 +440,11 @@ export const getIssue = asyncHandler(async (req, res, next) => {
   });
 
   if (!issue) {
-    return next(new ErrorResponse('Issue not found', 404));
+    return next(new ErrorResponse("Issue not found", 404));
   }
 
   return res.status(200).json({
-    message: 'Issue returned successfully',
+    message: "Issue returned successfully",
     issue,
   });
 });
@@ -438,27 +455,27 @@ export const updateIssue = asyncHandler(async (req, res, next) => {
   const user = authReq.user;
 
   if (!user) {
-    return next(new ErrorResponse('Unauthorized access', 401));
+    return next(new ErrorResponse("Unauthorized access", 401));
   }
 
   const workspaceId = req.params.workspaceId;
   const projectId = req.params.projectId;
   const issueId = req.params.issueId;
 
-  if (typeof workspaceId !== 'string') {
-    return next(new ErrorResponse('Workspace id is required', 400));
+  if (typeof workspaceId !== "string") {
+    return next(new ErrorResponse("Workspace id is required", 400));
   }
 
-  if (typeof projectId !== 'string') {
-    return next(new ErrorResponse('Project id is required', 400));
+  if (typeof projectId !== "string") {
+    return next(new ErrorResponse("Project id is required", 400));
   }
 
-  if (typeof issueId !== 'string') {
-    return next(new ErrorResponse('Issue id is required', 400));
+  if (typeof issueId !== "string") {
+    return next(new ErrorResponse("Issue id is required", 400));
   }
 
   if (!req.body) {
-    return next(new ErrorResponse('Issue update data is required', 400));
+    return next(new ErrorResponse("Issue update data is required", 400));
   }
 
   const { title, description, status, priority, type, assigneeId } = req.body;
@@ -475,8 +492,8 @@ export const updateIssue = asyncHandler(async (req, res, next) => {
 
   // Validate title only if user provided it.
   if (title !== undefined) {
-    if (typeof title !== 'string') {
-      return next(new ErrorResponse('Issue title must be a string', 400));
+    if (typeof title !== "string") {
+      return next(new ErrorResponse("Issue title must be a string", 400));
     }
 
     const trimmedTitle = title.trim();
@@ -484,7 +501,7 @@ export const updateIssue = asyncHandler(async (req, res, next) => {
     if (!issueTitleRegex.test(trimmedTitle)) {
       return next(
         new ErrorResponse(
-          'Issue title must be 2-100 characters and can include letters, numbers, spaces, and basic punctuation',
+          "Issue title must be 2-100 characters and can include letters, numbers, spaces, and basic punctuation",
           400,
         ),
       );
@@ -498,15 +515,15 @@ export const updateIssue = asyncHandler(async (req, res, next) => {
   if (description !== undefined) {
     if (description === null) {
       dataToUpdate.description = null;
-    } else if (typeof description !== 'string') {
-      return next(new ErrorResponse('Issue description must be a string', 400));
+    } else if (typeof description !== "string") {
+      return next(new ErrorResponse("Issue description must be a string", 400));
     } else {
       const trimmedDescription = description.trim();
 
       if (trimmedDescription.length > 1000) {
         return next(
           new ErrorResponse(
-            'Issue description must be 1000 characters or less',
+            "Issue description must be 1000 characters or less",
             400,
           ),
         );
@@ -518,7 +535,7 @@ export const updateIssue = asyncHandler(async (req, res, next) => {
 
   if (status !== undefined) {
     if (!isIssueStatus(status)) {
-      return next(new ErrorResponse('Invalid issue status', 400));
+      return next(new ErrorResponse("Invalid issue status", 400));
     }
 
     dataToUpdate.status = status;
@@ -526,7 +543,7 @@ export const updateIssue = asyncHandler(async (req, res, next) => {
 
   if (priority !== undefined) {
     if (!isIssuePriority(priority)) {
-      return next(new ErrorResponse('Invalid issue priority', 400));
+      return next(new ErrorResponse("Invalid issue priority", 400));
     }
 
     dataToUpdate.priority = priority;
@@ -534,16 +551,16 @@ export const updateIssue = asyncHandler(async (req, res, next) => {
 
   if (type !== undefined) {
     if (!isIssueType(type)) {
-      return next(new ErrorResponse('Invalid issue type', 400));
+      return next(new ErrorResponse("Invalid issue type", 400));
     }
 
     dataToUpdate.type = type;
   }
 
   if (assigneeId !== undefined) {
-    if (assigneeId !== null && typeof assigneeId !== 'string') {
+    if (assigneeId !== null && typeof assigneeId !== "string") {
       return next(
-        new ErrorResponse('Assignee id must be a string or null', 400),
+        new ErrorResponse("Assignee id must be a string or null", 400),
       );
     }
 
@@ -556,7 +573,7 @@ export const updateIssue = asyncHandler(async (req, res, next) => {
       });
 
       if (!assignee) {
-        return next(new ErrorResponse('Assignee not found', 404));
+        return next(new ErrorResponse("Assignee not found", 404));
       }
     }
 
@@ -567,7 +584,7 @@ export const updateIssue = asyncHandler(async (req, res, next) => {
   if (Object.keys(dataToUpdate).length === 0) {
     return next(
       new ErrorResponse(
-        'Please provide title, description, status, priority, type, or assigneeId to update',
+        "Please provide title, description, status, priority, type, or assigneeId to update",
         400,
       ),
     );
@@ -585,7 +602,7 @@ export const updateIssue = asyncHandler(async (req, res, next) => {
   });
 
   if (!issue) {
-    return next(new ErrorResponse('Issue not found', 404));
+    return next(new ErrorResponse("Issue not found", 404));
   }
 
   // Update only the provided fields.
@@ -691,7 +708,7 @@ export const updateIssue = asyncHandler(async (req, res, next) => {
   }
 
   return res.status(200).json({
-    message: 'Issue updated successfully',
+    message: "Issue updated successfully",
     issue: updatedIssue,
   });
 });
@@ -702,23 +719,23 @@ export const deleteIssue = asyncHandler(async (req, res, next) => {
   const user = authReq.user;
 
   if (!user) {
-    return next(new ErrorResponse('Unauthorized access', 401));
+    return next(new ErrorResponse("Unauthorized access", 401));
   }
 
   const workspaceId = req.params.workspaceId;
   const projectId = req.params.projectId;
   const issueId = req.params.issueId;
 
-  if (typeof workspaceId !== 'string') {
-    return next(new ErrorResponse('Workspace id is required', 400));
+  if (typeof workspaceId !== "string") {
+    return next(new ErrorResponse("Workspace id is required", 400));
   }
 
-  if (typeof projectId !== 'string') {
-    return next(new ErrorResponse('Project id is required', 400));
+  if (typeof projectId !== "string") {
+    return next(new ErrorResponse("Project id is required", 400));
   }
 
-  if (typeof issueId !== 'string') {
-    return next(new ErrorResponse('Issue id is required', 400));
+  if (typeof issueId !== "string") {
+    return next(new ErrorResponse("Issue id is required", 400));
   }
 
   // Make sure the issue belongs to this project and workspace before deleting.
@@ -733,7 +750,7 @@ export const deleteIssue = asyncHandler(async (req, res, next) => {
   });
 
   if (!issue) {
-    return next(new ErrorResponse('Issue not found', 404));
+    return next(new ErrorResponse("Issue not found", 404));
   }
 
   await createActivity({
@@ -762,7 +779,7 @@ export const deleteIssue = asyncHandler(async (req, res, next) => {
   });
 
   return res.status(200).json({
-    message: 'Issue deleted successfully',
+    message: "Issue deleted successfully",
     issue: {
       id: deletedIssue.id,
       title: deletedIssue.title,

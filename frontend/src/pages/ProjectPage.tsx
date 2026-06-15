@@ -71,17 +71,9 @@ export default function ProjectPage() {
     selectedLabelFilter !== "" ||
     searchValue.trim() !== "";
 
-  const filteredIssues = selectedLabelFilter
-    ? issues.filter((issue) =>
-        issue.labels.some(
-          (issueLabel) => issueLabel.labelId === selectedLabelFilter,
-        ),
-      )
-    : issues;
-
   const issueCountText = hasActiveFilters
-    ? `Showing ${filteredIssues.length} issue${filteredIssues.length === 1 ? "" : "s"}`
-    : `${filteredIssues.length} total issue${filteredIssues.length === 1 ? "" : "s"}`;
+    ? `Showing ${issues.length} issue${issues.length === 1 ? "" : "s"}`
+    : `${issues.length} total issue${issues.length === 1 ? "" : "s"}`;
 
   const { canManageWorkspace } = useWorkspaceContext();
 
@@ -158,6 +150,7 @@ export default function ProjectPage() {
           priorityFilter === "ALL" ? undefined : priorityFilter,
           typeFilter === "ALL" ? undefined : typeFilter,
           debouncedSearchValue,
+          selectedLabelFilter || undefined,
         );
 
         setIssues(issuesData.issues);
@@ -187,6 +180,7 @@ export default function ProjectPage() {
     priorityFilter,
     typeFilter,
     debouncedSearchValue,
+    selectedLabelFilter,
   ]);
 
   // useEffect for debouncing search
@@ -498,7 +492,7 @@ export default function ProjectPage() {
               )}
 
               {currentProject &&
-                filteredIssues.map((issue) => (
+                issues.map((issue) => (
                   <IssueCard
                     key={issue.id}
                     workspaceId={currentProject.workspaceId}
@@ -507,7 +501,7 @@ export default function ProjectPage() {
                 ))}
             </div>
 
-            {!showCreateIssueForm && filteredIssues.length === 0 && (
+            {!showCreateIssueForm && issues.length === 0 && (
               <EmptyState
                 message={
                   hasNoIssueFilters
