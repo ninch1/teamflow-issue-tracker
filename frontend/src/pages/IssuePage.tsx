@@ -22,6 +22,13 @@ import {
   updateIssueComment,
   deleteIssueComment,
 } from "../api/commentApi";
+import IssueLabelsSection from "../components/layout/IssueLabelsSection";
+import type { Label } from "../types/labelTypes";
+import {
+  getWorkspaceLabels,
+  addLabelToIssue,
+  removeLabelFromIssue,
+} from "../api/labelApi";
 
 export default function IssuePage() {
   const { workspaceId, projectId, issueId } = useParams();
@@ -54,6 +61,10 @@ export default function IssuePage() {
   const [commentsPage, setCommentsPage] = useState(1);
   const [hasMoreComments, setHasMoreComments] = useState(false);
   const [isLoadingMoreComments, setIsLoadingMoreComments] = useState(false);
+  const [labels, setLabels] = useState<Label[]>([]);
+  const [selectedLabelId, setSelectedLabelId] = useState("");
+  const [isAddingLabel, setIsAddingLabel] = useState(false);
+  const [isRemovingLabel, setIsRemovingLabel] = useState(false);
 
   const { members, currentMemberId, currentUserId, canManageWorkspace } =
     useWorkspaceContext();
@@ -70,6 +81,7 @@ export default function IssuePage() {
         }
 
         const issueData = await getIssue(workspaceId, projectId, issueId);
+        const labelsData = await getWorkspaceLabels(workspaceId);
         const commentsData = await getIssueComments(
           workspaceId,
           projectId,
@@ -79,6 +91,7 @@ export default function IssuePage() {
         );
 
         setCurrentIssue(issueData.issue);
+        setLabels(labelsData.labels);
         setComments(commentsData.comments);
 
         setCommentsPage(commentsData.page);
@@ -425,6 +438,110 @@ export default function IssuePage() {
       setIsUpdatingComment(false);
     }
   }
+  async function handleAddLabelToIssue() {
+    if (isAddingLabel) {
+      return;
+    }
+
+    setFormError("");
+    setSuccessMessage("");
+
+    if (!selectedLabelId) {
+      setFormError("Please choose a label");
+      return;
+    }
+
+    if (!workspaceId || !projectId || !issueId) {
+      setFormError("Issue not found");
+      return;
+    }
+
+    try {
+      setIsAddingLabel(true);
+
+      const data = await addLabelToIssue(
+        workspaceId,
+        projectId,
+        issueId,
+        selectedLabelId,
+      );
+
+      setCurrentIssue((currentIssue) => {
+        if (!currentIssue) {
+          return currentIssue;
+        }
+
+        return {
+          ...currentIssue,
+          labels: [...currentIssue.labels, data.issueLabel],
+        };
+      });
+      setSelectedLabelId("");
+      setSuccessMessage("Label added successfully.");
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate("/login");
+        return;
+      }
+
+      if (error instanceof Error) {
+        setFormError(error.message);
+      } else {
+        setFormError("Could not add label");
+      }
+    } finally {
+      setIsAddingLabel(false);
+    }
+  }
+
+  async function handleRemoveLabelFromIssue(labelId: string) {
+    if (isRemovingLabel) {
+      return;
+    }
+
+    setFormError("");
+    setSuccessMessage("");
+
+    if (!workspaceId || !projectId || !issueId) {
+      setFormError("Issue not found");
+      return;
+    }
+
+    try {
+      setIsRemovingLabel(true);
+
+      await removeLabelFromIssue(workspaceId, projectId, issueId, labelId);
+
+      setCurrentIssue((currentIssue) => {
+        if (!currentIssue) {
+          return currentIssue;
+        }
+
+        return {
+          ...currentIssue,
+          labels: currentIssue.labels.filter(
+            (issueLabel) => issueLabel.labelId !== labelId,
+          ),
+        };
+      });
+      setSuccessMessage("Label removed successfully.");
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate("/login");
+        return;
+      }
+
+      if (error instanceof Error) {
+        setFormError(error.message);
+      } else {
+        setFormError("Could not remove label");
+      }
+    } finally {
+      setIsRemovingLabel(false);
+    }
+  }
 
   async function handleDeleteComment(commentId: string) {
     if (isDeletingComment) {
@@ -562,6 +679,22 @@ export default function IssuePage() {
       )}
 
       {currentIssue && <IssueDetailsCard issue={currentIssue} />}
+
+      {currentIssue && (
+        <div className="mt-8">
+          <IssueLabelsSection
+            labels={labels}
+            issueLabels={currentIssue.labels}
+            selectedLabelId={selectedLabelId}
+            canManageWorkspace={canManageWorkspace}
+            isAddingLabel={isAddingLabel}
+            isRemovingLabel={isRemovingLabel}
+            onSelectedLabelChange={setSelectedLabelId}
+            onAddLabel={handleAddLabelToIssue}
+            onRemoveLabel={handleRemoveLabelFromIssue}
+          />
+        </div>
+      )}
 
       <div className="mt-8">
         <IssueAssigneeSection

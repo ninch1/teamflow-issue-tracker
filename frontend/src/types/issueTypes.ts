@@ -1,6 +1,8 @@
-export type IssueStatus = 'TODO' | 'IN_PROGRESS' | 'DONE';
-export type IssuePriority = 'LOW' | 'MEDIUM' | 'HIGH';
-export type IssueType = 'BUG' | 'FEATURE' | 'TASK';
+import type { IssueLabel } from "./labelTypes";
+
+export type IssueStatus = "TODO" | "IN_PROGRESS" | "DONE";
+export type IssuePriority = "LOW" | "MEDIUM" | "HIGH";
+export type IssueType = "BUG" | "FEATURE" | "TASK";
 
 export type Issue = {
   id: string;
@@ -17,7 +19,7 @@ export type Issue = {
     id: string;
     userId: string;
     workspaceId: string;
-    role: 'OWNER' | 'ADMIN' | 'MEMBER';
+    role: "OWNER" | "ADMIN" | "MEMBER";
     createdAt: string;
     updatedAt: string;
     user: {
@@ -26,6 +28,7 @@ export type Issue = {
       email: string;
     };
   } | null;
+  labels: IssueLabel[];
 };
 
 export type EditIssueInfo = {
