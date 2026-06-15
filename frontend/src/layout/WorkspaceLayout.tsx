@@ -121,6 +121,7 @@ export default function WorkspaceLayout() {
   );
 
   const currentUserRole = currentMember?.role ?? null;
+  const currentMemberId = currentMember?.id ?? null;
 
   const canManageWorkspace =
     currentUserRole === 'OWNER' || currentUserRole === 'ADMIN';
@@ -237,6 +238,7 @@ export default function WorkspaceLayout() {
       value={{
         members,
         currentUserRole,
+        currentMemberId,
         canManageWorkspace,
       }}
     >

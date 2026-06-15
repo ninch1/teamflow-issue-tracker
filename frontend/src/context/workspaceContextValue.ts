@@ -4,6 +4,7 @@ import type { Member } from '../types/memberTypes';
 export type WorkspaceContextValue = {
   members: Member[];
   currentUserRole: 'OWNER' | 'ADMIN' | 'MEMBER' | null;
+  currentMemberId: string | null;
   canManageWorkspace: boolean;
 };
 

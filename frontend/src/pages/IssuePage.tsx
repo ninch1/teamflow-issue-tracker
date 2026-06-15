@@ -13,6 +13,7 @@ import type { Issue, IssueStatus, EditIssueInfo } from '../types/issueTypes';
 import BackLink from '../components/common/BackLink';
 import SuccessAlert from '../components/common/SuccessAlert';
 import { useWorkspaceContext } from '../context/workspaceContextValue';
+import IssueAssigneeSection from '../components/layout/IssueAssigneeSection';
 
 export default function IssuePage() {
   const { workspaceId, projectId, issueId } = useParams();
@@ -33,8 +34,11 @@ export default function IssuePage() {
   const [isUpdatingIssueDetails, setIsUpdatingIssueDetails] = useState(false);
   const [isDeletingIssue, setIsDeletingIssue] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [newAssigneeId, setNewAssigneeId] = useState<string | null>(null);
+  const [isUpdatingAssignee, setIsUpdatingAssignee] = useState(false);
 
-  const { canManageWorkspace } = useWorkspaceContext();
+  const { members, currentMemberId, canManageWorkspace } =
+    useWorkspaceContext();
 
   useEffect(() => {
     async function initialIssue() {
@@ -57,6 +61,7 @@ export default function IssuePage() {
           priority: issueData.issue.priority,
           type: issueData.issue.type,
         });
+        setNewAssigneeId(issueData.issue.assigneeId);
       } catch (error: unknown) {
         if (error instanceof ApiError && error.status === 401) {
           removeAuthToken();
@@ -231,6 +236,49 @@ export default function IssuePage() {
     }
   }
 
+  async function handleUpdateAssignee() {
+    if (isUpdatingAssignee) {
+      return;
+    }
+
+    setFormError('');
+    setSuccessMessage('');
+
+    if (!workspaceId || !projectId || !issueId) {
+      setFormError('Issue not found');
+      return;
+    }
+
+    try {
+      setIsUpdatingAssignee(true);
+
+      const updatedIssueData = await updateIssue(
+        workspaceId,
+        projectId,
+        issueId,
+        { assigneeId: newAssigneeId },
+      );
+
+      setCurrentIssue(updatedIssueData.issue);
+      setNewAssigneeId(updatedIssueData.issue.assigneeId);
+      setSuccessMessage('Assignee updated successfully.');
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate('/login');
+        return;
+      }
+
+      if (error instanceof Error) {
+        setFormError(error.message);
+      } else {
+        setFormError('Could not update assignee');
+      }
+    } finally {
+      setIsUpdatingAssignee(false);
+    }
+  }
+
   useEffect(() => {
     if (!successMessage) {
       return;
@@ -246,6 +294,11 @@ export default function IssuePage() {
   if (isLoading) {
     return <LoadingCard message='Loading issue...' />;
   }
+
+  const canUpdateIssueStatus =
+    canManageWorkspace ||
+    currentIssue?.assigneeId === null ||
+    currentIssue?.assigneeId === currentMemberId;
 
   return (
     <div className='w-full max-w-6xl'>
@@ -270,23 +323,46 @@ export default function IssuePage() {
 
       {currentIssue && <IssueDetailsCard issue={currentIssue} />}
 
-      <div className='my-8 flex flex-col gap-5 lg:flex-row'>
-  <IssueStatusSection
-    status={newStatus}
-    onStatusChange={setNewStatus}
-    onSubmit={handleUpdateStatus}
-    isSubmitting={isUpdatingStatus}
-  />
+      <div className='mt-8'>
+        <IssueAssigneeSection
+          assigneeId={newAssigneeId}
+          members={members}
+          canManageWorkspace={canManageWorkspace}
+          isSubmitting={isUpdatingAssignee}
+          onAssigneeChange={setNewAssigneeId}
+          onSubmit={handleUpdateAssignee}
+        />
+      </div>
 
-  {canManageWorkspace && (
-    <IssueEditForm
-      editIssueInfo={editIssueInfo}
-      onEditIssueChange={setEditIssueInfo}
-      onSubmit={handleUpdateIssueDetails}
-      isSubmitting={isUpdatingIssueDetails}
-    />
-  )}
-</div>
+      <div className='my-8 flex flex-col gap-5 lg:flex-row'>
+        {canUpdateIssueStatus ? (
+          <IssueStatusSection
+            status={newStatus}
+            onStatusChange={setNewStatus}
+            onSubmit={handleUpdateStatus}
+            isSubmitting={isUpdatingStatus}
+          />
+        ) : (
+          <div className='rounded-xl border border-slate-200 bg-white p-5 shadow-sm'>
+            <h2 className='text-lg font-semibold text-slate-950'>
+              Update Status
+            </h2>
+            <p className='mt-2 text-sm text-slate-500'>
+              This issue is assigned to another member, so only the assignee or
+              a workspace admin can update its status.
+            </p>
+          </div>
+        )}
+
+        {canManageWorkspace && (
+          <IssueEditForm
+            editIssueInfo={editIssueInfo}
+            onEditIssueChange={setEditIssueInfo}
+            onSubmit={handleUpdateIssueDetails}
+            isSubmitting={isUpdatingIssueDetails}
+          />
+        )}
+      </div>
 
       {canManageWorkspace && (
         <DangerZone

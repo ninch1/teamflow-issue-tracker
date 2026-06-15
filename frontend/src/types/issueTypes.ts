@@ -12,6 +12,20 @@ export type Issue = {
   projectId: string;
   createdAt: string;
   updatedAt: string;
+  assigneeId: string | null;
+  assignee: {
+    id: string;
+    userId: string;
+    workspaceId: string;
+    role: 'OWNER' | 'ADMIN' | 'MEMBER';
+    createdAt: string;
+    updatedAt: string;
+    user: {
+      id: string;
+      name: string | null;
+      email: string;
+    };
+  } | null;
 };
 
 export type EditIssueInfo = {
@@ -19,4 +33,13 @@ export type EditIssueInfo = {
   description: string;
   priority: IssuePriority;
   type: IssueType;
+};
+
+export type UpdateIssuePayload = {
+  title?: string;
+  description?: string | null;
+  status?: IssueStatus;
+  priority?: IssuePriority;
+  type?: IssueType;
+  assigneeId?: string | null;
 };

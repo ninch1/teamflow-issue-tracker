@@ -10,11 +10,11 @@ const BASE_URL = 'http://localhost:3000/api/workspace';
 
 type UpdateIssuePayload = {
   title?: string;
-  description?: string;
+  description?: string | null;
   status?: IssueStatus;
   priority?: IssuePriority;
   type?: IssueType;
-  search?: string;
+  assigneeId?: string | null;
 };
 
 export const getIssues = async (
