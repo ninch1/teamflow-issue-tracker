@@ -207,6 +207,25 @@ export const removeWorkspaceMember = asyncHandler(async (req, res, next) => {
 
   const removedMemberName = membership.user.name || membership.user.email;
 
+  await prisma.$transaction([
+    prisma.issue.updateMany({
+      where: {
+        assigneeId: memberId,
+        project: {
+          workspaceId,
+        },
+      },
+      data: {
+        assigneeId: null,
+      },
+    }),
+    prisma.workspaceMember.delete({
+      where: {
+        id: memberId,
+      },
+    }),
+  ]);
+
   await createActivity({
     workspaceId,
     userId: user.id,
@@ -214,19 +233,13 @@ export const removeWorkspaceMember = asyncHandler(async (req, res, next) => {
     message: `${user.name} removed ${removedMemberName} from the workspace`,
   });
 
-  const deletedMembership = await prisma.workspaceMember.delete({
-    where: {
-      id: memberId,
-    },
-  });
-
   return res.status(200).json({
     message: 'Successfully removed member',
     membership: {
-      id: deletedMembership.id,
-      userId: deletedMembership.userId,
-      workspaceId: deletedMembership.workspaceId,
-      role: deletedMembership.role,
+      id: membership.id,
+      userId: membership.userId,
+      workspaceId: membership.workspaceId,
+      role: membership.role,
     },
   });
 });
