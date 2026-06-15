@@ -12,6 +12,8 @@ import { WorkspaceRole } from "../generated/prisma/client";
 import {
   getIssueComments,
   createIssueComment,
+  updateIssueComment,
+  deleteIssueComment,
 } from "../controllers/commentsController";
 
 // mergeParams lets this router access :workspaceId and :projectId from app.ts mount path.
@@ -75,6 +77,27 @@ issueRouter
       WorkspaceRole.MEMBER,
     ]),
     createIssueComment,
+  );
+
+issueRouter
+  .route("/:issueId/comments/:commentId")
+  .patch(
+    authMiddleware,
+    workspaceRoleMiddleware([
+      WorkspaceRole.OWNER,
+      WorkspaceRole.ADMIN,
+      WorkspaceRole.MEMBER,
+    ]),
+    updateIssueComment,
+  )
+  .delete(
+    authMiddleware,
+    workspaceRoleMiddleware([
+      WorkspaceRole.OWNER,
+      WorkspaceRole.ADMIN,
+      WorkspaceRole.MEMBER,
+    ]),
+    deleteIssueComment,
   );
 
 export default issueRouter;
