@@ -11,11 +11,13 @@ export async function getIssueComments(
   workspaceId: string,
   projectId: string,
   issueId: string,
+  limit = 5,
+  page = 1,
 ) {
   const authToken = getAuthToken();
 
   const response = await fetch(
-    `${BASE_URL}/${workspaceId}/projects/${projectId}/issues/${issueId}/comments`,
+    `${BASE_URL}/${workspaceId}/projects/${projectId}/issues/${issueId}/comments?limit=${limit}&page=${page}`,
     {
       method: "GET",
       headers: {

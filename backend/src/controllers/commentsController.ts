@@ -14,9 +14,7 @@ export const getIssueComments = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Unauthorized access", 401));
   }
 
-  const workspaceId = req.params.workspaceId;
-  const projectId = req.params.projectId;
-  const issueId = req.params.issueId;
+  const { workspaceId, projectId, issueId } = req.params;
 
   if (typeof workspaceId !== "string") {
     return next(new ErrorResponse("Workspace id is required", 400));
@@ -28,6 +26,23 @@ export const getIssueComments = asyncHandler(async (req, res, next) => {
 
   if (typeof issueId !== "string") {
     return next(new ErrorResponse("Issue id is required", 400));
+  }
+
+  const limitQuery = req.query.limit;
+  const pageQuery = req.query.page;
+
+  const limit =
+    typeof limitQuery === "string" ? Number.parseInt(limitQuery, 10) : 5;
+
+  const page =
+    typeof pageQuery === "string" ? Number.parseInt(pageQuery, 10) : 1;
+
+  if (Number.isNaN(limit) || limit < 1 || limit > 50) {
+    return next(new ErrorResponse("Limit must be between 1 and 50", 400));
+  }
+
+  if (Number.isNaN(page) || page < 1) {
+    return next(new ErrorResponse("Page must be 1 or greater", 400));
   }
 
   const issue = await prisma.issue.findFirst({
@@ -44,26 +59,45 @@ export const getIssueComments = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Issue not found", 404));
   }
 
-  const comments = await prisma.comment.findMany({
-    where: {
-      issueId,
-    },
-    orderBy: {
-      createdAt: "asc",
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
+  const skip = (page - 1) * limit;
+
+  const [comments, totalComments] = await Promise.all([
+    prisma.comment.findMany({
+      where: {
+        issueId,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip,
+      take: limit,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
         },
       },
-    },
-  });
+    }),
+    prisma.comment.count({
+      where: {
+        issueId,
+      },
+    }),
+  ]);
+
+  const totalPages = Math.ceil(totalComments / limit);
+  const hasMore = page < totalPages;
 
   return res.status(200).json({
     message: "Comments retrieved successfully",
+    page,
+    limit,
+    totalComments,
+    totalPages,
+    hasMore,
     comments,
   });
 });
