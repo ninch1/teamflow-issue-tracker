@@ -1,4 +1,7 @@
 import type { Activity } from '../../types/activityTypes';
+import PrimaryButton from '../common/PrimaryButton';
+import { Link, useParams } from 'react-router-dom';
+
 
 type ActivityPanelProps = {
   activities: Activity[];
@@ -15,6 +18,12 @@ export default function ActivityPanel({
   isLoading,
   error,
 }: ActivityPanelProps) {
+  const { workspaceId } = useParams();
+
+  if (!workspaceId) {
+    return null;
+  }
+
   return (
     <section className='rounded-xl border border-slate-200 bg-white p-5 shadow-sm'>
       <div>
@@ -37,7 +46,7 @@ export default function ActivityPanel({
       )}
 
       {!isLoading && !error && activities.length > 0 && (
-        <div className='mt-4 space-y-3'>
+        <div className='mt-4 mb-4 space-y-3'>
           {activities.map((activity) => (
             <div
               key={activity.id}
@@ -51,6 +60,10 @@ export default function ActivityPanel({
           ))}
         </div>
       )}
+
+      <Link to={`/workspaces/${workspaceId}/activity`}>
+        <PrimaryButton fullWidth={true}>View all activity</PrimaryButton>
+      </Link>
     </section>
   );
 }

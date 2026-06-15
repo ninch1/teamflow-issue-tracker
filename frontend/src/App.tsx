@@ -9,6 +9,7 @@ import WorkspacePage from './pages/WorkspacePage';
 import ProjectPage from './pages/ProjectPage';
 import IssuePage from './pages/IssuePage';
 import WorkspaceLayout from './layout/WorkspaceLayout';
+import ActivityPage from './pages/ActivityPage';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
               path='projects/:projectId/issues/:issueId'
               element={<IssuePage />}
             />
+            <Route path='activity' element={<ActivityPage />} />
           </Route>
         </Route>
       </Routes>
