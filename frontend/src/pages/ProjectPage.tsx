@@ -1,29 +1,31 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { getProject, updateProject, deleteProject } from '../api/projectApi';
-import { getIssues, createIssue } from '../api/issueApi';
-import IssueCard from '../components/common/IssueCard';
-import CreateIssueCard from '../components/layout/CreateIssueCard';
-import ErrorAlert from '../components/common/ErrorAlert';
-import ApiError from '../errors/ApiError';
-import { removeAuthToken } from '../utils/authToken';
-import ProjectDetailsCard from '../components/layout/ProjectDetailsCard';
-import ProjectEditForm from '../components/layout/ProjectEditForm';
-import DangerZone from '../components/common/DangerZone';
-import LoadingCard from '../components/common/LoadingCard';
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { getProject, updateProject, deleteProject } from "../api/projectApi";
+import { getIssues, createIssue } from "../api/issueApi";
+import IssueCard from "../components/common/IssueCard";
+import CreateIssueCard from "../components/layout/CreateIssueCard";
+import ErrorAlert from "../components/common/ErrorAlert";
+import ApiError from "../errors/ApiError";
+import { removeAuthToken } from "../utils/authToken";
+import ProjectDetailsCard from "../components/layout/ProjectDetailsCard";
+import ProjectEditForm from "../components/layout/ProjectEditForm";
+import DangerZone from "../components/common/DangerZone";
+import LoadingCard from "../components/common/LoadingCard";
 import type {
   Issue,
   IssuePriority,
   IssueStatus,
   IssueType,
   EditIssueInfo,
-} from '../types/issueTypes';
-import type { Project, EditProjectInfo } from '../types/projectTypes';
-import BackLink from '../components/common/BackLink';
-import SuccessAlert from '../components/common/SuccessAlert';
-import IssueFiltersBar from '../components/layout/IssueFiltersBar';
-import EmptyState from '../components/common/EmptyState';
-import { useWorkspaceContext } from '../context/workspaceContextValue';
+} from "../types/issueTypes";
+import type { Project, EditProjectInfo } from "../types/projectTypes";
+import BackLink from "../components/common/BackLink";
+import SuccessAlert from "../components/common/SuccessAlert";
+import IssueFiltersBar from "../components/layout/IssueFiltersBar";
+import EmptyState from "../components/common/EmptyState";
+import { useWorkspaceContext } from "../context/workspaceContextValue";
+import type { Label } from "../types/labelTypes";
+import { getWorkspaceLabels } from "../api/labelApi";
 
 type NewIssue = EditIssueInfo;
 
@@ -33,82 +35,102 @@ export default function ProjectPage() {
 
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [issues, setIssues] = useState<Issue[]>([]);
-  const [pageError, setPageError] = useState('');
-  const [formError, setFormError] = useState('');
+  const [pageError, setPageError] = useState("");
+  const [formError, setFormError] = useState("");
   const [showCreateIssueForm, setShowIssueForm] = useState(false);
   const [isCreatingIssue, setIsCreatingIssue] = useState(false);
   const [isUpdatingProject, setIsUpdatingProject] = useState(false);
   const [isDeletingProject, setIsDeletingProject] = useState(false);
   const [newIssueInfo, setNewIssueInfo] = useState<NewIssue>({
-    title: '',
-    description: '',
-    priority: 'MEDIUM',
-    type: 'TASK',
+    title: "",
+    description: "",
+    priority: "MEDIUM",
+    type: "TASK",
   });
   const [editProjectInfo, setEditProjectInfo] = useState<EditProjectInfo>({
-    name: '',
-    description: '',
+    name: "",
+    description: "",
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<'ALL' | IssueStatus>('ALL');
-  const [priorityFilter, setPriorityFilter] = useState<'ALL' | IssuePriority>(
-    'ALL',
+  const [statusFilter, setStatusFilter] = useState<"ALL" | IssueStatus>("ALL");
+  const [priorityFilter, setPriorityFilter] = useState<"ALL" | IssuePriority>(
+    "ALL",
   );
-  const [typeFilter, setTypeFilter] = useState<'ALL' | IssueType>('ALL');
+  const [typeFilter, setTypeFilter] = useState<"ALL" | IssueType>("ALL");
   const [isIssuesLoading, setIsIssuesLoading] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
-  const [debouncedSearchValue, setDebouncedSearchValue] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [searchValue, setSearchValue] = useState("");
+  const [debouncedSearchValue, setDebouncedSearchValue] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [labels, setLabels] = useState<Label[]>([]);
+  const [selectedLabelFilter, setSelectedLabelFilter] = useState("");
 
   const hasActiveFilters =
-    statusFilter !== 'ALL' ||
-    priorityFilter !== 'ALL' ||
-    typeFilter !== 'ALL' ||
-    searchValue.trim() !== '';
+    statusFilter !== "ALL" ||
+    priorityFilter !== "ALL" ||
+    typeFilter !== "ALL" ||
+    selectedLabelFilter !== "" ||
+    searchValue.trim() !== "";
+
+  const filteredIssues = selectedLabelFilter
+    ? issues.filter((issue) =>
+        issue.labels.some(
+          (issueLabel) => issueLabel.labelId === selectedLabelFilter,
+        ),
+      )
+    : issues;
 
   const issueCountText = hasActiveFilters
-    ? `Showing ${issues.length} issue${issues.length === 1 ? '' : 's'}`
-    : `${issues.length} total issue${issues.length === 1 ? '' : 's'}`;
+    ? `Showing ${filteredIssues.length} issue${filteredIssues.length === 1 ? "" : "s"}`
+    : `${filteredIssues.length} total issue${filteredIssues.length === 1 ? "" : "s"}`;
 
   const { canManageWorkspace } = useWorkspaceContext();
 
   function handleResetFilters() {
-    setStatusFilter('ALL');
-    setPriorityFilter('ALL');
-    setTypeFilter('ALL');
-    setSearchValue('');
-    setDebouncedSearchValue('');
+    setStatusFilter("ALL");
+    setPriorityFilter("ALL");
+    setTypeFilter("ALL");
+    setSelectedLabelFilter("");
+    setSearchValue("");
+    setDebouncedSearchValue("");
   }
 
   useEffect(() => {
     async function initialProject() {
       try {
         setIsLoading(true);
-        setPageError('');
+        setPageError("");
 
         if (!workspaceId || !projectId) {
-          setPageError('Project not found');
+          setPageError("Project not found");
           return;
         }
 
-        const projectData = await getProject(workspaceId, projectId);
+        const activeWorkspaceId = workspaceId;
+        const activeProjectId = projectId;
+
+        const projectData = await getProject(
+          activeWorkspaceId,
+          activeProjectId,
+        );
+        const labelsData = await getWorkspaceLabels(activeWorkspaceId);
 
         setCurrentProject(projectData.project);
+        setLabels(labelsData.labels);
         setEditProjectInfo({
           name: projectData.project.name,
-          description: projectData.project.description || '',
+          description: projectData.project.description || "",
         });
       } catch (error: unknown) {
         if (error instanceof ApiError && error.status === 401) {
           removeAuthToken();
-          navigate('/login');
+          navigate("/login");
           return;
         }
 
         if (error instanceof Error) {
           setPageError(error.message);
         } else {
-          setPageError('Could not load project');
+          setPageError("Could not load project");
         }
       } finally {
         setIsLoading(false);
@@ -122,19 +144,19 @@ export default function ProjectPage() {
     async function loadIssues() {
       try {
         setIsIssuesLoading(true);
-        setPageError('');
+        setPageError("");
 
         if (!workspaceId || !projectId) {
-          setPageError('Project not found');
+          setPageError("Project not found");
           return;
         }
 
         const issuesData = await getIssues(
           workspaceId,
           projectId,
-          statusFilter === 'ALL' ? undefined : statusFilter,
-          priorityFilter === 'ALL' ? undefined : priorityFilter,
-          typeFilter === 'ALL' ? undefined : typeFilter,
+          statusFilter === "ALL" ? undefined : statusFilter,
+          priorityFilter === "ALL" ? undefined : priorityFilter,
+          typeFilter === "ALL" ? undefined : typeFilter,
           debouncedSearchValue,
         );
 
@@ -142,14 +164,14 @@ export default function ProjectPage() {
       } catch (error: unknown) {
         if (error instanceof ApiError && error.status === 401) {
           removeAuthToken();
-          navigate('/login');
+          navigate("/login");
           return;
         }
 
         if (error instanceof Error) {
           setPageError(error.message);
         } else {
-          setPageError('Could not load issues');
+          setPageError("Could not load issues");
         }
       } finally {
         setIsIssuesLoading(false);
@@ -183,16 +205,16 @@ export default function ProjectPage() {
       return;
     }
 
-    setFormError('');
-    setSuccessMessage('');
+    setFormError("");
+    setSuccessMessage("");
 
     if (!newIssueInfo.title.trim()) {
-      setFormError('Issue title is required');
+      setFormError("Issue title is required");
       return;
     }
 
     if (!workspaceId || !projectId) {
-      setFormError('Project not found');
+      setFormError("Project not found");
       return;
     }
 
@@ -209,26 +231,26 @@ export default function ProjectPage() {
       );
 
       setNewIssueInfo({
-        title: '',
-        description: '',
-        priority: 'MEDIUM',
-        type: 'TASK',
+        title: "",
+        description: "",
+        priority: "MEDIUM",
+        type: "TASK",
       });
       setShowIssueForm(false);
 
       const createdIssue = newIssueData.issue;
 
       const matchesStatus =
-        statusFilter === 'ALL' || createdIssue.status === statusFilter;
+        statusFilter === "ALL" || createdIssue.status === statusFilter;
 
       const matchesPriority =
-        priorityFilter === 'ALL' || createdIssue.priority === priorityFilter;
+        priorityFilter === "ALL" || createdIssue.priority === priorityFilter;
 
       const matchesType =
-        typeFilter === 'ALL' || createdIssue.type === typeFilter;
+        typeFilter === "ALL" || createdIssue.type === typeFilter;
 
       const matchesSearch =
-        debouncedSearchValue.trim() === '' ||
+        debouncedSearchValue.trim() === "" ||
         createdIssue.title
           .toLowerCase()
           .includes(debouncedSearchValue.trim().toLowerCase());
@@ -237,18 +259,18 @@ export default function ProjectPage() {
         setIssues((prev) => [...prev, createdIssue]);
       }
 
-      setSuccessMessage('Issue created successfully.');
+      setSuccessMessage("Issue created successfully.");
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
         removeAuthToken();
-        navigate('/login');
+        navigate("/login");
         return;
       }
 
       if (error instanceof Error) {
         setFormError(error.message);
       } else {
-        setFormError('Could not create issue');
+        setFormError("Could not create issue");
       }
     } finally {
       setIsCreatingIssue(false);
@@ -262,16 +284,16 @@ export default function ProjectPage() {
       return;
     }
 
-    setFormError('');
-    setSuccessMessage('');
+    setFormError("");
+    setSuccessMessage("");
 
     if (!editProjectInfo.name.trim()) {
-      setFormError('Project name is required');
+      setFormError("Project name is required");
       return;
     }
 
     if (!workspaceId || !projectId) {
-      setFormError('Project not found');
+      setFormError("Project not found");
       return;
     }
 
@@ -287,20 +309,20 @@ export default function ProjectPage() {
 
       setEditProjectInfo({
         name: updatedProjectData.project.name,
-        description: updatedProjectData.project.description || '',
+        description: updatedProjectData.project.description || "",
       });
-      setSuccessMessage('Project saved successfully.');
+      setSuccessMessage("Project saved successfully.");
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
         removeAuthToken();
-        navigate('/login');
+        navigate("/login");
         return;
       }
 
       if (error instanceof Error) {
         setFormError(error.message);
       } else {
-        setFormError('Could not update project');
+        setFormError("Could not update project");
       }
     } finally {
       setIsUpdatingProject(false);
@@ -312,16 +334,16 @@ export default function ProjectPage() {
       return;
     }
 
-    setFormError('');
-    setSuccessMessage('');
+    setFormError("");
+    setSuccessMessage("");
 
     if (!workspaceId || !projectId) {
-      setFormError('Project not found');
+      setFormError("Project not found");
       return;
     }
 
     const confirmed = window.confirm(
-      'Are you sure you want to delete this project? This will also remove its issues.',
+      "Are you sure you want to delete this project? This will also remove its issues.",
     );
 
     if (!confirmed) {
@@ -337,14 +359,14 @@ export default function ProjectPage() {
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
         removeAuthToken();
-        navigate('/login');
+        navigate("/login");
         return;
       }
 
       if (error instanceof Error) {
         setFormError(error.message);
       } else {
-        setFormError('Could not delete project');
+        setFormError("Could not delete project");
       }
     } finally {
       setIsDeletingProject(false);
@@ -352,10 +374,11 @@ export default function ProjectPage() {
   }
 
   const hasNoIssueFilters =
-    statusFilter === 'ALL' &&
-    priorityFilter === 'ALL' &&
-    typeFilter === 'ALL' &&
-    debouncedSearchValue === '';
+    statusFilter === "ALL" &&
+    priorityFilter === "ALL" &&
+    typeFilter === "ALL" &&
+    selectedLabelFilter === "" &&
+    debouncedSearchValue === "";
 
   useEffect(() => {
     if (!successMessage) {
@@ -363,32 +386,32 @@ export default function ProjectPage() {
     }
 
     const timeoutId = setTimeout(() => {
-      setSuccessMessage('');
+      setSuccessMessage("");
     }, 3000);
 
     return () => clearTimeout(timeoutId);
   }, [successMessage]);
 
   if (isLoading) {
-    return <LoadingCard message='Loading project...' />;
+    return <LoadingCard message="Loading project..." />;
   }
 
   return (
-    <div className='w-full max-w-6xl'>
+    <div className="w-full max-w-6xl">
       <BackLink to={`/workspaces/${workspaceId}`}>Back to workspace</BackLink>
 
       {pageError && (
-        <ErrorAlert message={pageError} onClose={() => setPageError('')} />
+        <ErrorAlert message={pageError} onClose={() => setPageError("")} />
       )}
 
       {formError && (
-        <ErrorAlert message={formError} onClose={() => setFormError('')} />
+        <ErrorAlert message={formError} onClose={() => setFormError("")} />
       )}
 
       {successMessage && (
         <SuccessAlert
           message={successMessage}
-          onClose={() => setSuccessMessage('')}
+          onClose={() => setSuccessMessage("")}
         />
       )}
 
@@ -405,16 +428,16 @@ export default function ProjectPage() {
 
       {canManageWorkspace && (
         <DangerZone
-          buttonText='Delete project'
-          submittingText='Deleting...'
+          buttonText="Delete project"
+          submittingText="Deleting..."
           isSubmitting={isDeletingProject}
-          message='Deleting this project cannot be undone. All issues inside this project will be removed.'
+          message="Deleting this project cannot be undone. All issues inside this project will be removed."
           onDelete={handleDeleteProject}
           fullWidth
         />
       )}
 
-      <main className='mt-8'>
+      <main className="mt-8">
         <IssueFiltersBar
           issueCountText={issueCountText}
           statusFilter={statusFilter}
@@ -429,15 +452,18 @@ export default function ProjectPage() {
           onShowCreateIssueForm={() => setShowIssueForm(true)}
           searchValue={searchValue}
           onSearchChange={setSearchValue}
+          selectedLabelFilter={selectedLabelFilter}
+          onLabelFilterChange={setSelectedLabelFilter}
+          labels={labels}
         />
 
         {isIssuesLoading ? (
-          <div className='mt-5'>
-            <LoadingCard message='Loading issues...' />
+          <div className="mt-5">
+            <LoadingCard message="Loading issues..." />
           </div>
         ) : (
           <>
-            <div className='mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+            <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {showCreateIssueForm && (
                 <CreateIssueCard
                   title={newIssueInfo.title}
@@ -459,12 +485,12 @@ export default function ProjectPage() {
                   onSubmit={handleCreateIssue}
                   onCancel={() => {
                     setNewIssueInfo({
-                      title: '',
-                      description: '',
-                      priority: 'MEDIUM',
-                      type: 'TASK',
+                      title: "",
+                      description: "",
+                      priority: "MEDIUM",
+                      type: "TASK",
                     });
-                    setFormError('');
+                    setFormError("");
                     setShowIssueForm(false);
                   }}
                   isSubmitting={isCreatingIssue}
@@ -472,7 +498,7 @@ export default function ProjectPage() {
               )}
 
               {currentProject &&
-                issues.map((issue) => (
+                filteredIssues.map((issue) => (
                   <IssueCard
                     key={issue.id}
                     workspaceId={currentProject.workspaceId}
@@ -481,12 +507,12 @@ export default function ProjectPage() {
                 ))}
             </div>
 
-            {!showCreateIssueForm && issues.length === 0 && (
+            {!showCreateIssueForm && filteredIssues.length === 0 && (
               <EmptyState
                 message={
                   hasNoIssueFilters
-                    ? 'No issues yet. Create your first issue to start tracking work.'
-                    : 'No issues match your filters.'
+                    ? "No issues yet. Create your first issue to start tracking work."
+                    : "No issues match your filters."
                 }
               />
             )}
