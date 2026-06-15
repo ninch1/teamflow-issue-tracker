@@ -14,6 +14,14 @@ import BackLink from '../components/common/BackLink';
 import SuccessAlert from '../components/common/SuccessAlert';
 import { useWorkspaceContext } from '../context/workspaceContextValue';
 import IssueAssigneeSection from '../components/layout/IssueAssigneeSection';
+import IssueCommentsSection from '../components/layout/IssueCommentsSection';
+import type { Comment } from '../types/commentTypes';
+import {
+  getIssueComments,
+  createIssueComment,
+  updateIssueComment,
+  deleteIssueComment,
+} from '../api/commentApi';
 
 export default function IssuePage() {
   const { workspaceId, projectId, issueId } = useParams();
@@ -36,9 +44,16 @@ export default function IssuePage() {
   const [successMessage, setSuccessMessage] = useState('');
   const [newAssigneeId, setNewAssigneeId] = useState<string | null>(null);
   const [isUpdatingAssignee, setIsUpdatingAssignee] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+const [newCommentBody, setNewCommentBody] = useState('');
+const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+const [editingCommentBody, setEditingCommentBody] = useState('');
+const [isCreatingComment, setIsCreatingComment] = useState(false);
+const [isUpdatingComment, setIsUpdatingComment] = useState(false);
+const [isDeletingComment, setIsDeletingComment] = useState(false);
 
-  const { members, currentMemberId, canManageWorkspace } =
-    useWorkspaceContext();
+const { members, currentMemberId, currentUserId, canManageWorkspace } =
+useWorkspaceContext();
 
   useEffect(() => {
     async function initialIssue() {
@@ -52,8 +67,10 @@ export default function IssuePage() {
         }
 
         const issueData = await getIssue(workspaceId, projectId, issueId);
+        const commentsData = await getIssueComments(workspaceId, projectId, issueId);
 
         setCurrentIssue(issueData.issue);
+        setComments(commentsData.comments);
         setNewStatus(issueData.issue.status);
         setEditIssueInfo({
           title: issueData.issue.title,
@@ -279,6 +296,166 @@ export default function IssuePage() {
     }
   }
 
+  async function handleCreateComment() {
+    if (isCreatingComment) {
+      return;
+    }
+  
+    setFormError('');
+    setSuccessMessage('');
+  
+    if (!newCommentBody.trim()) {
+      setFormError('Comment body is required');
+      return;
+    }
+  
+    if (!workspaceId || !projectId || !issueId) {
+      setFormError('Issue not found');
+      return;
+    }
+  
+    try {
+      setIsCreatingComment(true);
+  
+      const commentData = await createIssueComment(
+        workspaceId,
+        projectId,
+        issueId,
+        { body: newCommentBody },
+      );
+  
+      setComments((currentComments) => [...currentComments, commentData.comment]);
+      setNewCommentBody('');
+      setSuccessMessage('Comment posted successfully.');
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate('/login');
+        return;
+      }
+  
+      if (error instanceof Error) {
+        setFormError(error.message);
+      } else {
+        setFormError('Could not create comment');
+      }
+    } finally {
+      setIsCreatingComment(false);
+    }
+  }
+
+  function handleStartEditingComment(comment: Comment) {
+    setEditingCommentId(comment.id);
+    setEditingCommentBody(comment.body);
+    setFormError('');
+    setSuccessMessage('');
+  }
+
+  function handleCancelEditingComment() {
+    setEditingCommentId(null);
+    setEditingCommentBody('');
+  }
+
+  async function handleUpdateComment(commentId: string) {
+    if (isUpdatingComment) {
+      return;
+    }
+  
+    setFormError('');
+    setSuccessMessage('');
+  
+    if (!editingCommentBody.trim()) {
+      setFormError('Comment body is required');
+      return;
+    }
+  
+    if (!workspaceId || !projectId || !issueId) {
+      setFormError('Issue not found');
+      return;
+    }
+  
+    try {
+      setIsUpdatingComment(true);
+  
+      const commentData = await updateIssueComment(
+        workspaceId,
+        projectId,
+        issueId,
+        commentId,
+        { body: editingCommentBody },
+      );
+  
+      setComments((currentComments) =>
+        currentComments.map((comment) =>
+          comment.id === commentId ? commentData.comment : comment,
+        ),
+      );
+  
+      setEditingCommentId(null);
+      setEditingCommentBody('');
+      setSuccessMessage('Comment updated successfully.');
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate('/login');
+        return;
+      }
+  
+      if (error instanceof Error) {
+        setFormError(error.message);
+      } else {
+        setFormError('Could not update comment');
+      }
+    } finally {
+      setIsUpdatingComment(false);
+    }
+  }
+
+  async function handleDeleteComment(commentId: string) {
+    if (isDeletingComment) {
+      return;
+    }
+  
+    setFormError('');
+    setSuccessMessage('');
+  
+    if (!workspaceId || !projectId || !issueId) {
+      setFormError('Issue not found');
+      return;
+    }
+  
+    try {
+      setIsDeletingComment(true);
+  
+      await deleteIssueComment(workspaceId, projectId, issueId, commentId);
+  
+      setComments((currentComments) =>
+        currentComments.filter((comment) => comment.id !== commentId),
+      );
+  
+      if (editingCommentId === commentId) {
+        setEditingCommentId(null);
+        setEditingCommentBody('');
+      }
+  
+      setSuccessMessage('Comment deleted successfully.');
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate('/login');
+        return;
+      }
+  
+      if (error instanceof Error) {
+        setFormError(error.message);
+      } else {
+        setFormError('Could not delete comment');
+      }
+    } finally {
+      setIsDeletingComment(false);
+    }
+  }
+
   useEffect(() => {
     if (!successMessage) {
       return;
@@ -364,6 +541,8 @@ export default function IssuePage() {
         )}
       </div>
 
+      
+
       {canManageWorkspace && (
         <DangerZone
           message='Deleting this issue cannot be undone.'
@@ -374,6 +553,27 @@ export default function IssuePage() {
           fullWidth
         />
       )}
+
+<div className='mt-8'>
+  <IssueCommentsSection
+    comments={comments}
+    currentUserId={currentUserId}
+    canManageWorkspace={canManageWorkspace}
+    newCommentBody={newCommentBody}
+    editingCommentId={editingCommentId}
+    editingCommentBody={editingCommentBody}
+    isCreatingComment={isCreatingComment}
+    isUpdatingComment={isUpdatingComment}
+    isDeletingComment={isDeletingComment}
+    onNewCommentBodyChange={setNewCommentBody}
+    onEditingCommentBodyChange={setEditingCommentBody}
+    onCreateComment={handleCreateComment}
+    onStartEditing={handleStartEditingComment}
+    onCancelEditing={handleCancelEditingComment}
+    onUpdateComment={handleUpdateComment}
+    onDeleteComment={handleDeleteComment}
+  />
+</div>
     </div>
   );
 }

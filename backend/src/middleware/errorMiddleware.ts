@@ -11,6 +11,16 @@ export default function errorMiddleware(
   res: Response,
   _next: NextFunction,
 ) {
+  // Malformed JSON request body
+  if (
+    err instanceof SyntaxError &&
+    "status" in err &&
+    (err as { status?: number }).status === 400 &&
+    "body" in err
+  ) {
+    return res.status(400).json({ error: "Invalid JSON in request body" });
+  }
+
   // Custom app errors
   if (err instanceof ErrorResponse) {
     return res.status(err.statusCode).json({ error: err.message });
