@@ -1,42 +1,37 @@
-import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import ContextSidebar from '../components/layout/ContextSidebar';
-import WorkspaceMembersPanel from '../components/common/WorkspaceMembersPanel';
-import MobileDrawer from '../components/layout/MobileDrawer';
-import { getMembers } from '../api/membersApi';
-import { getMe } from '../api/authApi';
-import ApiError from '../errors/ApiError';
-import { removeAuthToken } from '../utils/authToken';
-import type { Member } from '../types/memberTypes';
-import { WorkspaceProvider } from '../context/WorkspaceContext';
-import MemberInfoModal from '../components/common/MemberInfoModal';
-import { removeMember, updateMemberRole } from '../api/membersApi';
-import { getWorkspaceActivities } from '../api/activityApi';
-import type { Activity } from '../types/activityTypes';
-import ActivityPanel from '../components/activity/ActivityPanel';
+import { Outlet, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import ContextSidebar from "../components/layout/ContextSidebar";
+import WorkspaceMembersPanel from "../components/common/WorkspaceMembersPanel";
+import MobileDrawer from "../components/layout/MobileDrawer";
+import { getMembers } from "../api/membersApi";
+import { getMe } from "../api/authApi";
+import ApiError from "../errors/ApiError";
+import { removeAuthToken } from "../utils/authToken";
+import type { Member } from "../types/memberTypes";
+import { WorkspaceProvider } from "../context/WorkspaceContext";
+import MemberInfoModal from "../components/common/MemberInfoModal";
+import { removeMember, updateMemberRole } from "../api/membersApi";
+import { getWorkspaceActivities } from "../api/activityApi";
+import type { Activity } from "../types/activityTypes";
+import ActivityPanel from "../components/activity/ActivityPanel";
 
 export default function WorkspaceLayout() {
   const { workspaceId } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [members, setMembers] = useState<Member[]>([]);
-  const [currentUserId, setCurrentUserId] = useState('');
+  const [currentUserId, setCurrentUserId] = useState("");
   const [isMembersDrawerOpen, setIsMembersDrawerOpen] = useState(false);
   const [showMemberInfo, setShowMemberInfo] = useState(false);
-  const [selectedMemberId, setSelectedMemberId] = useState<string>('');
+  const [selectedMemberId, setSelectedMemberId] = useState<string>("");
   const [isRemovingMember, setIsRemovingMember] = useState(false);
-  const [removeMemberError, setRemoveMemberError] = useState('');
+  const [removeMemberError, setRemoveMemberError] = useState("");
   const [isUpdatingMemberRole, setIsUpdatingMemberRole] = useState(false);
-  const [updateMemberRoleError, setUpdateMemberRoleError] = useState('');
-  const [memberActionSuccess, setMemberActionSuccess] = useState('');
+  const [updateMemberRoleError, setUpdateMemberRoleError] = useState("");
+  const [memberActionSuccess, setMemberActionSuccess] = useState("");
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [activitiesError, setActivitiesError] = useState('');
+  const [activitiesError, setActivitiesError] = useState("");
   const [isLoadingActivities, setIsLoadingActivities] = useState(false);
-
-  useEffect(() => {
-    setIsMembersDrawerOpen(false);
-  }, [location.pathname]);
 
   useEffect(() => {
     if (!memberActionSuccess) {
@@ -44,7 +39,7 @@ export default function WorkspaceLayout() {
     }
 
     const timeoutId = window.setTimeout(() => {
-      setMemberActionSuccess('');
+      setMemberActionSuccess("");
     }, 3000);
 
     return () => {
@@ -71,11 +66,11 @@ export default function WorkspaceLayout() {
       } catch (error: unknown) {
         if (error instanceof ApiError && error.status === 401) {
           removeAuthToken();
-          navigate('/login');
+          navigate("/login");
           return;
         }
 
-        console.error('Failed to load workspace data:', error);
+        console.error("Failed to load workspace data:", error);
       }
     }
 
@@ -92,21 +87,21 @@ export default function WorkspaceLayout() {
     async function loadActivities() {
       try {
         setIsLoadingActivities(true);
-        setActivitiesError('');
+        setActivitiesError("");
 
         const data = await getWorkspaceActivities(activeWorkspaceId);
         setActivities(data.activities);
       } catch (error: unknown) {
         if (error instanceof ApiError && error.status === 401) {
           removeAuthToken();
-          navigate('/login');
+          navigate("/login");
           return;
         }
 
         if (error instanceof Error) {
           setActivitiesError(error.message);
         } else {
-          setActivitiesError('Could not load workspace activity');
+          setActivitiesError("Could not load workspace activity");
         }
       } finally {
         setIsLoadingActivities(false);
@@ -124,7 +119,7 @@ export default function WorkspaceLayout() {
   const currentMemberId = currentMember?.id ?? null;
 
   const canManageWorkspace =
-    currentUserRole === 'OWNER' || currentUserRole === 'ADMIN';
+    currentUserRole === "OWNER" || currentUserRole === "ADMIN";
 
   function handleMemberClick(memberId: string) {
     if (!memberId) {
@@ -141,10 +136,10 @@ export default function WorkspaceLayout() {
 
   function handleCloseMemberInfo() {
     setShowMemberInfo(false);
-    setSelectedMemberId('');
-    setRemoveMemberError('');
-    setUpdateMemberRoleError('');
-    setMemberActionSuccess('');
+    setSelectedMemberId("");
+    setRemoveMemberError("");
+    setUpdateMemberRoleError("");
+    setMemberActionSuccess("");
   }
 
   async function handleRemoveSelectedMember() {
@@ -153,7 +148,7 @@ export default function WorkspaceLayout() {
     }
 
     const confirmed = window.confirm(
-      'Are you sure you want to remove this member from the workspace?',
+      "Are you sure you want to remove this member from the workspace?",
     );
 
     if (!confirmed) {
@@ -162,7 +157,7 @@ export default function WorkspaceLayout() {
 
     try {
       setIsRemovingMember(true);
-      setRemoveMemberError('');
+      setRemoveMemberError("");
 
       await removeMember(workspaceId, selectedMemberId);
 
@@ -170,33 +165,33 @@ export default function WorkspaceLayout() {
         prev.filter((member) => member.id !== selectedMemberId),
       );
 
-      setSelectedMemberId('');
+      setSelectedMemberId("");
       setShowMemberInfo(false);
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
         removeAuthToken();
-        navigate('/login');
+        navigate("/login");
         return;
       }
 
       if (error instanceof Error) {
         setRemoveMemberError(error.message);
       } else {
-        setRemoveMemberError('Could not remove member');
+        setRemoveMemberError("Could not remove member");
       }
     } finally {
       setIsRemovingMember(false);
     }
   }
 
-  async function handleUpdateSelectedMemberRole(role: 'ADMIN' | 'MEMBER') {
+  async function handleUpdateSelectedMemberRole(role: "ADMIN" | "MEMBER") {
     if (!workspaceId || !selectedMemberId || isUpdatingMemberRole) {
       return;
     }
 
     try {
       setIsUpdatingMemberRole(true);
-      setUpdateMemberRoleError('');
+      setUpdateMemberRoleError("");
 
       const data = await updateMemberRole(workspaceId, selectedMemberId, role);
 
@@ -211,18 +206,18 @@ export default function WorkspaceLayout() {
         ),
       );
 
-      setMemberActionSuccess('Member role was updated successfully.');
+      setMemberActionSuccess("Member role was updated successfully.");
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
         removeAuthToken();
-        navigate('/login');
+        navigate("/login");
         return;
       }
 
       if (error instanceof Error) {
         setUpdateMemberRoleError(error.message);
       } else {
-        setUpdateMemberRoleError('Could not update member role');
+        setUpdateMemberRoleError("Could not update member role");
       }
     } finally {
       setIsUpdatingMemberRole(false);
@@ -258,13 +253,13 @@ export default function WorkspaceLayout() {
           onUpdateRole={handleUpdateSelectedMemberRole}
         />
       )}
-      <div className='flex w-full gap-6'>
-        <div className='min-w-0 flex-1'>
-          <div className='mb-5 flex justify-end xl:hidden'>
+      <div className="flex w-full gap-6">
+        <div className="min-w-0 flex-1">
+          <div className="mb-5 flex justify-end xl:hidden">
             <button
-              type='button'
+              type="button"
               onClick={() => setIsMembersDrawerOpen(true)}
-              className='rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100'
+              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
             >
               View members
             </button>
@@ -274,7 +269,7 @@ export default function WorkspaceLayout() {
         </div>
 
         <ContextSidebar>
-          <div className='space-y-5'>
+          <div className="space-y-5">
             <WorkspaceMembersPanel
               workspaceId={workspaceId}
               members={members}
@@ -287,6 +282,7 @@ export default function WorkspaceLayout() {
               activities={activities}
               isLoading={isLoadingActivities}
               error={activitiesError}
+              onViewAllActivityClick={() => setIsMembersDrawerOpen(false)}
             />
           </div>
         </ContextSidebar>
@@ -294,11 +290,11 @@ export default function WorkspaceLayout() {
 
       <MobileDrawer
         isOpen={isMembersDrawerOpen}
-        title='Workspace members'
+        title="Workspace members"
         onClose={() => setIsMembersDrawerOpen(false)}
       >
         {workspaceId && (
-          <div className='space-y-5'>
+          <div className="space-y-5">
             <WorkspaceMembersPanel
               workspaceId={workspaceId}
               members={members}
@@ -311,6 +307,7 @@ export default function WorkspaceLayout() {
               activities={activities}
               isLoading={isLoadingActivities}
               error={activitiesError}
+              onViewAllActivityClick={() => setIsMembersDrawerOpen(false)}
             />
           </div>
         )}
