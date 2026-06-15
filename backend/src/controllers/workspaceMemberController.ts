@@ -2,7 +2,8 @@ import prisma from '../lib/prisma';
 import ErrorResponse from '../errors/ErrorResponse';
 import asyncHandler from '../middleware/asyncHandler';
 import { AuthRequest } from '../types/auth';
-import { WorkspaceRole } from '../generated/prisma/client';
+import { WorkspaceRole, ActivityType } from '../generated/prisma/client';
+import { createActivity } from '../utils/createActivity';
 
 // gets all users of workspace
 export const getWorkspaceMembers = asyncHandler(async (req, res, next) => {
@@ -172,6 +173,15 @@ export const removeWorkspaceMember = asyncHandler(async (req, res, next) => {
       id: memberId,
       workspaceId,
     },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
   });
 
   if (!membership) {
@@ -194,6 +204,15 @@ export const removeWorkspaceMember = asyncHandler(async (req, res, next) => {
       new ErrorResponse('Admins can only remove regular members', 403),
     );
   }
+
+  const removedMemberName = membership.user.name || membership.user.email;
+
+  await createActivity({
+    workspaceId,
+    userId: user.id,
+    type: ActivityType.WORKSPACE_MEMBER_REMOVED,
+    message: `${user.name} removed ${removedMemberName} from the workspace`,
+  });
 
   const deletedMembership = await prisma.workspaceMember.delete({
     where: {

@@ -8,6 +8,11 @@ import {
   IssueType,
   ActivityType,
 } from '../generated/prisma/client';
+import {
+  createActivity,
+  formatIssuePriority,
+  formatIssueStatus,
+} from '../utils/createActivity';
 
 // Allows issue titles with letters, numbers, spaces, and basic punctuation.
 const issueTitleRegex = /^[A-Za-z0-9 _'.,!?-]{2,100}$/;
@@ -156,15 +161,13 @@ export const createIssue = asyncHandler(async (req, res, next) => {
     },
   });
 
-  await prisma.activity.create({
-    data: {
-      workspaceId,
-      projectId: project.id,
-      issueId: issue.id,
-      userId: user.id,
-      type: ActivityType.ISSUE_CREATED,
-      message: `${user.name} created issue "${issue.title}"`,
-    },
+  await createActivity({
+    workspaceId,
+    projectId: project.id,
+    issueId: issue.id,
+    userId: user.id,
+    type: ActivityType.ISSUE_CREATED,
+    message: `${user.name} created issue "${issue.title}"`,
   });
 
   return res.status(201).json({
@@ -478,17 +481,31 @@ export const updateIssue = asyncHandler(async (req, res, next) => {
     dataToUpdate.status !== undefined &&
     dataToUpdate.status !== issue.status
   ) {
-    await prisma.activity.create({
-      data: {
-        workspaceId: workspaceId,
-        projectId: projectId,
-        issueId: issueId,
-        userId: user.id,
-        type: ActivityType.ISSUE_STATUS_CHANGED,
-        message: `${user.name} changed issue "${updatedIssue.title}" from ${issue.status} to ${updatedIssue.status}`,
-        oldValue: issue.status,
-        newValue: updatedIssue.status,
-      },
+    await createActivity({
+      workspaceId,
+      projectId,
+      issueId,
+      userId: user.id,
+      type: ActivityType.ISSUE_STATUS_CHANGED,
+      message: `${user.name} changed issue "${updatedIssue.title}" from ${formatIssueStatus(issue.status)} to ${formatIssueStatus(updatedIssue.status)}`,
+      oldValue: issue.status,
+      newValue: updatedIssue.status,
+    });
+  }
+
+  if (
+    dataToUpdate.priority !== undefined &&
+    dataToUpdate.priority !== issue.priority
+  ) {
+    await createActivity({
+      workspaceId,
+      projectId,
+      issueId,
+      userId: user.id,
+      type: ActivityType.ISSUE_PRIORITY_CHANGED,
+      message: `${user.name} changed priority of issue "${updatedIssue.title}" from ${formatIssuePriority(issue.priority)} to ${formatIssuePriority(updatedIssue.priority)}`,
+      oldValue: issue.priority,
+      newValue: updatedIssue.priority,
     });
   }
 
@@ -508,17 +525,15 @@ export const updateIssue = asyncHandler(async (req, res, next) => {
       message = `${user.name} updated the description of issue "${updatedIssue.title}"`;
     }
 
-    await prisma.activity.create({
-      data: {
-        workspaceId: workspaceId,
-        projectId: projectId,
-        issueId: issueId,
-        userId: user.id,
-        type: ActivityType.ISSUE_DETAILS_UPDATED,
-        message,
-        oldValue: titleChanged ? issue.title : issue.description,
-        newValue: titleChanged ? updatedIssue.title : updatedIssue.description,
-      },
+    await createActivity({
+      workspaceId,
+      projectId,
+      issueId,
+      userId: user.id,
+      type: ActivityType.ISSUE_DETAILS_UPDATED,
+      message,
+      oldValue: titleChanged ? issue.title : issue.description,
+      newValue: titleChanged ? updatedIssue.title : updatedIssue.description,
     });
   }
 
@@ -567,6 +582,15 @@ export const deleteIssue = asyncHandler(async (req, res, next) => {
   if (!issue) {
     return next(new ErrorResponse('Issue not found', 404));
   }
+
+  await createActivity({
+    workspaceId,
+    projectId,
+    issueId: issue.id,
+    userId: user.id,
+    type: ActivityType.ISSUE_DELETED,
+    message: `${user.name} deleted issue "${issue.title}"`,
+  });
 
   const deletedIssue = await prisma.issue.delete({
     where: {

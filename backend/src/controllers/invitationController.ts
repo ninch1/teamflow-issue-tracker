@@ -2,7 +2,12 @@ import prisma from '../lib/prisma';
 import ErrorResponse from '../errors/ErrorResponse';
 import asyncHandler from '../middleware/asyncHandler';
 import { AuthRequest } from '../types/auth';
-import { InvitationStatus, WorkspaceRole } from '../generated/prisma/client';
+import {
+  ActivityType,
+  InvitationStatus,
+  WorkspaceRole,
+} from '../generated/prisma/client';
+import { createActivity } from '../utils/createActivity';
 
 export const sendInvitation = asyncHandler(async (req, res, next) => {
   const authReq = req as AuthRequest;
@@ -296,6 +301,13 @@ export const acceptInvitation = asyncHandler(async (req, res, next) => {
       },
     }),
   ]);
+
+  await createActivity({
+    workspaceId: invitation.workspaceId,
+    userId: user.id,
+    type: ActivityType.WORKSPACE_MEMBER_ADDED,
+    message: `${user.name} joined the workspace`,
+  });
 
   return res.status(200).json({
     message: 'Invitation accepted successfully',

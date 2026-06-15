@@ -1,4 +1,4 @@
-import { Outlet, useNavigate, useParams } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import ContextSidebar from '../components/layout/ContextSidebar';
 import WorkspaceMembersPanel from '../components/common/WorkspaceMembersPanel';
@@ -18,6 +18,7 @@ import ActivityPanel from '../components/activity/ActivityPanel';
 export default function WorkspaceLayout() {
   const { workspaceId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [members, setMembers] = useState<Member[]>([]);
   const [currentUserId, setCurrentUserId] = useState('');
@@ -32,6 +33,10 @@ export default function WorkspaceLayout() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [activitiesError, setActivitiesError] = useState('');
   const [isLoadingActivities, setIsLoadingActivities] = useState(false);
+
+  useEffect(() => {
+    setIsMembersDrawerOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!memberActionSuccess) {
