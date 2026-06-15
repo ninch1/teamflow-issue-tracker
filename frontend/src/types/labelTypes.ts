@@ -17,3 +17,8 @@ export type CreateLabelPayload = {
   name: string;
   color?: string | null;
 };
+
+export type UpdateLabelPayload = {
+  name?: string;
+  color?: string | null;
+};

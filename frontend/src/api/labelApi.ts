@@ -1,6 +1,9 @@
 import ApiError from "../errors/ApiError";
 import { getAuthToken } from "../utils/authToken";
-import type { CreateLabelPayload } from "../types/labelTypes";
+import type {
+  CreateLabelPayload,
+  UpdateLabelPayload,
+} from "../types/labelTypes";
 
 const BASE_URL = "http://localhost:3000/api/workspace";
 
@@ -102,6 +105,53 @@ export async function removeLabelFromIssue(
       data.error || "Could not remove label from issue",
       response.status,
     );
+  }
+
+  return data;
+}
+
+export async function updateWorkspaceLabel(
+  workspaceId: string,
+  labelId: string,
+  labelInfo: UpdateLabelPayload,
+) {
+  const authToken = getAuthToken();
+
+  const response = await fetch(`${BASE_URL}/${workspaceId}/labels/${labelId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${authToken}`,
+    },
+    body: JSON.stringify(labelInfo),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new ApiError(data.error || "Could not update label", response.status);
+  }
+
+  return data;
+}
+
+export async function deleteWorkspaceLabel(
+  workspaceId: string,
+  labelId: string,
+) {
+  const authToken = getAuthToken();
+
+  const response = await fetch(`${BASE_URL}/${workspaceId}/labels/${labelId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+    },
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new ApiError(data.error || "Could not delete label", response.status);
   }
 
   return data;
