@@ -35,6 +35,7 @@ model Workspace {
   projects             Project[]
   workspaceInvitations WorkspaceInvitation[]
   activities           Activity[]
+  labels               Label[]
 }
 
 model WorkspaceMember {
@@ -94,6 +95,7 @@ model Issue {
   assigneeId String?
 
   comments Comment[]
+  labels IssueLabel[]
 }
 
 model Comment {
@@ -142,6 +144,30 @@ model WorkspaceInvitation {
   updatedAt DateTime @updatedAt
 
   @@unique([email, workspaceId])
+}
+
+model Label {
+  id          String   @id @default(uuid())
+  name        String
+  color       String?
+  workspaceId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  issues    IssueLabel[]
+
+  @@unique([workspaceId, name])
+}
+
+model IssueLabel {
+  issueId String
+  labelId String
+
+  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  label Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([issueId, labelId])
 }
 
 enum InvitationStatus {

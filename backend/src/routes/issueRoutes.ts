@@ -1,26 +1,30 @@
-import express from "express";
+import express from 'express';
 import {
   createIssue,
   deleteIssue,
   getIssue,
   getIssues,
   updateIssue,
-} from "../controllers/issueController";
-import authMiddleware from "../middleware/authMiddleware";
-import workspaceRoleMiddleware from "../middleware/workspaceRoleMiddleware";
-import { WorkspaceRole } from "../generated/prisma/client";
+} from '../controllers/issueController';
+import authMiddleware from '../middleware/authMiddleware';
+import workspaceRoleMiddleware from '../middleware/workspaceRoleMiddleware';
+import { WorkspaceRole } from '../generated/prisma/client';
 import {
   getIssueComments,
   createIssueComment,
   updateIssueComment,
   deleteIssueComment,
-} from "../controllers/commentsController";
+} from '../controllers/commentsController';
+import {
+  addLabelToIssue,
+  removeLabelFromIssue,
+} from '../controllers/labelController';
 
 // mergeParams lets this router access :workspaceId and :projectId from app.ts mount path.
 const issueRouter = express.Router({ mergeParams: true });
 
 issueRouter
-  .route("/")
+  .route('/')
   .get(
     authMiddleware,
     workspaceRoleMiddleware([
@@ -37,7 +41,7 @@ issueRouter
   );
 
 issueRouter
-  .route("/:issueId")
+  .route('/:issueId')
   .get(
     authMiddleware,
     workspaceRoleMiddleware([
@@ -59,7 +63,7 @@ issueRouter
   );
 
 issueRouter
-  .route("/:issueId/comments")
+  .route('/:issueId/comments')
   .get(
     authMiddleware,
     workspaceRoleMiddleware([
@@ -80,7 +84,7 @@ issueRouter
   );
 
 issueRouter
-  .route("/:issueId/comments/:commentId")
+  .route('/:issueId/comments/:commentId')
   .patch(
     authMiddleware,
     workspaceRoleMiddleware([
@@ -98,6 +102,19 @@ issueRouter
       WorkspaceRole.MEMBER,
     ]),
     deleteIssueComment,
+  );
+
+issueRouter
+  .route('/:issueId/labels/:labelId')
+  .post(
+    authMiddleware,
+    workspaceRoleMiddleware([WorkspaceRole.OWNER, WorkspaceRole.ADMIN]),
+    addLabelToIssue,
+  )
+  .delete(
+    authMiddleware,
+    workspaceRoleMiddleware([WorkspaceRole.OWNER, WorkspaceRole.ADMIN]),
+    removeLabelFromIssue,
   );
 
 export default issueRouter;
