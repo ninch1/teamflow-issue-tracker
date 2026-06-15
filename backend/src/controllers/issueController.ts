@@ -740,10 +740,20 @@ export const deleteIssue = asyncHandler(async (req, res, next) => {
     message: `${user.name} deleted issue "${issue.title}"`,
   });
 
-  const deletedIssue = await prisma.issue.delete({
-    where: {
-      id: issue.id,
-    },
+  const deletedIssue = await prisma.$transaction(async (tx) => {
+    await tx.comment.deleteMany({
+      where: {
+        issueId: issue.id,
+      },
+    });
+
+    const deletedIssue = await tx.issue.delete({
+      where: {
+        id: issue.id,
+      },
+    });
+
+    return deletedIssue;
   });
 
   return res.status(200).json({

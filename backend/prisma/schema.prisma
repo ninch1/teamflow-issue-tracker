@@ -22,6 +22,7 @@ model User {
   workspaceMembers         WorkspaceMember[]
   sentWorkspaceInvitations WorkspaceInvitation[]
   activities               Activity[]
+  comments Comment[]
 }
 
 model Workspace {
@@ -91,6 +92,20 @@ model Issue {
 
   assignee   WorkspaceMember? @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
   assigneeId String?
+
+  comments Comment[]
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  body      String
+  issueId   String
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  issue Issue @relation(fields: [issueId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
 }
 
 enum IssueStatus {

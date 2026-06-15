@@ -1,20 +1,24 @@
-import express from 'express';
+import express from "express";
 import {
   createIssue,
   deleteIssue,
   getIssue,
   getIssues,
   updateIssue,
-} from '../controllers/issueController';
-import authMiddleware from '../middleware/authMiddleware';
-import workspaceRoleMiddleware from '../middleware/workspaceRoleMiddleware';
-import { WorkspaceRole } from '../generated/prisma/client';
+} from "../controllers/issueController";
+import authMiddleware from "../middleware/authMiddleware";
+import workspaceRoleMiddleware from "../middleware/workspaceRoleMiddleware";
+import { WorkspaceRole } from "../generated/prisma/client";
+import {
+  getIssueComments,
+  createIssueComment,
+} from "../controllers/commentsController";
 
 // mergeParams lets this router access :workspaceId and :projectId from app.ts mount path.
 const issueRouter = express.Router({ mergeParams: true });
 
 issueRouter
-  .route('/')
+  .route("/")
   .get(
     authMiddleware,
     workspaceRoleMiddleware([
@@ -31,7 +35,7 @@ issueRouter
   );
 
 issueRouter
-  .route('/:issueId')
+  .route("/:issueId")
   .get(
     authMiddleware,
     workspaceRoleMiddleware([
@@ -50,6 +54,27 @@ issueRouter
     authMiddleware,
     workspaceRoleMiddleware([WorkspaceRole.OWNER, WorkspaceRole.ADMIN]),
     deleteIssue,
+  );
+
+issueRouter
+  .route("/:issueId/comments")
+  .get(
+    authMiddleware,
+    workspaceRoleMiddleware([
+      WorkspaceRole.OWNER,
+      WorkspaceRole.ADMIN,
+      WorkspaceRole.MEMBER,
+    ]),
+    getIssueComments,
+  )
+  .post(
+    authMiddleware,
+    workspaceRoleMiddleware([
+      WorkspaceRole.OWNER,
+      WorkspaceRole.ADMIN,
+      WorkspaceRole.MEMBER,
+    ]),
+    createIssueComment,
   );
 
 export default issueRouter;
