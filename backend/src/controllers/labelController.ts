@@ -1,20 +1,20 @@
-import prisma from '../lib/prisma';
-import ErrorResponse from '../errors/ErrorResponse';
-import asyncHandler from '../middleware/asyncHandler';
-import { AuthRequest } from '../types/auth';
+import prisma from "../lib/prisma";
+import ErrorResponse from "../errors/ErrorResponse";
+import asyncHandler from "../middleware/asyncHandler";
+import { AuthRequest } from "../types/auth";
 
 export const getWorkspaceLabels = asyncHandler(async (req, res, next) => {
   const authReq = req as AuthRequest;
   const user = authReq.user;
 
   if (!user) {
-    return next(new ErrorResponse('Unauthorized access', 401));
+    return next(new ErrorResponse("Unauthorized access", 401));
   }
 
   const { workspaceId } = req.params;
 
-  if (typeof workspaceId !== 'string') {
-    return next(new ErrorResponse('Workspace id is required', 400));
+  if (typeof workspaceId !== "string") {
+    return next(new ErrorResponse("Workspace id is required", 400));
   }
 
   const labels = await prisma.label.findMany({
@@ -22,12 +22,12 @@ export const getWorkspaceLabels = asyncHandler(async (req, res, next) => {
       workspaceId,
     },
     orderBy: {
-      name: 'asc',
+      name: "asc",
     },
   });
 
   return res.status(200).json({
-    message: 'Labels retrieved successfully',
+    message: "Labels retrieved successfully",
     labels,
   });
 });
@@ -37,35 +37,35 @@ export const createWorkspaceLabel = asyncHandler(async (req, res, next) => {
   const user = authReq.user;
 
   if (!user) {
-    return next(new ErrorResponse('Unauthorized access', 401));
+    return next(new ErrorResponse("Unauthorized access", 401));
   }
 
   const { workspaceId } = req.params;
 
-  if (typeof workspaceId !== 'string') {
-    return next(new ErrorResponse('Workspace id is required', 400));
+  if (typeof workspaceId !== "string") {
+    return next(new ErrorResponse("Workspace id is required", 400));
   }
 
   const { name, color } = req.body;
 
-  if (typeof name !== 'string' || !name.trim()) {
-    return next(new ErrorResponse('Label name is required', 400));
+  if (typeof name !== "string" || !name.trim()) {
+    return next(new ErrorResponse("Label name is required", 400));
   }
 
   const trimmedName = name.trim();
 
   if (trimmedName.length > 30) {
     return next(
-      new ErrorResponse('Label name must be 30 characters or less', 400),
+      new ErrorResponse("Label name must be 30 characters or less", 400),
     );
   }
 
-  if (color !== undefined && color !== null && typeof color !== 'string') {
-    return next(new ErrorResponse('Label color must be a string', 400));
+  if (color !== undefined && color !== null && typeof color !== "string") {
+    return next(new ErrorResponse("Label color must be a string", 400));
   }
 
   const trimmedColor =
-    typeof color === 'string' && color.trim() ? color.trim() : null;
+    typeof color === "string" && color.trim() ? color.trim() : null;
 
   const existingLabel = await prisma.label.findUnique({
     where: {
@@ -77,7 +77,7 @@ export const createWorkspaceLabel = asyncHandler(async (req, res, next) => {
   });
 
   if (existingLabel) {
-    return next(new ErrorResponse('Label already exists', 400));
+    return next(new ErrorResponse("Label already exists", 400));
   }
 
   const label = await prisma.label.create({
@@ -89,7 +89,7 @@ export const createWorkspaceLabel = asyncHandler(async (req, res, next) => {
   });
 
   return res.status(201).json({
-    message: 'Label created successfully',
+    message: "Label created successfully",
     label,
   });
 });
@@ -99,25 +99,25 @@ export const addLabelToIssue = asyncHandler(async (req, res, next) => {
   const user = authReq.user;
 
   if (!user) {
-    return next(new ErrorResponse('Unauthorized access', 401));
+    return next(new ErrorResponse("Unauthorized access", 401));
   }
 
   const { workspaceId, projectId, issueId, labelId } = req.params;
 
-  if (typeof workspaceId !== 'string') {
-    return next(new ErrorResponse('Workspace id is required', 400));
+  if (typeof workspaceId !== "string") {
+    return next(new ErrorResponse("Workspace id is required", 400));
   }
 
-  if (typeof projectId !== 'string') {
-    return next(new ErrorResponse('Project id is required', 400));
+  if (typeof projectId !== "string") {
+    return next(new ErrorResponse("Project id is required", 400));
   }
 
-  if (typeof issueId !== 'string') {
-    return next(new ErrorResponse('Issue id is required', 400));
+  if (typeof issueId !== "string") {
+    return next(new ErrorResponse("Issue id is required", 400));
   }
 
-  if (typeof labelId !== 'string') {
-    return next(new ErrorResponse('Label id is required', 400));
+  if (typeof labelId !== "string") {
+    return next(new ErrorResponse("Label id is required", 400));
   }
 
   const issue = await prisma.issue.findFirst({
@@ -131,7 +131,7 @@ export const addLabelToIssue = asyncHandler(async (req, res, next) => {
   });
 
   if (!issue) {
-    return next(new ErrorResponse('Issue not found', 404));
+    return next(new ErrorResponse("Issue not found", 404));
   }
 
   const label = await prisma.label.findFirst({
@@ -142,7 +142,7 @@ export const addLabelToIssue = asyncHandler(async (req, res, next) => {
   });
 
   if (!label) {
-    return next(new ErrorResponse('Label not found', 404));
+    return next(new ErrorResponse("Label not found", 404));
   }
 
   const issueLabel = await prisma.issueLabel.upsert({
@@ -163,7 +163,7 @@ export const addLabelToIssue = asyncHandler(async (req, res, next) => {
   });
 
   return res.status(201).json({
-    message: 'Label added to issue successfully',
+    message: "Label added to issue successfully",
     issueLabel,
   });
 });
@@ -173,25 +173,25 @@ export const removeLabelFromIssue = asyncHandler(async (req, res, next) => {
   const user = authReq.user;
 
   if (!user) {
-    return next(new ErrorResponse('Unauthorized access', 401));
+    return next(new ErrorResponse("Unauthorized access", 401));
   }
 
   const { workspaceId, projectId, issueId, labelId } = req.params;
 
-  if (typeof workspaceId !== 'string') {
-    return next(new ErrorResponse('Workspace id is required', 400));
+  if (typeof workspaceId !== "string") {
+    return next(new ErrorResponse("Workspace id is required", 400));
   }
 
-  if (typeof projectId !== 'string') {
-    return next(new ErrorResponse('Project id is required', 400));
+  if (typeof projectId !== "string") {
+    return next(new ErrorResponse("Project id is required", 400));
   }
 
-  if (typeof issueId !== 'string') {
-    return next(new ErrorResponse('Issue id is required', 400));
+  if (typeof issueId !== "string") {
+    return next(new ErrorResponse("Issue id is required", 400));
   }
 
-  if (typeof labelId !== 'string') {
-    return next(new ErrorResponse('Label id is required', 400));
+  if (typeof labelId !== "string") {
+    return next(new ErrorResponse("Label id is required", 400));
   }
 
   const issue = await prisma.issue.findFirst({
@@ -205,7 +205,7 @@ export const removeLabelFromIssue = asyncHandler(async (req, res, next) => {
   });
 
   if (!issue) {
-    return next(new ErrorResponse('Issue not found', 404));
+    return next(new ErrorResponse("Issue not found", 404));
   }
 
   const issueLabel = await prisma.issueLabel.findUnique({
@@ -218,7 +218,7 @@ export const removeLabelFromIssue = asyncHandler(async (req, res, next) => {
   });
 
   if (!issueLabel) {
-    return next(new ErrorResponse('Issue label not found', 404));
+    return next(new ErrorResponse("Issue label not found", 404));
   }
 
   await prisma.issueLabel.delete({
@@ -231,10 +231,107 @@ export const removeLabelFromIssue = asyncHandler(async (req, res, next) => {
   });
 
   return res.status(200).json({
-    message: 'Label removed from issue successfully',
+    message: "Label removed from issue successfully",
     issueLabel: {
       issueId,
       labelId,
+    },
+  });
+});
+
+export const updateWorkspaceLabel = asyncHandler(async (req, res, next) => {
+  const { workspaceId, labelId } = req.params;
+
+  if (typeof workspaceId !== "string") {
+    return next(new ErrorResponse("Workspace id is required", 400));
+  }
+
+  if (typeof labelId !== "string") {
+    return next(new ErrorResponse("Label id is required", 400));
+  }
+
+  const { name, color } = req.body;
+
+  if (name !== undefined && typeof name !== "string") {
+    return next(new ErrorResponse("Label name must be a string", 400));
+  }
+
+  if (color !== undefined && color !== null && typeof color !== "string") {
+    return next(new ErrorResponse("Label color must be a string", 400));
+  }
+
+  const trimmedName = typeof name === "string" ? name.trim() : undefined;
+
+  if (trimmedName !== undefined && trimmedName.length < 1) {
+    return next(new ErrorResponse("Label name is required", 400));
+  }
+
+  if (trimmedName !== undefined && trimmedName.length > 30) {
+    return next(
+      new ErrorResponse("Label name must be 30 characters or less", 400),
+    );
+  }
+
+  const label = await prisma.label.findFirst({
+    where: {
+      id: labelId,
+      workspaceId,
+    },
+  });
+
+  if (!label) {
+    return next(new ErrorResponse("Label not found", 404));
+  }
+
+  const updatedLabel = await prisma.label.update({
+    where: {
+      id: label.id,
+    },
+    data: {
+      ...(trimmedName !== undefined ? { name: trimmedName } : {}),
+      ...(color !== undefined ? { color } : {}),
+    },
+  });
+
+  return res.status(200).json({
+    message: "Label updated successfully",
+    label: updatedLabel,
+  });
+});
+
+export const deleteWorkspaceLabel = asyncHandler(async (req, res, next) => {
+  const { workspaceId, labelId } = req.params;
+
+  if (typeof workspaceId !== "string") {
+    return next(new ErrorResponse("Workspace id is required", 400));
+  }
+
+  if (typeof labelId !== "string") {
+    return next(new ErrorResponse("Label id is required", 400));
+  }
+
+  const label = await prisma.label.findFirst({
+    where: {
+      id: labelId,
+      workspaceId,
+    },
+  });
+
+  if (!label) {
+    return next(new ErrorResponse("Label not found", 404));
+  }
+
+  const deletedLabel = await prisma.label.delete({
+    where: {
+      id: label.id,
+    },
+  });
+
+  return res.status(200).json({
+    message: "Label deleted successfully",
+    label: {
+      id: deletedLabel.id,
+      name: deletedLabel.name,
     },
   });
 });
