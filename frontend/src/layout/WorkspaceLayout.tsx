@@ -290,13 +290,21 @@ export default function WorkspaceLayout() {
         onClose={() => setIsMembersDrawerOpen(false)}
       >
         {workspaceId && (
-          <WorkspaceMembersPanel
-            workspaceId={workspaceId}
-            members={members}
-            currentUserId={currentUserId}
-            canManageWorkspace={canManageWorkspace}
-            onMemberClick={handleMemberClick}
-          />
+          <div className='space-y-5'>
+            <WorkspaceMembersPanel
+              workspaceId={workspaceId}
+              members={members}
+              currentUserId={currentUserId}
+              canManageWorkspace={canManageWorkspace}
+              onMemberClick={handleMemberClick}
+            />
+
+            <ActivityPanel
+              activities={activities}
+              isLoading={isLoadingActivities}
+              error={activitiesError}
+            />
+          </div>
         )}
       </MobileDrawer>
     </WorkspaceProvider>

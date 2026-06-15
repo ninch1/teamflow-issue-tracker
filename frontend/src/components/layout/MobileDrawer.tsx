@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 type MobileDrawerProps = {
   isOpen: boolean;
   title: string;
@@ -11,12 +13,25 @@ export default function MobileDrawer({
   onClose,
   children,
 }: MobileDrawerProps) {
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
+
   if (!isOpen) {
     return null;
   }
 
   return (
-    <div className='xl:hidden'>
+    <div className='fixed inset-0 z-50 xl:hidden'>
       <button
         type='button'
         aria-label='Close drawer overlay'

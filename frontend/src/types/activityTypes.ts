@@ -1,4 +1,7 @@
-export type ActivityType = 'ISSUE_STATUS_CHANGED';
+export type ActivityType =
+  | 'ISSUE_CREATED'
+  | 'ISSUE_DETAILS_UPDATED'
+  | 'ISSUE_STATUS_CHANGED';
 
 export type Activity = {
   id: string;

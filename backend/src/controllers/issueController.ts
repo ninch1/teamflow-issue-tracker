@@ -156,6 +156,17 @@ export const createIssue = asyncHandler(async (req, res, next) => {
     },
   });
 
+  await prisma.activity.create({
+    data: {
+      workspaceId,
+      projectId: project.id,
+      issueId: issue.id,
+      userId: user.id,
+      type: ActivityType.ISSUE_CREATED,
+      message: `${user.name} created issue "${issue.title}"`,
+    },
+  });
+
   return res.status(201).json({
     message: 'Issue created successfully',
     issue,
@@ -462,7 +473,7 @@ export const updateIssue = asyncHandler(async (req, res, next) => {
     data: dataToUpdate,
   });
 
-  // Create activity record - only for status changes
+  // Create activity records for tracked issue changes.
   if (
     dataToUpdate.status !== undefined &&
     dataToUpdate.status !== issue.status
@@ -477,6 +488,36 @@ export const updateIssue = asyncHandler(async (req, res, next) => {
         message: `${user.name} changed issue "${updatedIssue.title}" from ${issue.status} to ${updatedIssue.status}`,
         oldValue: issue.status,
         newValue: updatedIssue.status,
+      },
+    });
+  }
+
+  const titleChanged =
+    dataToUpdate.title !== undefined && dataToUpdate.title !== issue.title;
+
+  const descriptionChanged =
+    dataToUpdate.description !== undefined &&
+    (dataToUpdate.description ?? null) !== (issue.description ?? null);
+
+  if (titleChanged || descriptionChanged) {
+    let message = `${user.name} updated issue "${updatedIssue.title}"`;
+
+    if (titleChanged && !descriptionChanged) {
+      message = `${user.name} renamed issue from "${issue.title}" to "${updatedIssue.title}"`;
+    } else if (!titleChanged && descriptionChanged) {
+      message = `${user.name} updated the description of issue "${updatedIssue.title}"`;
+    }
+
+    await prisma.activity.create({
+      data: {
+        workspaceId: workspaceId,
+        projectId: projectId,
+        issueId: issueId,
+        userId: user.id,
+        type: ActivityType.ISSUE_DETAILS_UPDATED,
+        message,
+        oldValue: titleChanged ? issue.title : issue.description,
+        newValue: titleChanged ? updatedIssue.title : updatedIssue.description,
       },
     });
   }

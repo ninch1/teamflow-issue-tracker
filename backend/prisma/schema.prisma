@@ -153,5 +153,7 @@ model Activity {
 }
 
 enum ActivityType {
+  ISSUE_CREATED
+  ISSUE_DETAILS_UPDATED
   ISSUE_STATUS_CHANGED
 }
