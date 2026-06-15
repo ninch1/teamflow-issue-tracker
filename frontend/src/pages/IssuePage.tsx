@@ -26,6 +26,7 @@ import IssueLabelsSection from "../components/layout/IssueLabelsSection";
 import type { Label } from "../types/labelTypes";
 import {
   getWorkspaceLabels,
+  createWorkspaceLabel,
   addLabelToIssue,
   removeLabelFromIssue,
 } from "../api/labelApi";
@@ -65,6 +66,9 @@ export default function IssuePage() {
   const [selectedLabelId, setSelectedLabelId] = useState("");
   const [isAddingLabel, setIsAddingLabel] = useState(false);
   const [isRemovingLabel, setIsRemovingLabel] = useState(false);
+  const [newLabelName, setNewLabelName] = useState("");
+  const [newLabelColor, setNewLabelColor] = useState("#5e6ad2");
+  const [isCreatingLabel, setIsCreatingLabel] = useState(false);
 
   const { members, currentMemberId, currentUserId, canManageWorkspace } =
     useWorkspaceContext();
@@ -636,6 +640,53 @@ export default function IssuePage() {
     }
   }
 
+  async function handleCreateLabel() {
+    if (isCreatingLabel) {
+      return;
+    }
+
+    setFormError("");
+    setSuccessMessage("");
+
+    if (!newLabelName.trim()) {
+      setFormError("Label name is required");
+      return;
+    }
+
+    if (!workspaceId) {
+      setFormError("Workspace not found");
+      return;
+    }
+
+    try {
+      setIsCreatingLabel(true);
+
+      const data = await createWorkspaceLabel(workspaceId, {
+        name: newLabelName,
+        color: newLabelColor,
+      });
+
+      setLabels((currentLabels) => [...currentLabels, data.label]);
+      setNewLabelName("");
+      setNewLabelColor("#5e6ad2");
+      setSuccessMessage("Label created successfully.");
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate("/login");
+        return;
+      }
+
+      if (error instanceof Error) {
+        setFormError(error.message);
+      } else {
+        setFormError("Could not create label");
+      }
+    } finally {
+      setIsCreatingLabel(false);
+    }
+  }
+
   useEffect(() => {
     if (!successMessage) {
       return;
@@ -692,6 +743,12 @@ export default function IssuePage() {
             onSelectedLabelChange={setSelectedLabelId}
             onAddLabel={handleAddLabelToIssue}
             onRemoveLabel={handleRemoveLabelFromIssue}
+            newLabelName={newLabelName}
+            newLabelColor={newLabelColor}
+            isCreatingLabel={isCreatingLabel}
+            onNewLabelNameChange={setNewLabelName}
+            onNewLabelColorChange={setNewLabelColor}
+            onCreateLabel={handleCreateLabel}
           />
         </div>
       )}

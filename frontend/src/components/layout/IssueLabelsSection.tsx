@@ -1,4 +1,4 @@
-import type { Label, IssueLabel } from '../../types/labelTypes';
+import type { Label, IssueLabel } from "../../types/labelTypes";
 
 type IssueLabelsSectionProps = {
   labels: Label[];
@@ -10,6 +10,12 @@ type IssueLabelsSectionProps = {
   onSelectedLabelChange: (labelId: string) => void;
   onAddLabel: () => void;
   onRemoveLabel: (labelId: string) => void;
+  newLabelName: string;
+  newLabelColor: string;
+  isCreatingLabel: boolean;
+  onNewLabelNameChange: (name: string) => void;
+  onNewLabelColorChange: (color: string) => void;
+  onCreateLabel: () => void;
 };
 
 export default function IssueLabelsSection({
@@ -19,9 +25,15 @@ export default function IssueLabelsSection({
   canManageWorkspace,
   isAddingLabel,
   isRemovingLabel,
+  newLabelName,
+  newLabelColor,
+  isCreatingLabel,
   onSelectedLabelChange,
   onAddLabel,
   onRemoveLabel,
+  onNewLabelNameChange,
+  onNewLabelColorChange,
+  onCreateLabel,
 }: IssueLabelsSectionProps) {
   const attachedLabelIds = new Set(
     issueLabels.map((issueLabel) => issueLabel.labelId),
@@ -32,37 +44,37 @@ export default function IssueLabelsSection({
   );
 
   return (
-    <section className='rounded-xl border border-slate-200 bg-white p-5 shadow-sm'>
+    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <div>
-        <h2 className='text-lg font-semibold text-slate-950'>Labels</h2>
-        <p className='text-sm text-slate-500'>
+        <h2 className="text-lg font-semibold text-slate-950">Labels</h2>
+        <p className="text-sm text-slate-500">
           Categorize this issue with workspace labels.
         </p>
       </div>
 
-      <div className='mt-4 flex flex-wrap gap-2'>
+      <div className="mt-4 flex flex-wrap gap-2">
         {issueLabels.length === 0 ? (
-          <p className='text-sm text-slate-500'>No labels added yet.</p>
+          <p className="text-sm text-slate-500">No labels added yet.</p>
         ) : (
           issueLabels.map((issueLabel) => (
             <span
               key={issueLabel.labelId}
-              className='inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-sm font-medium text-slate-700'
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-sm font-medium text-slate-700"
             >
               <span
-                className='h-2.5 w-2.5 rounded-full'
+                className="h-2.5 w-2.5 rounded-full"
                 style={{
-                  backgroundColor: issueLabel.label.color || '#94a3b8',
+                  backgroundColor: issueLabel.label.color || "#94a3b8",
                 }}
               />
               {issueLabel.label.name}
 
               {canManageWorkspace && (
                 <button
-                  type='button'
+                  type="button"
                   onClick={() => onRemoveLabel(issueLabel.labelId)}
                   disabled={isRemovingLabel}
-                  className='text-xs text-slate-400 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-60'
+                  className="text-xs text-slate-400 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-60"
                   aria-label={`Remove ${issueLabel.label.name} label`}
                 >
                   ×
@@ -74,34 +86,70 @@ export default function IssueLabelsSection({
       </div>
 
       {canManageWorkspace && (
-        <div className='mt-5 flex flex-col gap-3 sm:flex-row'>
-          <select
-            value={selectedLabelId}
-            onChange={(e) => onSelectedLabelChange(e.target.value)}
-            disabled={isAddingLabel || availableLabels.length === 0}
-            className='min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20 disabled:cursor-not-allowed disabled:opacity-60'
-          >
-            <option value=''>
-              {availableLabels.length === 0
-                ? 'No labels available'
-                : 'Choose a label'}
-            </option>
-
-            {availableLabels.map((label) => (
-              <option key={label.id} value={label.id}>
-                {label.name}
+        <div className="mt-5 space-y-5">
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <select
+              value={selectedLabelId}
+              onChange={(e) => onSelectedLabelChange(e.target.value)}
+              disabled={isAddingLabel || availableLabels.length === 0}
+              className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <option value="">
+                {availableLabels.length === 0
+                  ? "No labels available"
+                  : "Choose a label"}
               </option>
-            ))}
-          </select>
 
-          <button
-            type='button'
-            onClick={onAddLabel}
-            disabled={isAddingLabel || !selectedLabelId}
-            className='rounded-lg bg-[#5e6ad2] px-4 py-2 text-sm font-medium text-white hover:bg-[#828fff] disabled:cursor-not-allowed disabled:opacity-60'
-          >
-            {isAddingLabel ? 'Adding...' : 'Add label'}
-          </button>
+              {availableLabels.map((label) => (
+                <option key={label.id} value={label.id}>
+                  {label.name}
+                </option>
+              ))}
+            </select>
+
+            <button
+              type="button"
+              onClick={onAddLabel}
+              disabled={isAddingLabel || !selectedLabelId}
+              className="rounded-lg bg-[#5e6ad2] px-4 py-2 text-sm font-medium text-white hover:bg-[#828fff] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isAddingLabel ? "Adding..." : "Add label"}
+            </button>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <h3 className="text-sm font-semibold text-slate-950">
+              Create new label
+            </h3>
+
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+              <input
+                type="text"
+                value={newLabelName}
+                onChange={(e) => onNewLabelNameChange(e.target.value)}
+                placeholder="Label name"
+                disabled={isCreatingLabel}
+                className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20 disabled:cursor-not-allowed disabled:opacity-60"
+              />
+
+              <input
+                type="color"
+                value={newLabelColor}
+                onChange={(e) => onNewLabelColorChange(e.target.value)}
+                disabled={isCreatingLabel}
+                className="h-10 w-full cursor-pointer rounded-lg border border-slate-300 bg-white p-1 disabled:cursor-not-allowed disabled:opacity-60 sm:w-16"
+              />
+
+              <button
+                type="button"
+                onClick={onCreateLabel}
+                disabled={isCreatingLabel || !newLabelName.trim()}
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isCreatingLabel ? "Creating..." : "Create label"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </section>
