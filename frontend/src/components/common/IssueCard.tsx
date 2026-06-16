@@ -14,7 +14,9 @@ export default function IssueCard({ workspaceId, issueInfo }: IssueCardProps) {
       className="flex min-h-36 w-full cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-white p-6 shadow-sm hover:border-slate-300"
     >
       <div className="flex flex-col gap-1">
-        <h3 className="font-semibold text-slate-950">{issueInfo.title}</h3>
+        <h3 className="break-words font-semibold text-slate-950">
+          {issueInfo.title}
+        </h3>
 
         <p className="line-clamp-2 text-sm text-slate-500">
           {issueInfo.description || "No description yet."}

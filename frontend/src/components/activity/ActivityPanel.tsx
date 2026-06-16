@@ -51,9 +51,11 @@ export default function ActivityPanel({
           {activities.map((activity) => (
             <div
               key={activity.id}
-              className="rounded-lg border border-slate-100 bg-slate-50 p-3"
+              className="min-w-0 overflow-hidden rounded-lg border border-slate-100 bg-slate-50 p-3"
             >
-              <p className="text-sm text-slate-700">{activity.message}</p>
+              <p className="break-words text-sm text-slate-700">
+                {activity.message}
+              </p>
               <p className="mt-1 text-xs text-slate-400">
                 {formatActivityDate(activity.createdAt)}
               </p>

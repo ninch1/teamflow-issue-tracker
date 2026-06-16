@@ -1,13 +1,13 @@
-import { getAuthToken } from '../utils/authToken';
-import ApiError from '../errors/ApiError';
+import { getAuthToken } from "../utils/authToken";
+import ApiError from "../errors/ApiError";
 
-const BASE_URL = 'http://localhost:3000/api/workspace';
+const BASE_URL = "http://localhost:3000/api/workspace";
 
 export const getMembers = async (workspaceId: string) => {
   const authToken = getAuthToken();
 
   const response = await fetch(`${BASE_URL}/${workspaceId}/members`, {
-    method: 'GET',
+    method: "GET",
     headers: {
       Authorization: `Bearer ${authToken}`,
     },
@@ -17,7 +17,7 @@ export const getMembers = async (workspaceId: string) => {
 
   if (!response.ok) {
     throw new ApiError(
-      data.error || 'Session expired. Please log in again',
+      data.error || "Session expired. Please log in again",
       response.status,
     );
   }
@@ -31,7 +31,7 @@ export const removeMember = async (workspaceId: string, memberId: string) => {
   const response = await fetch(
     `${BASE_URL}/${workspaceId}/members/${memberId}`,
     {
-      method: 'DELETE',
+      method: "DELETE",
       headers: {
         Authorization: `Bearer ${authToken}`,
       },
@@ -42,7 +42,7 @@ export const removeMember = async (workspaceId: string, memberId: string) => {
 
   if (!response.ok) {
     throw new ApiError(
-      data.error || 'Session expired. Please log in again',
+      data.error || "Session expired. Please log in again",
       response.status,
     );
   }
@@ -53,16 +53,16 @@ export const removeMember = async (workspaceId: string, memberId: string) => {
 export const updateMemberRole = async (
   workspaceId: string,
   memberId: string,
-  role: 'ADMIN' | 'MEMBER',
+  role: "ADMIN" | "MEMBER",
 ) => {
   const authToken = getAuthToken();
 
   const response = await fetch(
     `${BASE_URL}/${workspaceId}/members/${memberId}/role`,
     {
-      method: 'PATCH',
+      method: "PATCH",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${authToken}`,
       },
       body: JSON.stringify({ role }),
@@ -73,7 +73,29 @@ export const updateMemberRole = async (
 
   if (!response.ok) {
     throw new ApiError(
-      data.error || 'Could not update member role',
+      data.error || "Could not update member role",
+      response.status,
+    );
+  }
+
+  return data;
+};
+
+export const leaveWorkspace = async (workspaceId: string) => {
+  const authToken = getAuthToken();
+
+  const response = await fetch(`${BASE_URL}/${workspaceId}/members/me`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+    },
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new ApiError(
+      data.error || "Could not leave workspace",
       response.status,
     );
   }

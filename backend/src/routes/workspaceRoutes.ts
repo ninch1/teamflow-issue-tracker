@@ -1,24 +1,25 @@
-import express from 'express';
+import express from "express";
 import {
   createWorkspace,
   getWorkspaces,
   getWorkspace,
   deleteWorkspace,
   updateWorkspace,
-} from '../controllers/workspaceController';
+} from "../controllers/workspaceController";
 import {
   sendInvitation,
   getWorkspaceInvitations,
-} from '../controllers/invitationController';
+} from "../controllers/invitationController";
 import {
   getWorkspaceMembers,
   updateWorkspaceMemberRole,
   removeWorkspaceMember,
-} from '../controllers/workspaceMemberController';
-import authMiddleware from '../middleware/authMiddleware';
-import workspaceRoleMiddleware from '../middleware/workspaceRoleMiddleware';
-import { WorkspaceRole } from '../generated/prisma/client';
-import { getActivities } from '../controllers/activityController';
+  leaveWorkspace,
+} from "../controllers/workspaceMemberController";
+import authMiddleware from "../middleware/authMiddleware";
+import workspaceRoleMiddleware from "../middleware/workspaceRoleMiddleware";
+import { WorkspaceRole } from "../generated/prisma/client";
+import { getActivities } from "../controllers/activityController";
 
 const workspaceRouter = express.Router();
 
@@ -33,12 +34,12 @@ const workspaceRouter = express.Router();
 // PATCH /api/workspace/:workspaceId/members/:memberId/role - update member role. OWNER only.
 // DELETE /api/workspace/:workspaceId/members/:memberId - remove member. OWNER only.
 workspaceRouter
-  .route('/')
+  .route("/")
   .get(authMiddleware, getWorkspaces)
   .post(authMiddleware, createWorkspace);
 
 workspaceRouter
-  .route('/:workspaceId')
+  .route("/:workspaceId")
   .get(authMiddleware, getWorkspace)
   .patch(
     authMiddleware,
@@ -52,7 +53,7 @@ workspaceRouter
   );
 
 workspaceRouter
-  .route('/:workspaceId/invitations')
+  .route("/:workspaceId/invitations")
   .get(
     authMiddleware,
     workspaceRoleMiddleware([WorkspaceRole.OWNER, WorkspaceRole.ADMIN]),
@@ -65,7 +66,7 @@ workspaceRouter
   );
 
 workspaceRouter
-  .route('/:workspaceId/members')
+  .route("/:workspaceId/members")
   .get(
     authMiddleware,
     workspaceRoleMiddleware([
@@ -77,7 +78,19 @@ workspaceRouter
   );
 
 workspaceRouter
-  .route('/:workspaceId/members/:memberId/role')
+  .route("/:workspaceId/members/me")
+  .delete(
+    authMiddleware,
+    workspaceRoleMiddleware([
+      WorkspaceRole.OWNER,
+      WorkspaceRole.ADMIN,
+      WorkspaceRole.MEMBER,
+    ]),
+    leaveWorkspace,
+  );
+
+workspaceRouter
+  .route("/:workspaceId/members/:memberId/role")
   .patch(
     authMiddleware,
     workspaceRoleMiddleware([WorkspaceRole.OWNER]),
@@ -85,7 +98,7 @@ workspaceRouter
   );
 
 workspaceRouter
-  .route('/:workspaceId/members/:memberId')
+  .route("/:workspaceId/members/:memberId")
   .delete(
     authMiddleware,
     workspaceRoleMiddleware([WorkspaceRole.OWNER, WorkspaceRole.ADMIN]),
@@ -93,7 +106,7 @@ workspaceRouter
   );
 
 workspaceRouter
-  .route('/:workspaceId/activities')
+  .route("/:workspaceId/activities")
   .get(
     authMiddleware,
     workspaceRoleMiddleware([

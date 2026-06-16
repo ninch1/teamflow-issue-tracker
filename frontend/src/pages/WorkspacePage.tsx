@@ -30,6 +30,7 @@ import {
   updateWorkspaceLabel,
   deleteWorkspaceLabel,
 } from "../api/labelApi";
+import { leaveWorkspace } from "../api/membersApi";
 
 type NewProject = {
   name: string;
@@ -74,6 +75,7 @@ export default function WorkspacePage() {
   const [isDeletingLabel, setIsDeletingLabel] = useState(false);
   const [labelError, setLabelError] = useState("");
   const [labelSuccess, setLabelSuccess] = useState("");
+  const [isLeavingWorkspace, setIsLeavingWorkspace] = useState(false);
 
   const { canManageWorkspace } = useWorkspaceContext();
 
@@ -184,7 +186,17 @@ export default function WorkspacePage() {
         const data = await getWorkspaceLabels(activeWorkspaceId);
         setLabels(data.labels);
       } catch (error: unknown) {
-        // existing error handling
+        if (error instanceof ApiError && error.status === 401) {
+          removeAuthToken();
+          navigate("/login");
+          return;
+        }
+
+        if (error instanceof Error) {
+          setLabelError(error.message);
+        } else {
+          setLabelError("Could not load labels");
+        }
       } finally {
         setIsLoadingLabels(false);
       }
@@ -462,6 +474,50 @@ export default function WorkspacePage() {
     }
   }
 
+  async function handleLeaveWorkspace() {
+    if (isLeavingWorkspace) {
+      return;
+    }
+
+    setPageError("");
+    setSuccessMessage("");
+
+    if (!workspaceId) {
+      setPageError("Workspace not found");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Are you sure you want to leave this workspace? You will lose access unless someone invites you again.",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setIsLeavingWorkspace(true);
+
+      await leaveWorkspace(workspaceId);
+
+      navigate("/dashboard");
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        removeAuthToken();
+        navigate("/login");
+        return;
+      }
+
+      if (error instanceof Error) {
+        setPageError(error.message);
+      } else {
+        setPageError("Could not leave workspace");
+      }
+    } finally {
+      setIsLeavingWorkspace(false);
+    }
+  }
+
   useEffect(() => {
     if (!successMessage) {
       return;
@@ -507,17 +563,6 @@ export default function WorkspacePage() {
           onEditWorkspaceChange={setEditWorkspaceInfo}
           onSubmit={handleUpdateWorkspace}
           isSubmitting={isUpdatingWorkspace}
-        />
-      )}
-
-      {canManageWorkspace && (
-        <DangerZone
-          buttonText="Delete workspace"
-          submittingText="Deleting..."
-          isSubmitting={isDeletingWorkspace}
-          message="Deleting this workspace cannot be undone. All projects and issues inside this workspace will be removed."
-          onDelete={handleDeleteWorkspace}
-          fullWidth
         />
       )}
 
@@ -603,6 +648,28 @@ export default function WorkspacePage() {
             onEditingLabelColorChange={setEditingLabelColor}
             onUpdateLabel={handleUpdateLabel}
             onDeleteLabel={handleDeleteLabel}
+          />
+        )}
+
+        <div className="mt-8 mb-8">
+          <DangerZone
+            buttonText="Leave workspace"
+            submittingText="Leaving..."
+            isSubmitting={isLeavingWorkspace}
+            message="Leaving this workspace will remove your access. You can only rejoin if someone invites you again."
+            onDelete={handleLeaveWorkspace}
+            fullWidth
+          />
+        </div>
+
+        {canManageWorkspace && (
+          <DangerZone
+            buttonText="Delete workspace"
+            submittingText="Deleting..."
+            isSubmitting={isDeletingWorkspace}
+            message="Deleting this workspace cannot be undone. All projects and issues inside this workspace will be removed."
+            onDelete={handleDeleteWorkspace}
+            fullWidth
           />
         )}
       </main>
