@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { getIssue, updateIssue, deleteIssue } from "../api/issueApi";
 import ErrorAlert from "../components/common/ErrorAlert";
 import ApiError from "../errors/ApiError";
-import { removeAuthToken } from "../utils/authToken";
+import { clearAuthTokens } from "../utils/authToken";
 import IssueDetailsCard from "../components/layout/IssueDetailsCard";
 import IssueStatusSection from "../components/layout/IssueStatusSection";
 import IssueEditForm from "../components/layout/IssueEditForm";
@@ -106,7 +106,7 @@ export default function IssuePage() {
         setNewAssigneeId(issueData.issue.assigneeId);
       } catch (error: unknown) {
         if (error instanceof ApiError && error.status === 401) {
-          removeAuthToken();
+          clearAuthTokens();
           navigate("/login");
           return;
         }
@@ -158,7 +158,7 @@ export default function IssuePage() {
       setSuccessMessage("Status updated successfully.");
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }
@@ -202,7 +202,7 @@ export default function IssuePage() {
       navigate(`/workspaces/${workspaceId}/projects/${projectId}`);
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }
@@ -263,7 +263,7 @@ export default function IssuePage() {
       setSuccessMessage("Issue updated successfully.");
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }
@@ -306,7 +306,7 @@ export default function IssuePage() {
       setSuccessMessage("Assignee updated successfully.");
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }
@@ -357,7 +357,7 @@ export default function IssuePage() {
       setSuccessMessage("Comment posted successfully.");
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }
@@ -424,7 +424,7 @@ export default function IssuePage() {
       setSuccessMessage("Comment updated successfully.");
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }
@@ -480,7 +480,7 @@ export default function IssuePage() {
       setSuccessMessage("Label added successfully.");
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }
@@ -528,7 +528,7 @@ export default function IssuePage() {
       setSuccessMessage("Label removed successfully.");
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }
@@ -573,7 +573,7 @@ export default function IssuePage() {
       setSuccessMessage("Comment deleted successfully.");
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }
@@ -621,7 +621,7 @@ export default function IssuePage() {
       setHasMoreComments(commentsData.hasMore);
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }

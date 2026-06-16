@@ -1,19 +1,16 @@
-import { getAuthToken } from '../utils/authToken';
-import ApiError from '../errors/ApiError';
+import { apiFetch } from "./apiFetch";
+import ApiError from "../errors/ApiError";
 
-const WORKSPACE_BASE_URL = 'http://localhost:3000/api/workspace';
-const INVITATION_BASE_URL = 'http://localhost:3000/api/invitations';
+const WORKSPACE_BASE_URL = "http://localhost:3000/api/workspace";
+const INVITATION_BASE_URL = "http://localhost:3000/api/invitations";
 
 export const inviteMember = async (workspaceId: string, email: string) => {
-  const authToken = getAuthToken();
-
-  const response = await fetch(
+  const response = await apiFetch(
     `${WORKSPACE_BASE_URL}/${workspaceId}/invitations`,
     {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${authToken}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ email }),
     },
@@ -23,7 +20,7 @@ export const inviteMember = async (workspaceId: string, email: string) => {
 
   if (!response.ok) {
     throw new ApiError(
-      data.error || 'Could not invite member',
+      data.error || "Could not invite member",
       response.status,
     );
   }
@@ -32,20 +29,15 @@ export const inviteMember = async (workspaceId: string, email: string) => {
 };
 
 export const getInvitations = async () => {
-  const authToken = getAuthToken();
-
-  const response = await fetch(`${INVITATION_BASE_URL}/me`, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${authToken}`,
-    },
+  const response = await apiFetch(`${INVITATION_BASE_URL}/me`, {
+    method: "GET",
   });
 
   const data = await response.json();
 
   if (!response.ok) {
     throw new ApiError(
-      data.error || 'Could not load invitations',
+      data.error || "Could not load invitations",
       response.status,
     );
   }
@@ -54,15 +46,10 @@ export const getInvitations = async () => {
 };
 
 export const acceptInvitation = async (invitationId: string) => {
-  const authToken = getAuthToken();
-
-  const response = await fetch(
+  const response = await apiFetch(
     `${INVITATION_BASE_URL}/${invitationId}/accept`,
     {
-      method: 'PATCH',
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
+      method: "PATCH",
     },
   );
 
@@ -70,7 +57,7 @@ export const acceptInvitation = async (invitationId: string) => {
 
   if (!response.ok) {
     throw new ApiError(
-      data.error || 'Could not accept invitation',
+      data.error || "Could not accept invitation",
       response.status,
     );
   }
@@ -79,15 +66,10 @@ export const acceptInvitation = async (invitationId: string) => {
 };
 
 export const declineInvitation = async (invitationId: string) => {
-  const authToken = getAuthToken();
-
-  const response = await fetch(
+  const response = await apiFetch(
     `${INVITATION_BASE_URL}/${invitationId}/decline`,
     {
-      method: 'PATCH',
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
+      method: "PATCH",
     },
   );
 
@@ -95,7 +77,7 @@ export const declineInvitation = async (invitationId: string) => {
 
   if (!response.ok) {
     throw new ApiError(
-      data.error || 'Could not decline invitation',
+      data.error || "Could not decline invitation",
       response.status,
     );
   }

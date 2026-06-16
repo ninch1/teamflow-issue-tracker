@@ -10,7 +10,7 @@ import ProjectCard from "../components/common/ProjectCard";
 import CreateProjectCard from "../components/layout/CreateProjectCard";
 import ErrorAlert from "../components/common/ErrorAlert";
 import ApiError from "../errors/ApiError";
-import { removeAuthToken } from "../utils/authToken";
+import { clearAuthTokens } from "../utils/authToken";
 import PrimaryButton from "../components/common/PrimaryButton";
 import WorkspaceDetailsCard from "../components/layout/WorkspaceDetailsCard";
 import WorkspaceEditForm from "../components/layout/WorkspaceEditForm";
@@ -101,7 +101,7 @@ export default function WorkspacePage() {
         });
       } catch (error: unknown) {
         if (error instanceof ApiError && error.status === 401) {
-          removeAuthToken();
+          clearAuthTokens();
           navigate("/login");
           return;
         }
@@ -156,7 +156,7 @@ export default function WorkspacePage() {
       setSuccessMessage("Project created successfully.");
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }
@@ -187,7 +187,7 @@ export default function WorkspacePage() {
         setLabels(data.labels);
       } catch (error: unknown) {
         if (error instanceof ApiError && error.status === 401) {
-          removeAuthToken();
+          clearAuthTokens();
           navigate("/login");
           return;
         }
@@ -242,7 +242,7 @@ export default function WorkspacePage() {
       setSuccessMessage("Workspace saved successfully.");
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }
@@ -286,7 +286,7 @@ export default function WorkspacePage() {
       navigate("/dashboard");
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }
@@ -333,7 +333,7 @@ export default function WorkspacePage() {
       setLabelSuccess("Label created successfully.");
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }
@@ -405,7 +405,7 @@ export default function WorkspacePage() {
       setLabelSuccess("Label updated successfully.");
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }
@@ -459,7 +459,7 @@ export default function WorkspacePage() {
       setLabelSuccess("Label deleted successfully.");
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }
@@ -503,7 +503,7 @@ export default function WorkspacePage() {
       navigate("/dashboard");
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }

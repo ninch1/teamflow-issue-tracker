@@ -1,5 +1,5 @@
 import ApiError from "../errors/ApiError";
-import { getAuthToken } from "../utils/authToken";
+import { apiFetch } from "./apiFetch";
 import type {
   CreateCommentPayload,
   UpdateCommentPayload,
@@ -14,15 +14,10 @@ export async function getIssueComments(
   limit = 5,
   page = 1,
 ) {
-  const authToken = getAuthToken();
-
-  const response = await fetch(
+  const response = await apiFetch(
     `${BASE_URL}/${workspaceId}/projects/${projectId}/issues/${issueId}/comments?limit=${limit}&page=${page}`,
     {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
     },
   );
 
@@ -44,15 +39,12 @@ export async function createIssueComment(
   issueId: string,
   commentInfo: CreateCommentPayload,
 ) {
-  const authToken = getAuthToken();
-
-  const response = await fetch(
+  const response = await apiFetch(
     `${BASE_URL}/${workspaceId}/projects/${projectId}/issues/${issueId}/comments`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${authToken}`,
       },
       body: JSON.stringify(commentInfo),
     },
@@ -77,15 +69,12 @@ export async function updateIssueComment(
   commentId: string,
   commentInfo: UpdateCommentPayload,
 ) {
-  const authToken = getAuthToken();
-
-  const response = await fetch(
+  const response = await apiFetch(
     `${BASE_URL}/${workspaceId}/projects/${projectId}/issues/${issueId}/comments/${commentId}`,
     {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${authToken}`,
       },
       body: JSON.stringify(commentInfo),
     },
@@ -109,15 +98,10 @@ export async function deleteIssueComment(
   issueId: string,
   commentId: string,
 ) {
-  const authToken = getAuthToken();
-
-  const response = await fetch(
+  const response = await apiFetch(
     `${BASE_URL}/${workspaceId}/projects/${projectId}/issues/${issueId}/comments/${commentId}`,
     {
       method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
     },
   );
 

@@ -1,16 +1,11 @@
-import { getAuthToken } from "../utils/authToken";
+import { apiFetch } from "./apiFetch";
 import ApiError from "../errors/ApiError";
 
 const BASE_URL = "http://localhost:3000/api/workspace";
 
 export const getMembers = async (workspaceId: string) => {
-  const authToken = getAuthToken();
-
-  const response = await fetch(`${BASE_URL}/${workspaceId}/members`, {
+  const response = await apiFetch(`${BASE_URL}/${workspaceId}/members`, {
     method: "GET",
-    headers: {
-      Authorization: `Bearer ${authToken}`,
-    },
   });
 
   const data = await response.json();
@@ -26,15 +21,10 @@ export const getMembers = async (workspaceId: string) => {
 };
 
 export const removeMember = async (workspaceId: string, memberId: string) => {
-  const authToken = getAuthToken();
-
-  const response = await fetch(
+  const response = await apiFetch(
     `${BASE_URL}/${workspaceId}/members/${memberId}`,
     {
       method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
     },
   );
 
@@ -55,15 +45,12 @@ export const updateMemberRole = async (
   memberId: string,
   role: "OWNER" | "ADMIN" | "MEMBER",
 ) => {
-  const authToken = getAuthToken();
-
-  const response = await fetch(
+  const response = await apiFetch(
     `${BASE_URL}/${workspaceId}/members/${memberId}/role`,
     {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${authToken}`,
       },
       body: JSON.stringify({ role }),
     },
@@ -82,13 +69,8 @@ export const updateMemberRole = async (
 };
 
 export const leaveWorkspace = async (workspaceId: string) => {
-  const authToken = getAuthToken();
-
-  const response = await fetch(`${BASE_URL}/${workspaceId}/members/me`, {
+  const response = await apiFetch(`${BASE_URL}/${workspaceId}/members/me`, {
     method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${authToken}`,
-    },
   });
 
   const data = await response.json();

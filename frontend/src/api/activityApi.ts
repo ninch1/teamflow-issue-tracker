@@ -1,5 +1,5 @@
 import ApiError from "../errors/ApiError";
-import { getAuthToken } from "../utils/authToken";
+import { apiFetch } from "./apiFetch";
 
 const BASE_URL = "http://localhost:3000/api/workspace";
 
@@ -8,15 +8,10 @@ export const getWorkspaceActivities = async (
   limit = 3,
   page = 1,
 ) => {
-  const authToken = getAuthToken();
-
-  const response = await fetch(
+  const response = await apiFetch(
     `${BASE_URL}/${workspaceId}/activities?limit=${limit}&page=${page}`,
     {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
     },
   );
 

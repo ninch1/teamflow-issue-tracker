@@ -6,7 +6,7 @@ import MobileDrawer from "../components/layout/MobileDrawer";
 import { getMembers } from "../api/membersApi";
 import { getMe } from "../api/authApi";
 import ApiError from "../errors/ApiError";
-import { removeAuthToken } from "../utils/authToken";
+import { clearAuthTokens } from "../utils/authToken";
 import type { Member } from "../types/memberTypes";
 import { WorkspaceProvider } from "../context/WorkspaceContext";
 import MemberInfoModal from "../components/common/MemberInfoModal";
@@ -65,7 +65,7 @@ export default function WorkspaceLayout() {
         setCurrentUserId(currentUserData.user.id);
       } catch (error: unknown) {
         if (error instanceof ApiError && error.status === 401) {
-          removeAuthToken();
+          clearAuthTokens();
           navigate("/login");
           return;
         }
@@ -93,7 +93,7 @@ export default function WorkspaceLayout() {
         setActivities(data.activities);
       } catch (error: unknown) {
         if (error instanceof ApiError && error.status === 401) {
-          removeAuthToken();
+          clearAuthTokens();
           navigate("/login");
           return;
         }
@@ -169,7 +169,7 @@ export default function WorkspaceLayout() {
       setShowMemberInfo(false);
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }
@@ -211,7 +211,7 @@ export default function WorkspaceLayout() {
       setMemberActionSuccess("Member role was updated successfully.");
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }

@@ -1,7 +1,7 @@
-import { getAuthToken } from '../utils/authToken';
-import ApiError from '../errors/ApiError';
+import { apiFetch } from "./apiFetch";
+import ApiError from "../errors/ApiError";
 
-const BASE_URL = 'http://localhost:3000/api/workspace';
+const BASE_URL = "http://localhost:3000/api/workspace";
 
 type UpdateWorkspacePayload = {
   name?: string;
@@ -9,20 +9,15 @@ type UpdateWorkspacePayload = {
 };
 
 export const getWorkspaces = async () => {
-  const authToken = getAuthToken();
-
-  const response = await fetch(`${BASE_URL}`, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${authToken}`,
-    },
+  const response = await apiFetch(`${BASE_URL}`, {
+    method: "GET",
   });
 
   const data = await response.json();
 
   if (!response.ok) {
     throw new ApiError(
-      data.error || 'Session expired. Please log in again',
+      data.error || "Session expired. Please log in again",
       response.status,
     );
   }
@@ -31,13 +26,10 @@ export const getWorkspaces = async () => {
 };
 
 export const createWorkspace = async (name: string, description: string) => {
-  const authToken = getAuthToken();
-
-  const response = await fetch(`${BASE_URL}`, {
-    method: 'POST',
+  const response = await apiFetch(`${BASE_URL}`, {
+    method: "POST",
     headers: {
-      Authorization: `Bearer ${authToken}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       name,
@@ -49,7 +41,7 @@ export const createWorkspace = async (name: string, description: string) => {
 
   if (!response.ok) {
     throw new ApiError(
-      data.error || 'Workspace creation failed',
+      data.error || "Workspace creation failed",
       response.status,
     );
   }
@@ -58,20 +50,15 @@ export const createWorkspace = async (name: string, description: string) => {
 };
 
 export const getWorkspace = async (id: string) => {
-  const authToken = getAuthToken();
-
-  const response = await fetch(`${BASE_URL}/${id}`, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${authToken}`,
-    },
+  const response = await apiFetch(`${BASE_URL}/${id}`, {
+    method: "GET",
   });
 
   const data = await response.json();
 
   if (!response.ok) {
     throw new ApiError(
-      data.error || 'Session expired. Please log in again',
+      data.error || "Session expired. Please log in again",
       response.status,
     );
   }
@@ -83,13 +70,10 @@ export const updateWorkspace = async (
   workspaceId: string,
   payload: UpdateWorkspacePayload,
 ) => {
-  const authToken = getAuthToken();
-
-  const response = await fetch(`${BASE_URL}/${workspaceId}`, {
-    method: 'PATCH',
+  const response = await apiFetch(`${BASE_URL}/${workspaceId}`, {
+    method: "PATCH",
     headers: {
-      Authorization: `Bearer ${authToken}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
   });
@@ -98,7 +82,7 @@ export const updateWorkspace = async (
 
   if (!response.ok) {
     throw new ApiError(
-      data.error || 'Could not update workspace',
+      data.error || "Could not update workspace",
       response.status,
     );
   }
@@ -107,20 +91,15 @@ export const updateWorkspace = async (
 };
 
 export const deleteWorkspace = async (workspaceId: string) => {
-  const authToken = getAuthToken();
-
-  const response = await fetch(`${BASE_URL}/${workspaceId}`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${authToken}`,
-    },
+  const response = await apiFetch(`${BASE_URL}/${workspaceId}`, {
+    method: "DELETE",
   });
 
   const data = await response.json();
 
   if (!response.ok) {
     throw new ApiError(
-      data.error || 'Could not delete workspace',
+      data.error || "Could not delete workspace",
       response.status,
     );
   }

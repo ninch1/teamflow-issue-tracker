@@ -6,7 +6,7 @@ import IssueCard from "../components/common/IssueCard";
 import CreateIssueCard from "../components/layout/CreateIssueCard";
 import ErrorAlert from "../components/common/ErrorAlert";
 import ApiError from "../errors/ApiError";
-import { removeAuthToken } from "../utils/authToken";
+import { clearAuthTokens } from "../utils/authToken";
 import ProjectDetailsCard from "../components/layout/ProjectDetailsCard";
 import ProjectEditForm from "../components/layout/ProjectEditForm";
 import DangerZone from "../components/common/DangerZone";
@@ -114,7 +114,7 @@ export default function ProjectPage() {
         });
       } catch (error: unknown) {
         if (error instanceof ApiError && error.status === 401) {
-          removeAuthToken();
+          clearAuthTokens();
           navigate("/login");
           return;
         }
@@ -156,7 +156,7 @@ export default function ProjectPage() {
         setIssues(issuesData.issues);
       } catch (error: unknown) {
         if (error instanceof ApiError && error.status === 401) {
-          removeAuthToken();
+          clearAuthTokens();
           navigate("/login");
           return;
         }
@@ -249,14 +249,27 @@ export default function ProjectPage() {
           .toLowerCase()
           .includes(debouncedSearchValue.trim().toLowerCase());
 
-      if (matchesStatus && matchesPriority && matchesType && matchesSearch) {
+      const matchesLabel =
+        selectedLabelFilter === "" ||
+        createdIssue.labels.some(
+          (issueLabel: { labelId: string }) =>
+            issueLabel.labelId === selectedLabelFilter,
+        );
+
+      if (
+        matchesStatus &&
+        matchesPriority &&
+        matchesType &&
+        matchesSearch &&
+        matchesLabel
+      ) {
         setIssues((prev) => [...prev, createdIssue]);
       }
 
       setSuccessMessage("Issue created successfully.");
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }
@@ -308,7 +321,7 @@ export default function ProjectPage() {
       setSuccessMessage("Project saved successfully.");
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }
@@ -352,7 +365,7 @@ export default function ProjectPage() {
       navigate(`/workspaces/${workspaceId}`);
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 401) {
-        removeAuthToken();
+        clearAuthTokens();
         navigate("/login");
         return;
       }

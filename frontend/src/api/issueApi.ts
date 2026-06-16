@@ -1,5 +1,5 @@
 import ApiError from "../errors/ApiError";
-import { getAuthToken } from "../utils/authToken";
+import { apiFetch } from "./apiFetch";
 import type {
   IssueStatus,
   IssuePriority,
@@ -26,8 +26,6 @@ export const getIssues = async (
   search?: string,
   labelId?: string,
 ) => {
-  const token = getAuthToken();
-
   const params = new URLSearchParams();
 
   if (search) {
@@ -52,13 +50,10 @@ export const getIssues = async (
 
   const filterQuery = params.toString() ? `?${params.toString()}` : "";
 
-  const response = await fetch(
+  const response = await apiFetch(
     `${BASE_URL}/${workspaceId}/projects/${projectId}/issues${filterQuery}`,
     {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
     },
   );
 
@@ -82,14 +77,11 @@ export const createIssue = async (
   priority: string,
   type: string,
 ) => {
-  const token = getAuthToken();
-
-  const response = await fetch(
+  const response = await apiFetch(
     `${BASE_URL}/${workspaceId}/projects/${projectId}/issues`,
     {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -115,15 +107,10 @@ export const getIssue = async (
   projectId: string,
   issueId: string,
 ) => {
-  const token = getAuthToken();
-
-  const response = await fetch(
+  const response = await apiFetch(
     `${BASE_URL}/${workspaceId}/projects/${projectId}/issues/${issueId}`,
     {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
     },
   );
 
@@ -142,14 +129,11 @@ export const updateIssue = async (
   issueId: string,
   payload: UpdateIssuePayload,
 ) => {
-  const token = getAuthToken();
-
-  const response = await fetch(
+  const response = await apiFetch(
     `${BASE_URL}/${workspaceId}/projects/${projectId}/issues/${issueId}`,
     {
       method: "PATCH",
       headers: {
-        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
@@ -170,15 +154,10 @@ export const deleteIssue = async (
   projectId: string,
   issueId: string,
 ) => {
-  const token = getAuthToken();
-
-  const response = await fetch(
+  const response = await apiFetch(
     `${BASE_URL}/${workspaceId}/projects/${projectId}/issues/${issueId}`,
     {
       method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
     },
   );
 

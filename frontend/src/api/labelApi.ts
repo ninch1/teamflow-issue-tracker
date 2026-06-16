@@ -1,5 +1,5 @@
 import ApiError from "../errors/ApiError";
-import { getAuthToken } from "../utils/authToken";
+import { apiFetch } from "./apiFetch";
 import type {
   CreateLabelPayload,
   UpdateLabelPayload,
@@ -8,13 +8,8 @@ import type {
 const BASE_URL = "http://localhost:3000/api/workspace";
 
 export async function getWorkspaceLabels(workspaceId: string) {
-  const authToken = getAuthToken();
-
-  const response = await fetch(`${BASE_URL}/${workspaceId}/labels`, {
+  const response = await apiFetch(`${BASE_URL}/${workspaceId}/labels`, {
     method: "GET",
-    headers: {
-      Authorization: `Bearer ${authToken}`,
-    },
   });
 
   const data = await response.json();
@@ -30,13 +25,10 @@ export async function createWorkspaceLabel(
   workspaceId: string,
   labelInfo: CreateLabelPayload,
 ) {
-  const authToken = getAuthToken();
-
-  const response = await fetch(`${BASE_URL}/${workspaceId}/labels`, {
+  const response = await apiFetch(`${BASE_URL}/${workspaceId}/labels`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${authToken}`,
     },
     body: JSON.stringify(labelInfo),
   });
@@ -56,15 +48,10 @@ export async function addLabelToIssue(
   issueId: string,
   labelId: string,
 ) {
-  const authToken = getAuthToken();
-
-  const response = await fetch(
+  const response = await apiFetch(
     `${BASE_URL}/${workspaceId}/projects/${projectId}/issues/${issueId}/labels/${labelId}`,
     {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
     },
   );
 
@@ -86,15 +73,10 @@ export async function removeLabelFromIssue(
   issueId: string,
   labelId: string,
 ) {
-  const authToken = getAuthToken();
-
-  const response = await fetch(
+  const response = await apiFetch(
     `${BASE_URL}/${workspaceId}/projects/${projectId}/issues/${issueId}/labels/${labelId}`,
     {
       method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
     },
   );
 
@@ -115,16 +97,16 @@ export async function updateWorkspaceLabel(
   labelId: string,
   labelInfo: UpdateLabelPayload,
 ) {
-  const authToken = getAuthToken();
-
-  const response = await fetch(`${BASE_URL}/${workspaceId}/labels/${labelId}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${authToken}`,
+  const response = await apiFetch(
+    `${BASE_URL}/${workspaceId}/labels/${labelId}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(labelInfo),
     },
-    body: JSON.stringify(labelInfo),
-  });
+  );
 
   const data = await response.json();
 
@@ -139,14 +121,12 @@ export async function deleteWorkspaceLabel(
   workspaceId: string,
   labelId: string,
 ) {
-  const authToken = getAuthToken();
-
-  const response = await fetch(`${BASE_URL}/${workspaceId}/labels/${labelId}`, {
-    method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${authToken}`,
+  const response = await apiFetch(
+    `${BASE_URL}/${workspaceId}/labels/${labelId}`,
+    {
+      method: "DELETE",
     },
-  });
+  );
 
   const data = await response.json();
 
