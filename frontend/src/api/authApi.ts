@@ -3,24 +3,45 @@ import {
   setRefreshToken,
   getRefreshToken,
   clearAuthTokens,
-} from "../utils/authToken";
-import ApiError from "../errors/ApiError";
-import { apiFetch } from "./apiFetch";
+} from '../utils/authToken';
+import ApiError from '../errors/ApiError';
+import { apiFetch } from './apiFetch';
 
 // API functions for authentication requests.
 
-const BASE_URL = "http://localhost:3000/api/auth";
+const BASE_URL = 'http://localhost:3000/api/auth';
 
 export const getMe = async () => {
   const response = await apiFetch(`${BASE_URL}/me`, {
-    method: "GET",
+    method: 'GET',
   });
 
   const data = await response.json();
 
   if (!response.ok) {
     throw new ApiError(
-      data.error || "Session expired. Please log in again",
+      data.error || 'Session expired. Please log in again',
+      response.status,
+    );
+  }
+
+  return data;
+};
+
+export const updateMe = async (name: string, email: string) => {
+  const response = await apiFetch(`${BASE_URL}/me`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ name, email }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new ApiError(
+      data.error || 'Could not update profile',
       response.status,
     );
   }
@@ -30,9 +51,9 @@ export const getMe = async () => {
 
 export const loginUser = async (email: string, password: string) => {
   const response = await fetch(`${BASE_URL}/login`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       email,
@@ -43,7 +64,7 @@ export const loginUser = async (email: string, password: string) => {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.error || "Login failed");
+    throw new Error(data.error || 'Login failed');
   }
 
   setAuthToken(data.token);
@@ -56,9 +77,9 @@ export const registerUser = async (
   password: string,
 ) => {
   const response = await fetch(`${BASE_URL}/register`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       name,
@@ -70,7 +91,7 @@ export const registerUser = async (
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.error || "Registration failed");
+    throw new Error(data.error || 'Registration failed');
   }
 
   setAuthToken(data.token);
@@ -81,13 +102,13 @@ export const refreshAccessToken = async () => {
   const refreshToken = getRefreshToken();
 
   if (!refreshToken) {
-    throw new ApiError("Refresh token not found", 401);
+    throw new ApiError('Refresh token not found', 401);
   }
 
   const response = await fetch(`${BASE_URL}/refresh`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({ refreshToken }),
   });
@@ -96,7 +117,7 @@ export const refreshAccessToken = async () => {
 
   if (!response.ok) {
     clearAuthTokens();
-    throw new ApiError(data.error || "Session expired", response.status);
+    throw new ApiError(data.error || 'Session expired', response.status);
   }
 
   setAuthToken(data.token);
@@ -113,9 +134,9 @@ export const logoutUser = async () => {
   }
 
   await fetch(`${BASE_URL}/logout`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({ refreshToken }),
   });

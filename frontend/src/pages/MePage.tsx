@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { getMe, logoutUser } from '../api/authApi';
+import { getMe, logoutUser, updateMe } from '../api/authApi';
 import { getAuthToken, clearAuthTokens } from '../utils/authToken';
 import { useNavigate } from 'react-router-dom';
+import SuccessAlert from '../components/common/SuccessAlert';
 import ErrorAlert from '../components/common/ErrorAlert';
 import ApiError from '../errors/ApiError';
 import DangerButton from '../components/common/DangerButton';
@@ -19,6 +20,10 @@ export default function MePage() {
   const [userData, setUserData] = useState<UserType | null>(null);
   const [pageError, setPageError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const navigate = useNavigate();
 
@@ -38,6 +43,8 @@ export default function MePage() {
 
         const data = await getMe();
         setUserData(data);
+        setEditName(data.user.name);
+        setEditEmail(data.user.email);
       } catch (error: unknown) {
         if (error instanceof ApiError && error.status === 401) {
           clearAuthTokens();
@@ -58,10 +65,84 @@ export default function MePage() {
     fetchMe();
   }, [navigate]);
 
+  async function handleUpdateProfile(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (isUpdatingProfile) {
+      return;
+    }
+
+    setPageError('');
+    setSuccessMessage('');
+
+    if (!editName.trim()) {
+      setPageError('Name is required');
+      return;
+    }
+
+    if (!editEmail.trim()) {
+      setPageError('Email is required');
+      return;
+    }
+
+    try {
+      setIsUpdatingProfile(true);
+
+      const data = await updateMe(editName, editEmail);
+
+      setUserData({ user: data.user });
+      setEditName(data.user.name);
+      setEditEmail(data.user.email);
+      setSuccessMessage('Profile updated successfully.');
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        clearAuthTokens();
+        navigate('/login');
+        return;
+      }
+
+      if (error instanceof Error) {
+        setPageError(error.message);
+      } else {
+        setPageError('Could not update profile');
+      }
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  }
+
   async function handleLogout() {
     await logoutUser();
     navigate('/');
   }
+
+  useEffect(() => {
+    if (!successMessage) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSuccessMessage('');
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [successMessage]);
+
+  useEffect(() => {
+    if (!pageError) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setPageError('');
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [pageError]);
 
   if (isLoading) {
     return <LoadingCard message='Loading...' />;
@@ -83,18 +164,37 @@ export default function MePage() {
           <ErrorAlert message={pageError} onClose={() => setPageError('')} />
         )}
 
+        {successMessage && (
+          <SuccessAlert
+            message={successMessage}
+            onClose={() => setSuccessMessage('')}
+          />
+        )}
+
         {userData && (
-          <div className='flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4'>
+          <form
+            onSubmit={handleUpdateProfile}
+            className='flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4'
+          >
             <div>
-              <p className='text-xs font-medium text-slate-500'>Name</p>
-              <p className='text-sm font-medium text-slate-950'>
-                {userData.user.name}
-              </p>
+              <label className='text-xs font-medium text-slate-500'>Name</label>
+              <input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className='mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-indigo-500'
+              />
             </div>
 
             <div>
-              <p className='text-xs font-medium text-slate-500'>Email</p>
-              <p className='text-sm text-slate-950'>{userData.user.email}</p>
+              <label className='text-xs font-medium text-slate-500'>
+                Email
+              </label>
+              <input
+                type='email'
+                value={editEmail}
+                onChange={(e) => setEditEmail(e.target.value)}
+                className='mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-indigo-500'
+              />
             </div>
 
             <div>
@@ -103,7 +203,15 @@ export default function MePage() {
                 {userData.user.id}
               </p>
             </div>
-          </div>
+
+            <button
+              type='submit'
+              disabled={isUpdatingProfile}
+              className='mt-2 rounded-lg bg-slate-950 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60'
+            >
+              {isUpdatingProfile ? 'Saving...' : 'Save changes'}
+            </button>
+          </form>
         )}
 
         <DangerButton onClick={handleLogout} fullWidth>
