@@ -335,3 +335,61 @@ export const updateMe = asyncHandler(async (req, res, next) => {
     user: updatedUser,
   });
 });
+
+export const updatePassword = asyncHandler(async (req, res, next) => {
+  const authReq = req as AuthRequest;
+  const user = authReq.user;
+
+  if (!user) {
+    return next(new ErrorResponse('Unauthorized access', 401));
+  }
+
+  const { currentPassword, newPassword } = req.body;
+
+  if (
+    typeof currentPassword !== 'string' ||
+    currentPassword.trim().length === 0
+  ) {
+    return next(new ErrorResponse('Current password is required', 400));
+  }
+
+  if (typeof newPassword !== 'string') {
+    return next(new ErrorResponse('New password is required', 400));
+  }
+
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,64}$/;
+
+  if (!passwordRegex.test(newPassword)) {
+    return next(new ErrorResponse('Please create a stronger password', 400));
+  }
+
+  const existingUser = await prisma.user.findUnique({
+    where: { id: user.id },
+  });
+
+  if (!existingUser) {
+    return next(new ErrorResponse('User not found', 404));
+  }
+
+  const isPasswordValid = await bcrypt.compare(
+    currentPassword,
+    existingUser.passwordHash,
+  );
+
+  if (!isPasswordValid) {
+    return next(new ErrorResponse('Current password is incorrect', 400));
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      passwordHash: hashedPassword,
+    },
+  });
+
+  return res.status(200).json({
+    message: 'Password updated successfully',
+  });
+});

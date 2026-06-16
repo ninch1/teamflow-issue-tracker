@@ -6,6 +6,7 @@ import {
   refreshAccessToken,
   logout,
   updateMe,
+  updatePassword,
 } from '../controllers/authController';
 import authMiddleware from '../middleware/authMiddleware';
 
@@ -30,5 +31,9 @@ authRouter.post('/logout', logout);
 // PROTECTED GET request to get user information
 // AUTH: Bearer Token
 authRouter.route('/me').get(authMiddleware, me).patch(authMiddleware, updateMe);
+
+// PROTECTED PATCH request to update user password
+// AUTH: Bearer Token
+authRouter.route('/me/password').patch(authMiddleware, updatePassword);
 
 export default authRouter;

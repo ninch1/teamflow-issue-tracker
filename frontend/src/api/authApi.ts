@@ -49,6 +49,30 @@ export const updateMe = async (name: string, email: string) => {
   return data;
 };
 
+export const updatePassword = async (
+  currentPassword: string,
+  newPassword: string,
+) => {
+  const response = await apiFetch(`${BASE_URL}/me/password`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new ApiError(
+      data.error || 'Could not update password',
+      response.status,
+    );
+  }
+
+  return data;
+};
+
 export const loginUser = async (email: string, password: string) => {
   const response = await fetch(`${BASE_URL}/login`, {
     method: 'POST',

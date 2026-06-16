@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getMe, logoutUser, updateMe } from '../api/authApi';
+import { getMe, logoutUser, updateMe, updatePassword } from '../api/authApi';
 import { getAuthToken, clearAuthTokens } from '../utils/authToken';
 import { useNavigate } from 'react-router-dom';
 import SuccessAlert from '../components/common/SuccessAlert';
@@ -24,6 +24,10 @@ export default function MePage() {
   const [editEmail, setEditEmail] = useState('');
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   const navigate = useNavigate();
 
@@ -108,6 +112,57 @@ export default function MePage() {
       }
     } finally {
       setIsUpdatingProfile(false);
+    }
+  }
+
+  async function handleUpdatePassword(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (isUpdatingPassword) {
+      return;
+    }
+
+    setPageError('');
+    setSuccessMessage('');
+
+    if (!currentPassword.trim()) {
+      setPageError('Current password is required');
+      return;
+    }
+
+    if (!newPassword.trim()) {
+      setPageError('New password is required');
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      setPageError('New passwords do not match');
+      return;
+    }
+
+    try {
+      setIsUpdatingPassword(true);
+
+      await updatePassword(currentPassword, newPassword);
+
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+      setSuccessMessage('Password updated successfully.');
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 401) {
+        clearAuthTokens();
+        navigate('/login');
+        return;
+      }
+
+      if (error instanceof Error) {
+        setPageError(error.message);
+      } else {
+        setPageError('Could not update password');
+      }
+    } finally {
+      setIsUpdatingPassword(false);
     }
   }
 
@@ -210,6 +265,69 @@ export default function MePage() {
               className='mt-2 rounded-lg bg-slate-950 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60'
             >
               {isUpdatingProfile ? 'Saving...' : 'Save changes'}
+            </button>
+          </form>
+        )}
+
+        {userData && (
+          <form
+            onSubmit={handleUpdatePassword}
+            className='flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4'
+          >
+            <div>
+              <h2 className='text-sm font-semibold text-slate-950'>
+                Change password
+              </h2>
+              <p className='text-xs text-slate-500'>
+                Enter your current password and choose a new one.
+              </p>
+            </div>
+
+            <div>
+              <label className='text-xs font-medium text-slate-500'>
+                Current password
+              </label>
+              <input
+                type='password'
+                autoComplete='current-password'
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className='mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-indigo-500'
+              />
+            </div>
+
+            <div>
+              <label className='text-xs font-medium text-slate-500'>
+                New password
+              </label>
+              <input
+                type='password'
+                autoComplete='new-password'
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className='mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-indigo-500'
+              />
+            </div>
+
+            <div>
+              <label className='text-xs font-medium text-slate-500'>
+                Confirm new password
+              </label>
+              <input
+                type='password'
+                autoComplete='new-password'
+                value={confirmNewPassword}
+                onChange={(e) => setConfirmNewPassword(e.target.value)}
+                className='mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-indigo-500'
+              />
+            </div>
+
+            <button
+              type='submit'
+              disabled={isUpdatingPassword}
+              className='mt-2 rounded-lg bg-slate-950 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60'
+            >
+              {isUpdatingPassword ? 'Saving...' : 'Update password'}
             </button>
           </form>
         )}
