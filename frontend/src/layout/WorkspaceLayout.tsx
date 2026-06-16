@@ -184,7 +184,9 @@ export default function WorkspaceLayout() {
     }
   }
 
-  async function handleUpdateSelectedMemberRole(role: "ADMIN" | "MEMBER") {
+  async function handleUpdateSelectedMemberRole(
+    role: "OWNER" | "ADMIN" | "MEMBER",
+  ) {
     if (!workspaceId || !selectedMemberId || isUpdatingMemberRole) {
       return;
     }

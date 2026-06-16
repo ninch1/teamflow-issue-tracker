@@ -53,7 +53,7 @@ export const removeMember = async (workspaceId: string, memberId: string) => {
 export const updateMemberRole = async (
   workspaceId: string,
   memberId: string,
-  role: "ADMIN" | "MEMBER",
+  role: "OWNER" | "ADMIN" | "MEMBER",
 ) => {
   const authToken = getAuthToken();
 

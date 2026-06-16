@@ -79,13 +79,21 @@ export const updateWorkspaceMemberRole = asyncHandler(
 
     const newRoleTrim = newRole.toUpperCase().trim();
 
-    if (newRoleTrim !== "ADMIN" && newRoleTrim !== "MEMBER") {
-      return next(new ErrorResponse("Role must be ADMIN or MEMBER", 400));
+    if (
+      newRoleTrim !== "OWNER" &&
+      newRoleTrim !== "ADMIN" &&
+      newRoleTrim !== "MEMBER"
+    ) {
+      return next(
+        new ErrorResponse("Role must be OWNER, ADMIN, or MEMBER", 400),
+      );
     }
 
     let updatedRole: WorkspaceRole;
 
-    if (newRoleTrim === "ADMIN") {
+    if (newRoleTrim === WorkspaceRole.OWNER) {
+      updatedRole = WorkspaceRole.OWNER;
+    } else if (newRoleTrim === WorkspaceRole.ADMIN) {
       updatedRole = WorkspaceRole.ADMIN;
     } else {
       updatedRole = WorkspaceRole.MEMBER;
@@ -108,8 +116,25 @@ export const updateWorkspaceMemberRole = asyncHandler(
       return next(new ErrorResponse("User already has this role", 400));
     }
 
-    if (membership.role === WorkspaceRole.OWNER) {
-      return next(new ErrorResponse("Owner role cannot be changed", 400));
+    if (
+      membership.role === WorkspaceRole.OWNER &&
+      updatedRole !== WorkspaceRole.OWNER
+    ) {
+      const ownerCount = await prisma.workspaceMember.count({
+        where: {
+          workspaceId,
+          role: WorkspaceRole.OWNER,
+        },
+      });
+
+      if (ownerCount === 1) {
+        return next(
+          new ErrorResponse(
+            "You cannot remove the last owner from this workspace",
+            400,
+          ),
+        );
+      }
     }
 
     const updatedMembership = await prisma.workspaceMember.update({
@@ -275,7 +300,7 @@ export const leaveWorkspace = asyncHandler(async (req, res, next) => {
     const ownerCount = await prisma.workspaceMember.count({
       where: {
         workspaceId,
-        role: "OWNER",
+        role: WorkspaceRole.OWNER,
       },
     });
 
