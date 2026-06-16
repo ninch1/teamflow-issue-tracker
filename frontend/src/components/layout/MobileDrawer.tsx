@@ -31,7 +31,7 @@ export default function MobileDrawer({
   }
 
   return (
-    <div className='fixed inset-0 z-50 xl:hidden'>
+    <div className='fixed inset-0 z-50 md:hidden'>
       <button
         type='button'
         aria-label='Close drawer overlay'

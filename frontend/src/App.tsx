@@ -18,10 +18,10 @@ function App() {
         <Route path='/' element={<HomePage />} />
         <Route path='/login' element={<LoginPage />} />
         <Route path='/register' element={<RegisterPage />} />
-        <Route path='/me' element={<MePage />} />
+
         <Route element={<AppLayout />}>
           <Route path='/dashboard' element={<DashboardPage />} />
-
+          <Route path='/me' element={<MePage />} />
           <Route path='/workspaces/:workspaceId' element={<WorkspaceLayout />}>
             <Route index element={<WorkspacePage />} />
             <Route path='projects/:projectId' element={<ProjectPage />} />
