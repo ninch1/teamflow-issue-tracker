@@ -202,7 +202,15 @@ export const deleteProject = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Project not found', 404));
   }
 
-  const [, deletedProject] = await prisma.$transaction([
+  const [, , deletedProject] = await prisma.$transaction([
+    prisma.comment.deleteMany({
+      where: {
+        issue: {
+          projectId: project.id,
+        },
+      },
+    }),
+
     prisma.issue.deleteMany({
       where: {
         projectId: project.id,

@@ -115,7 +115,7 @@ export default function IssueFiltersBar({
         <select
           value={selectedLabelFilter}
           onChange={(e) => onLabelFilterChange(e.target.value)}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20"
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-[#5e6ad2] focus:ring-2 focus:ring-[#5e69d1]/20 lg:w-auto"
         >
           <option value="">All labels</option>
 

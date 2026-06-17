@@ -530,6 +530,62 @@ export default function WorkspacePage() {
     return () => clearTimeout(timeoutId);
   }, [successMessage]);
 
+  useEffect(() => {
+    if (!formError) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setFormError("");
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [formError]);
+
+  useEffect(() => {
+    if (!pageError) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setPageError("");
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [pageError]);
+
+  useEffect(() => {
+    if (!labelError) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setLabelError("");
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [labelError]);
+
+  useEffect(() => {
+    if (!labelSuccess) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setLabelSuccess("");
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [labelSuccess]);
+
   if (isLoading) {
     return <LoadingCard message="Loading workspace..." />;
   }
@@ -615,14 +671,21 @@ export default function WorkspacePage() {
         )}
 
         {labelError && (
-          <ErrorAlert message={labelError} onClose={() => setLabelError("")} />
+          <div className="mt-8">
+            <ErrorAlert
+              message={labelError}
+              onClose={() => setLabelError("")}
+            />
+          </div>
         )}
 
         {labelSuccess && (
-          <SuccessAlert
-            message={labelSuccess}
-            onClose={() => setLabelSuccess("")}
-          />
+          <div className="mt-8">
+            <SuccessAlert
+              message={labelSuccess}
+              onClose={() => setLabelSuccess("")}
+            />
+          </div>
         )}
 
         {isLoadingLabels ? (

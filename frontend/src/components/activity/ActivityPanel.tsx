@@ -1,5 +1,4 @@
 import type { Activity } from "../../types/activityTypes";
-import PrimaryButton from "../common/PrimaryButton";
 import { Link, useParams } from "react-router-dom";
 
 type ActivityPanelProps = {
@@ -67,8 +66,9 @@ export default function ActivityPanel({
       <Link
         onClick={onViewAllActivityClick}
         to={`/workspaces/${workspaceId}/activity`}
+        className='block w-full rounded-lg bg-[#5e6ad2] px-4 py-2 text-center text-sm font-medium text-white hover:bg-[#828fff]'
       >
-        <PrimaryButton fullWidth={true}>View all activity</PrimaryButton>
+        View all activity
       </Link>
     </section>
   );

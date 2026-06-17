@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getWorkspaceActivities } from '../api/activityApi';
 import ApiError from '../errors/ApiError';
-import { removeAuthToken } from '../utils/authToken';
+import { clearAuthTokens } from '../utils/authToken';
 import type { Activity } from '../types/activityTypes';
 import BackLink from '../components/common/BackLink';
 import ErrorAlert from '../components/common/ErrorAlert';
@@ -44,7 +44,7 @@ export default function ActivityPage() {
         setActivities(data.activities);
       } catch (error: unknown) {
         if (error instanceof ApiError && error.status === 401) {
-          removeAuthToken();
+          clearAuthTokens();
           navigate('/login');
           return;
         }
@@ -100,7 +100,9 @@ export default function ActivityPage() {
                 key={activity.id}
                 className='rounded-lg border border-slate-100 bg-slate-50 p-3'
               >
-                <p className='text-sm text-slate-700'>{activity.message}</p>
+                <p className='break-words text-sm text-slate-700'>
+                  {activity.message}
+                </p>
                 <p className='mt-1 text-xs text-slate-400'>
                   {formatActivityDate(activity.createdAt)}
                 </p>

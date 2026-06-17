@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Member } from "../../types/memberTypes";
 
 type MemberInfoModalProps = {
@@ -59,6 +59,15 @@ export default function MemberInfoModal({
 
   const canUpdateRole = currentUserRole === "OWNER" && !isCurrentUser;
 
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <button
@@ -68,9 +77,9 @@ export default function MemberInfoModal({
         className="absolute inset-0 bg-slate-950/40"
       />
 
-      <div className="relative z-10 w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-xl">
-        <div className="mb-5 flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
+      <div className="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-slate-200 bg-white p-6 shadow-xl">
+        <div className="mb-5 flex min-w-0 items-start justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-3">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#5e6ad2]/10 text-base font-semibold text-[#5e6ad2]">
               {getInitials(member.user.name, member.user.email)}
             </div>

@@ -678,99 +678,101 @@ export default function IssuePage() {
         />
       )}
 
-      {currentIssue && <IssueDetailsCard issue={currentIssue} />}
-
       {currentIssue && (
-        <div className="mt-8">
-          <IssueLabelsSection
-            labels={labels}
-            issueLabels={currentIssue.labels}
-            selectedLabelId={selectedLabelId}
-            canManageWorkspace={canManageWorkspace}
-            isAddingLabel={isAddingLabel}
-            isRemovingLabel={isRemovingLabel}
-            onSelectedLabelChange={setSelectedLabelId}
-            onAddLabel={handleAddLabelToIssue}
-            onRemoveLabel={handleRemoveLabelFromIssue}
-          />
-        </div>
-      )}
+        <>
+          <IssueDetailsCard issue={currentIssue} />
 
-      <div className="mt-8">
-        <IssueAssigneeSection
-          assigneeId={newAssigneeId}
-          members={members}
-          canManageWorkspace={canManageWorkspace}
-          isSubmitting={isUpdatingAssignee}
-          onAssigneeChange={setNewAssigneeId}
-          onSubmit={handleUpdateAssignee}
-        />
-      </div>
-
-      <div className="my-8 flex flex-col gap-5 lg:flex-row">
-        {canUpdateIssueStatus ? (
-          <IssueStatusSection
-            status={newStatus}
-            onStatusChange={setNewStatus}
-            onSubmit={handleUpdateStatus}
-            isSubmitting={isUpdatingStatus}
-          />
-        ) : (
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold text-slate-950">
-              Update Status
-            </h2>
-            <p className="mt-2 text-sm text-slate-500">
-              This issue is assigned to another member, so only the assignee or
-              a workspace admin can update its status.
-            </p>
+          <div className="mt-8">
+            <IssueLabelsSection
+              labels={labels}
+              issueLabels={currentIssue.labels}
+              selectedLabelId={selectedLabelId}
+              canManageWorkspace={canManageWorkspace}
+              isAddingLabel={isAddingLabel}
+              isRemovingLabel={isRemovingLabel}
+              onSelectedLabelChange={setSelectedLabelId}
+              onAddLabel={handleAddLabelToIssue}
+              onRemoveLabel={handleRemoveLabelFromIssue}
+            />
           </div>
-        )}
 
-        {canManageWorkspace && (
-          <IssueEditForm
-            editIssueInfo={editIssueInfo}
-            onEditIssueChange={setEditIssueInfo}
-            onSubmit={handleUpdateIssueDetails}
-            isSubmitting={isUpdatingIssueDetails}
-          />
-        )}
-      </div>
+          <div className="mt-8">
+            <IssueAssigneeSection
+              assigneeId={newAssigneeId}
+              members={members}
+              canManageWorkspace={canManageWorkspace}
+              isSubmitting={isUpdatingAssignee}
+              onAssigneeChange={setNewAssigneeId}
+              onSubmit={handleUpdateAssignee}
+            />
+          </div>
 
-      {canManageWorkspace && (
-        <DangerZone
-          message="Deleting this issue cannot be undone."
-          buttonText="Delete issue"
-          submittingText="Deleting..."
-          isSubmitting={isDeletingIssue}
-          onDelete={handleDeleteIssue}
-          fullWidth
-        />
+          <div className="my-8 flex min-w-0 flex-col gap-5 lg:flex-row">
+            {canUpdateIssueStatus ? (
+              <IssueStatusSection
+                status={newStatus}
+                onStatusChange={setNewStatus}
+                onSubmit={handleUpdateStatus}
+                isSubmitting={isUpdatingStatus}
+              />
+            ) : (
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                <h2 className="text-lg font-semibold text-slate-950">
+                  Update Status
+                </h2>
+                <p className="mt-2 text-sm text-slate-500">
+                  This issue is assigned to another member, so only the assignee
+                  or a workspace admin can update its status.
+                </p>
+              </div>
+            )}
+
+            {canManageWorkspace && (
+              <IssueEditForm
+                editIssueInfo={editIssueInfo}
+                onEditIssueChange={setEditIssueInfo}
+                onSubmit={handleUpdateIssueDetails}
+                isSubmitting={isUpdatingIssueDetails}
+              />
+            )}
+          </div>
+
+          {canManageWorkspace && (
+            <DangerZone
+              message="Deleting this issue cannot be undone."
+              buttonText="Delete issue"
+              submittingText="Deleting..."
+              isSubmitting={isDeletingIssue}
+              onDelete={handleDeleteIssue}
+              fullWidth
+            />
+          )}
+
+          <div className="mt-8">
+            <IssueCommentsSection
+              comments={comments}
+              currentUserId={currentUserId}
+              canManageWorkspace={canManageWorkspace}
+              newCommentBody={newCommentBody}
+              editingCommentId={editingCommentId}
+              editingCommentBody={editingCommentBody}
+              isCreatingComment={isCreatingComment}
+              isUpdatingComment={isUpdatingComment}
+              isDeletingComment={isDeletingComment}
+              hasMoreComments={hasMoreComments}
+              isLoadingMoreComments={isLoadingMoreComments}
+              onNewCommentBodyChange={setNewCommentBody}
+              onEditingCommentBodyChange={setEditingCommentBody}
+              onCreateComment={handleCreateComment}
+              onStartEditing={handleStartEditingComment}
+              onCancelEditing={handleCancelEditingComment}
+              onUpdateComment={handleUpdateComment}
+              onDeleteComment={handleDeleteComment}
+              onLoadMoreComments={handleLoadMoreComments}
+            />
+          </div>
+        </>
       )}
-
-      <div className="mt-8">
-        <IssueCommentsSection
-          comments={comments}
-          currentUserId={currentUserId}
-          canManageWorkspace={canManageWorkspace}
-          newCommentBody={newCommentBody}
-          editingCommentId={editingCommentId}
-          editingCommentBody={editingCommentBody}
-          isCreatingComment={isCreatingComment}
-          isUpdatingComment={isUpdatingComment}
-          isDeletingComment={isDeletingComment}
-          hasMoreComments={hasMoreComments}
-          isLoadingMoreComments={isLoadingMoreComments}
-          onNewCommentBodyChange={setNewCommentBody}
-          onEditingCommentBodyChange={setEditingCommentBody}
-          onCreateComment={handleCreateComment}
-          onStartEditing={handleStartEditingComment}
-          onCancelEditing={handleCancelEditingComment}
-          onUpdateComment={handleUpdateComment}
-          onDeleteComment={handleDeleteComment}
-          onLoadMoreComments={handleLoadMoreComments}
-        />
-      </div>
     </div>
   );
 }

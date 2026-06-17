@@ -52,7 +52,7 @@ export const sendInvitation = asyncHandler(async (req, res, next) => {
   if (!invitedUser) {
     return next(
       new ErrorResponse(
-        'The user you are trying to invite does not exist',
+        'Unable to send invitation to this email address',
         400,
       ),
     );

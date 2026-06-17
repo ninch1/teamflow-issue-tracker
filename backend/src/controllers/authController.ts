@@ -12,6 +12,46 @@ import {
 
 const saltRounds = 10;
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function getNameValidationError(rawName: string): string | null {
+  const trimmedName = rawName.trim();
+
+  if (!trimmedName) {
+    return 'Name is required';
+  }
+
+  const nameParts = trimmedName.split(/\s+/);
+
+  if (nameParts.length < 2) {
+    return 'Name must include first and last name';
+  }
+
+  if (nameParts.length > 3) {
+    return 'Name can include at most first, middle, and last name';
+  }
+
+  for (const part of nameParts) {
+    if (!/^[A-Za-z]+$/.test(part)) {
+      return 'Name can only contain letters';
+    }
+
+    if (part.length < 2) {
+      return 'Each name must be at least 2 characters';
+    }
+
+    if (part.length > 30) {
+      return 'Each name must be 30 characters or less';
+    }
+  }
+
+  return null;
+}
+
+function normalizeUserName(rawName: string): string {
+  return rawName.trim().split(/\s+/).join(' ');
+}
+
 // Register User controller. creates user. Required parameters: name, email, password.
 export const register = asyncHandler(async (req, res, next) => {
   const userInfo = req.body;
@@ -29,55 +69,19 @@ export const register = asyncHandler(async (req, res, next) => {
 
   // validates email
   const email = userInfo.email.trim().toLowerCase();
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   if (!emailRegex.test(email)) {
     return next(new ErrorResponse('Invalid email', 400));
   }
 
   // validates name
-  const rawName = userInfo.name.trim();
+  const nameError = getNameValidationError(userInfo.name);
 
-  if (!rawName) {
-    return next(new ErrorResponse('Name is required', 400));
+  if (nameError) {
+    return next(new ErrorResponse(nameError, 400));
   }
 
-  const nameParts = rawName.split(/\s+/);
-
-  if (nameParts.length < 2) {
-    return next(
-      new ErrorResponse('Name must include first and last name', 400),
-    );
-  }
-
-  if (nameParts.length > 3) {
-    return next(
-      new ErrorResponse(
-        'Name can include at most first, middle, and last name',
-        400,
-      ),
-    );
-  }
-
-  for (const part of nameParts) {
-    if (!/^[A-Za-z]+$/.test(part)) {
-      return next(new ErrorResponse('Name can only contain letters', 400));
-    }
-
-    if (part.length < 2) {
-      return next(
-        new ErrorResponse('Each name must be at least 2 characters', 400),
-      );
-    }
-
-    if (part.length > 30) {
-      return next(
-        new ErrorResponse('Each name must be 30 characters or less', 400),
-      );
-    }
-  }
-
-  const name = nameParts.join(' ');
+  const name = normalizeUserName(userInfo.name);
 
   // validates and encrypts password
   const password = userInfo.password;
@@ -137,7 +141,6 @@ export const login = asyncHandler(async (req, res, next) => {
   const trimmedEmail = email.trim().toLowerCase();
 
   // checks if email is valid
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(trimmedEmail) || password.length < 1) {
     return next(
       new ErrorResponse('Valid email and password are required', 400),
@@ -291,11 +294,17 @@ export const updateMe = asyncHandler(async (req, res, next) => {
   } = {};
 
   if (name !== undefined) {
-    if (typeof name !== 'string' || name.trim().length === 0) {
+    if (typeof name !== 'string') {
       return next(new ErrorResponse('Name is required', 400));
     }
 
-    updateData.name = name.trim();
+    const nameError = getNameValidationError(name);
+
+    if (nameError) {
+      return next(new ErrorResponse(nameError, 400));
+    }
+
+    updateData.name = normalizeUserName(name);
   }
 
   if (email !== undefined) {
@@ -304,6 +313,10 @@ export const updateMe = asyncHandler(async (req, res, next) => {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
+
+    if (!emailRegex.test(normalizedEmail)) {
+      return next(new ErrorResponse('Invalid email', 400));
+    }
 
     const existingUser = await prisma.user.findUnique({
       where: { email: normalizedEmail },
@@ -382,12 +395,23 @@ export const updatePassword = asyncHandler(async (req, res, next) => {
 
   const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      passwordHash: hashedPassword,
-    },
-  });
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash: hashedPassword,
+      },
+    }),
+    prisma.refreshToken.updateMany({
+      where: {
+        userId: user.id,
+        revokedAt: null,
+      },
+      data: {
+        revokedAt: new Date(),
+      },
+    }),
+  ]);
 
   return res.status(200).json({
     message: 'Password updated successfully',

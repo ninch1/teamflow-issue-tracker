@@ -221,6 +221,10 @@ export const updateIssueComment = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Comment id is required", 400));
   }
 
+  if (!req.body || typeof req.body !== "object") {
+    return next(new ErrorResponse("Comment body is required", 400));
+  }
+
   const { body } = req.body;
 
   if (typeof body !== "string") {

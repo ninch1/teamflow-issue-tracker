@@ -3,6 +3,36 @@ import ErrorResponse from "../errors/ErrorResponse";
 import asyncHandler from "../middleware/asyncHandler";
 import { AuthRequest } from "../types/auth";
 
+const HEX_COLOR_REGEX = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+
+function getLabelColorValidationError(
+  color: unknown,
+): string | null | undefined {
+  if (color === undefined) {
+    return undefined;
+  }
+
+  if (color === null) {
+    return null;
+  }
+
+  if (typeof color !== "string") {
+    return "Label color must be a string";
+  }
+
+  const trimmedColor = color.trim();
+
+  if (!trimmedColor) {
+    return null;
+  }
+
+  if (!HEX_COLOR_REGEX.test(trimmedColor)) {
+    return "Label color must be a valid hex color";
+  }
+
+  return null;
+}
+
 export const getWorkspaceLabels = asyncHandler(async (req, res, next) => {
   const authReq = req as AuthRequest;
   const user = authReq.user;
@@ -62,6 +92,12 @@ export const createWorkspaceLabel = asyncHandler(async (req, res, next) => {
 
   if (color !== undefined && color !== null && typeof color !== "string") {
     return next(new ErrorResponse("Label color must be a string", 400));
+  }
+
+  const colorValidationError = getLabelColorValidationError(color);
+
+  if (colorValidationError) {
+    return next(new ErrorResponse(colorValidationError, 400));
   }
 
   const trimmedColor =
@@ -260,6 +296,12 @@ export const updateWorkspaceLabel = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Label color must be a string", 400));
   }
 
+  const colorValidationError = getLabelColorValidationError(color);
+
+  if (colorValidationError) {
+    return next(new ErrorResponse(colorValidationError, 400));
+  }
+
   const trimmedName = typeof name === "string" ? name.trim() : undefined;
 
   if (trimmedName !== undefined && trimmedName.length < 1) {
@@ -283,13 +325,22 @@ export const updateWorkspaceLabel = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Label not found", 404));
   }
 
+  if (trimmedName === undefined && color === undefined) {
+    return next(new ErrorResponse("No label changes provided", 400));
+  }
+
   const updatedLabel = await prisma.label.update({
     where: {
       id: label.id,
     },
     data: {
       ...(trimmedName !== undefined ? { name: trimmedName } : {}),
-      ...(color !== undefined ? { color } : {}),
+      ...(color !== undefined
+        ? {
+            color:
+              typeof color === "string" && color.trim() ? color.trim() : null,
+          }
+        : {}),
     },
   });
 

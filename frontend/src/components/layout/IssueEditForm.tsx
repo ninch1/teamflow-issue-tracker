@@ -15,7 +15,7 @@ export default function IssueEditForm({
   isSubmitting,
 }: IssueEditFormProps) {
   return (
-    <div className='rounded-xl border border-slate-200 bg-white p-6 shadow-sm lg:flex-1'>
+    <div className='min-w-0 rounded-xl border border-slate-200 bg-white p-6 shadow-sm lg:flex-1'>
       <h2 className='mb-4 text-xl font-semibold'>Edit Issue</h2>
 
       <form onSubmit={onSubmit} className='grid gap-3 md:grid-cols-2'>

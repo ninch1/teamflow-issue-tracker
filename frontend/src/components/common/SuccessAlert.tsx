@@ -6,7 +6,7 @@ type SuccessAlertProps = {
 export default function SuccessAlert({ message, onClose }: SuccessAlertProps) {
   return (
     <div className='mb-5 flex items-center justify-between gap-3 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700'>
-      <p>{message}</p>
+      <p className='min-w-0 flex-1 break-words'>{message}</p>
 
       <button
         type='button'
