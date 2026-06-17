@@ -1,7 +1,8 @@
 import ApiError from "../errors/ApiError";
 import { apiFetch } from "./apiFetch";
+import { API_BASE_URL } from "../config/api";
 
-const BASE_URL = "http://localhost:3000/api/workspace";
+const BASE_URL = `${API_BASE_URL}/workspace`;
 
 type UpdateProjectPayload = {
   name?: string;

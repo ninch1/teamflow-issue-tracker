@@ -6,10 +6,11 @@ import {
 } from '../utils/authToken';
 import ApiError from '../errors/ApiError';
 import { apiFetch } from './apiFetch';
+import { API_BASE_URL } from "../config/api";
 
 // API functions for authentication requests.
 
-const BASE_URL = 'http://localhost:3000/api/auth';
+const BASE_URL = `${API_BASE_URL}/auth`;
 
 export const getMe = async () => {
   const response = await apiFetch(`${BASE_URL}/me`, {

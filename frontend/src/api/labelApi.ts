@@ -4,8 +4,9 @@ import type {
   CreateLabelPayload,
   UpdateLabelPayload,
 } from "../types/labelTypes";
+import { API_BASE_URL } from "../config/api";
 
-const BASE_URL = "http://localhost:3000/api/workspace";
+const BASE_URL = `${API_BASE_URL}/workspace`;
 
 export async function getWorkspaceLabels(workspaceId: string) {
   const response = await apiFetch(`${BASE_URL}/${workspaceId}/labels`, {

@@ -257,7 +257,9 @@ The backend will run on the port defined in your backend `.env`.
 
 ## Environment Variables
 
-Backend environment variables:
+### Backend
+
+Create `backend/.env` using `backend/.env.example`:
 
 | Variable       | Description                                                |
 | -------------- | ---------------------------------------------------------- |
@@ -267,14 +269,19 @@ Backend environment variables:
 | `PORT`         | Backend server port                                        |
 | `NODE_ENV`     | Runtime environment, usually `development` or `production` |
 
-## Development Checks
+### Frontend
 
-### Backend TypeScript check
+Create `frontend/.env` using `frontend/.env.example`:
 
-```bash
-cd backend
-npx tsc --noEmit
-```
+| Variable            | Description                               |
+| ------------------- | ----------------------------------------- |
+| `VITE_API_BASE_URL` | Backend API base URL used by the frontend |
+
+````md
+Local example:
+
+````env
+VITE_API_BASE_URL="http://localhost:3000/api"
 
 ### Frontend lint and build
 
@@ -282,7 +289,7 @@ npx tsc --noEmit
 cd frontend
 npm run lint
 npm run build
-```
+````
 
 ## Security Notes
 
@@ -355,3 +362,4 @@ Possible future improvements:
 - Workspace analytics
 - More advanced issue search
 - Deployment with production database and hosted frontend/backend
+````

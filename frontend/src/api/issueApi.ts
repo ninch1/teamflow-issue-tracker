@@ -5,8 +5,9 @@ import type {
   IssuePriority,
   IssueType,
 } from "../types/issueTypes";
+import { API_BASE_URL } from "../config/api";
 
-const BASE_URL = "http://localhost:3000/api/workspace";
+const BASE_URL = `${API_BASE_URL}/workspace`;
 
 type UpdateIssuePayload = {
   title?: string;

@@ -1,7 +1,8 @@
 import { apiFetch } from "./apiFetch";
 import ApiError from "../errors/ApiError";
+import { API_BASE_URL } from "../config/api";
 
-const BASE_URL = "http://localhost:3000/api/workspace";
+const BASE_URL = `${API_BASE_URL}/workspace`;
 
 export const getMembers = async (workspaceId: string) => {
   const response = await apiFetch(`${BASE_URL}/${workspaceId}/members`, {
