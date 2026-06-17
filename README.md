@@ -273,15 +273,30 @@ Create `backend/.env` using `backend/.env.example`:
 
 Create `frontend/.env` using `frontend/.env.example`:
 
-| Variable            | Description                               |
-| ------------------- | ----------------------------------------- |
+| Variable            | Description                              |
+| ------------------- | ---------------------------------------- |
 | `VITE_API_BASE_URL` | Backend API base URL used by the frontend |
 
-````md
 Local example:
 
-````env
+```env
 VITE_API_BASE_URL="http://localhost:3000/api"
+```
+
+Production example:
+
+```env
+VITE_API_BASE_URL="https://your-backend-url.onrender.com/api"
+```
+
+## Development Checks
+
+### Backend TypeScript check
+
+```bash
+cd backend
+npx tsc --noEmit
+```
 
 ### Frontend lint and build
 
@@ -289,8 +304,7 @@ VITE_API_BASE_URL="http://localhost:3000/api"
 cd frontend
 npm run lint
 npm run build
-````
-
+```
 ## Security Notes
 
 TeamFlow includes several security-focused backend and frontend decisions:
@@ -362,4 +376,4 @@ Possible future improvements:
 - Workspace analytics
 - More advanced issue search
 - Deployment with production database and hosted frontend/backend
-````
+
