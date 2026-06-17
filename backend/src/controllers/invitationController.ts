@@ -6,7 +6,7 @@ import {
   ActivityType,
   InvitationStatus,
   WorkspaceRole,
-} from '../generated/prisma/client';
+} from '@prisma/client';
 import { createActivity } from '../utils/createActivity';
 
 export const sendInvitation = asyncHandler(async (req, res, next) => {

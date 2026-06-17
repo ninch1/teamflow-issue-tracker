@@ -7,7 +7,7 @@ import {
 } from "../controllers/labelController";
 import authMiddleware from "../middleware/authMiddleware";
 import workspaceRoleMiddleware from "../middleware/workspaceRoleMiddleware";
-import { WorkspaceRole } from "../generated/prisma/client";
+import { WorkspaceRole } from "@prisma/client";
 
 const labelRouter = express.Router({ mergeParams: true });
 

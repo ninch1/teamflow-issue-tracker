@@ -18,7 +18,7 @@ import {
 } from "../controllers/workspaceMemberController";
 import authMiddleware from "../middleware/authMiddleware";
 import workspaceRoleMiddleware from "../middleware/workspaceRoleMiddleware";
-import { WorkspaceRole } from "../generated/prisma/client";
+import { WorkspaceRole } from "@prisma/client";
 import { getActivities } from "../controllers/activityController";
 
 const workspaceRouter = express.Router();

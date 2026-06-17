@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import ErrorResponse from '../errors/ErrorResponse';
-import { Prisma } from '../generated/prisma/client';
+import { Prisma } from '@prisma/client';
 
 // Middleware for errors.
 // If you pass an error or custom ErrorResponse object into next(),

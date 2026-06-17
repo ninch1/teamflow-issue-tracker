@@ -8,7 +8,7 @@ import {
 } from '../controllers/issueController';
 import authMiddleware from '../middleware/authMiddleware';
 import workspaceRoleMiddleware from '../middleware/workspaceRoleMiddleware';
-import { WorkspaceRole } from '../generated/prisma/client';
+import { WorkspaceRole } from '@prisma/client';
 import {
   getIssueComments,
   createIssueComment,

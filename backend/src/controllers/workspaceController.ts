@@ -2,7 +2,7 @@ import prisma from '../lib/prisma';
 import ErrorResponse from '../errors/ErrorResponse';
 import asyncHandler from '../middleware/asyncHandler';
 import { AuthRequest } from '../types/auth';
-import { WorkspaceRole } from '../generated/prisma/client';
+import { WorkspaceRole } from '@prisma/client';
 
 // Creates a new workspace. Required parameter: name.
 export const createWorkspace = asyncHandler(async (req, res, next) => {

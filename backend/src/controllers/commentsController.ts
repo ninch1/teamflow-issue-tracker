@@ -3,7 +3,7 @@ import ErrorResponse from "../errors/ErrorResponse";
 import asyncHandler from "../middleware/asyncHandler";
 import { AuthRequest } from "../types/auth";
 import { createActivity } from "../utils/createActivity";
-import { ActivityType, WorkspaceRole } from "../generated/prisma/client";
+import { ActivityType, WorkspaceRole } from "@prisma/client";
 
 // Get comments for one issue.
 export const getIssueComments = asyncHandler(async (req, res, next) => {

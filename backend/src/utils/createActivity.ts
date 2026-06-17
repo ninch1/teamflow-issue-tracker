@@ -3,7 +3,7 @@ import {
   ActivityType,
   IssuePriority,
   IssueStatus,
-} from '../generated/prisma/client';
+} from '@prisma/client';
 
 type CreateActivityInput = {
   workspaceId: string;

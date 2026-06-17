@@ -7,7 +7,7 @@ import {
   IssueStatus,
   IssueType,
   ActivityType,
-} from "../generated/prisma/client";
+} from "@prisma/client";
 import {
   createActivity,
   formatIssuePriority,

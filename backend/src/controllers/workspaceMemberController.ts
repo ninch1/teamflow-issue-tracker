@@ -2,7 +2,7 @@ import prisma from "../lib/prisma";
 import ErrorResponse from "../errors/ErrorResponse";
 import asyncHandler from "../middleware/asyncHandler";
 import { AuthRequest } from "../types/auth";
-import { WorkspaceRole, ActivityType } from "../generated/prisma/client";
+import { WorkspaceRole, ActivityType } from "@prisma/client";
 import { createActivity } from "../utils/createActivity";
 
 // gets all users of workspace

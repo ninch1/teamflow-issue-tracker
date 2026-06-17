@@ -1,7 +1,7 @@
 import asyncHandler from './asyncHandler';
 import ErrorResponse from '../errors/ErrorResponse';
 import prisma from '../lib/prisma';
-import { WorkspaceRole } from '../generated/prisma/client';
+import { WorkspaceRole } from '@prisma/client';
 import { AuthRequest } from '../types/auth';
 
 // Middleware to protect routes from unauthorized role users
