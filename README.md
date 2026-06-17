@@ -4,6 +4,13 @@ TeamFlow is a full-stack team issue tracker and lightweight project management a
 
 The project was built as a portfolio-ready full-stack application focused on authentication, relational database modeling, protected routes, role-based permissions, and practical team collaboration workflows.
 
+## Live Demo
+
+Frontend: https://teamflow-issue-tracker.vercel.app  
+Backend API: https://teamflow-issue-tracker.onrender.com
+
+Note: The backend is hosted on Render's free tier, so the first request after inactivity may take up to 50 seconds.
+
 ## Screenshots
 
 ### Dashboard
@@ -273,8 +280,8 @@ Create `backend/.env` using `backend/.env.example`:
 
 Create `frontend/.env` using `frontend/.env.example`:
 
-| Variable            | Description                              |
-| ------------------- | ---------------------------------------- |
+| Variable            | Description                               |
+| ------------------- | ----------------------------------------- |
 | `VITE_API_BASE_URL` | Backend API base URL used by the frontend |
 
 Local example:
@@ -305,6 +312,7 @@ cd frontend
 npm run lint
 npm run build
 ```
+
 ## Security Notes
 
 TeamFlow includes several security-focused backend and frontend decisions:
@@ -376,4 +384,3 @@ Possible future improvements:
 - Workspace analytics
 - More advanced issue search
 - Deployment with production database and hosted frontend/backend
-
