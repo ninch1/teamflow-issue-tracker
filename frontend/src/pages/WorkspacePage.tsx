@@ -77,7 +77,7 @@ export default function WorkspacePage() {
   const [labelSuccess, setLabelSuccess] = useState("");
   const [isLeavingWorkspace, setIsLeavingWorkspace] = useState(false);
 
-  const { canManageWorkspace } = useWorkspaceContext();
+  const { canManageWorkspace, currentUserRole } = useWorkspaceContext();
 
   useEffect(() => {
     async function initialWorkspace() {
@@ -610,7 +610,10 @@ export default function WorkspacePage() {
       )}
 
       {currentWorkspace && (
-        <WorkspaceDetailsCard workspace={currentWorkspace} />
+        <WorkspaceDetailsCard
+          workspace={currentWorkspace}
+          role={currentUserRole}
+        />
       )}
 
       {canManageWorkspace && (
